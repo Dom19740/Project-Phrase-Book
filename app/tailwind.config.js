@@ -4,10 +4,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        appbg: '#0A0A0A',
-        surface: '#171717',
-        surfacehover: '#1f1f1f',
-        hairline: '#2A2A2A',
+        appbg: '#121212',
+        surface: '#1E1E1E',
+        surfacehover: '#292929',
+        hairline: '#333333',
         ink: '#D1D5DB',
         muted: '#9CA3AF',
         brandteal: '#207781',

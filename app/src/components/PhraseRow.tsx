@@ -26,7 +26,7 @@ export function PhraseRow({
   return (
     <div
       id={`phrase-row-${phrase.translationId}`}
-      className="group flex items-center gap-1.5 rounded-xl bg-surface border border-hairline px-2 py-1 shadow-sm transition-colors hover:border-neutral-600"
+      className="group flex items-center gap-1.5 rounded-2xl bg-surface border border-hairline px-2 py-1 shadow-md transition-colors hover:border-neutral-600"
       style={phrase.learned ? { borderColor: accent } : undefined}
     >
       <button

@@ -25,7 +25,7 @@ export function CategoryFilterPopout({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-lg border border-[var(--accent)] px-2.5 py-1.5 text-xs font-medium text-[var(--accent)]"
+        className="flex items-center gap-1.5 rounded-full border border-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--accent)]"
       >
         <ListFilter size={14} strokeWidth={2} />
         Categories
@@ -37,7 +37,7 @@ export function CategoryFilterPopout({
       {open && (
         <>
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close category filter" />
-          <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-xl border border-hairline bg-surface p-3 shadow-lg">
+          <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-2xl border border-hairline bg-surface p-3 shadow-xl">
             <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 mb-1 border-b border-hairline pb-2">
               <input
                 type="checkbox"

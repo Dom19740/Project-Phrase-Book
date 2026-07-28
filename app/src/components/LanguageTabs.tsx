@@ -28,7 +28,7 @@ export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLangu
       <div className="relative">
         <button
           onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-semibold"
+          className="w-full flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-semibold shadow-sm"
           style={{ borderColor: accent, color: accent }}
         >
           <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
@@ -39,7 +39,7 @@ export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLangu
         {open && (
           <>
             <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close language menu" />
-            <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-xl border border-hairline bg-surface p-2 shadow-lg">
+            <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface p-2 shadow-xl">
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                 {languages.map((lang) => (
                   <div key={lang.id} className="flex flex-col rounded-lg hover:bg-surfacehover">
@@ -53,11 +53,11 @@ export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLangu
                                 onRemoveLanguage(lang.id)
                                 setConfirmingRemoveId(null)
                               }}
-                              className="rounded px-2 py-1 text-xs font-medium bg-red-600 text-white"
+                              className="rounded-full px-2.5 py-1 text-xs font-medium bg-red-600 text-white"
                             >
                               Remove
                             </button>
-                            <button onClick={() => setConfirmingRemoveId(null)} className="rounded px-2 py-1 text-xs font-medium text-muted">
+                            <button onClick={() => setConfirmingRemoveId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
                               Cancel
                             </button>
                           </div>

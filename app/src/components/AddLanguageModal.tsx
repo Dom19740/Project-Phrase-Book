@@ -33,7 +33,7 @@ export function AddLanguageModal({ defaultColor, onClose, onSubmit }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 sm:pt-24" onClick={onClose}>
-      <div className="w-full sm:max-w-sm rounded-2xl bg-surface p-5 shadow-xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full sm:max-w-sm rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-semibold mb-4 text-ink">Add language</h2>
 
         <label className="block text-sm font-medium mb-1 text-ink">Name</label>
@@ -45,7 +45,7 @@ export function AddLanguageModal({ defaultColor, onClose, onSubmit }: Props) {
             setError(null)
           }}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-          className="w-full mb-1 rounded-lg border border-hairline bg-transparent text-ink px-3 py-2"
+          className="w-full mb-1 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
           placeholder="e.g. Thai"
         />
         {error ? (
@@ -60,13 +60,13 @@ export function AddLanguageModal({ defaultColor, onClose, onSubmit }: Props) {
         </div>
 
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-muted">
+          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={!name.trim() || saving}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+            className="rounded-full px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
             style={{ backgroundColor: color }}
           >
             {saving ? 'Adding & translating...' : 'Add language'}

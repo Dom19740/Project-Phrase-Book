@@ -76,7 +76,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 sm:pt-24" onClick={onClose}>
-      <div className="w-full sm:max-w-md rounded-2xl bg-surface p-5 shadow-xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-semibold mb-1 text-ink">Backup</h2>
         <p className="text-xs text-muted mb-4">
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}
@@ -88,13 +88,13 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
               This replaces <strong>everything</strong> currently in the app with the contents of "{confirmingImport.name}". This can't be undone.
             </p>
             <div className="flex gap-2">
-              <button onClick={() => setConfirmingImport(null)} disabled={busy} className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-muted">
+              <button onClick={() => setConfirmingImport(null)} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted">
                 Cancel
               </button>
               <button
                 onClick={confirmImport}
                 disabled={busy}
-                className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+                className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
               >
                 Replace everything
               </button>
@@ -105,17 +105,17 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
             <button
               onClick={handleBackUpNow}
               disabled={busy}
-              className="rounded-lg bg-brandteal px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+              className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
             >
               Back up now
             </button>
-            <button onClick={handleExport} disabled={busy} className="rounded-lg border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40">
+            <button onClick={handleExport} disabled={busy} className="rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40">
               Export as JSON file
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={busy}
-              className="rounded-lg border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40"
+              className="rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40"
             >
               Restore from JSON file...
             </button>
@@ -145,7 +145,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
                   <button
                     onClick={handleExportCsv}
                     disabled={busy}
-                    className="shrink-0 rounded-lg border border-hairline text-ink px-3 py-2 text-sm font-medium disabled:opacity-40"
+                    className="shrink-0 rounded-full border border-hairline text-ink px-3 py-2 text-sm font-medium disabled:opacity-40"
                   >
                     Export
                   </button>
@@ -160,7 +160,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
 
         {!confirmingImport && (
           <div className="flex justify-end mt-4">
-            <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-muted">
+            <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
               Close
             </button>
           </div>

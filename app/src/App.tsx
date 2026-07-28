@@ -59,9 +59,9 @@ function Shell() {
   return (
     <div className="flex h-full flex-col bg-appbg text-ink" style={{ '--accent': accent } as React.CSSProperties}>
       <header className="flex items-center justify-between px-4 py-4">
-        <div className="flex items-center gap-3 rounded-2xl border-2 px-3 py-2" style={{ borderColor: 'var(--accent)' }}>
+        <div className="flex items-center gap-3 rounded-full border-2 px-4 py-2 shadow-sm" style={{ borderColor: 'var(--accent)' }}>
           <Logo size={44} className="text-white shrink-0" />
-          <h1 className="text-2xl font-bold tracking-tight text-ink">
+          <h1 className="text-2xl font-black tracking-tight text-ink">
             Travel <span style={{ color: 'var(--accent)' }}>Chatter</span>
           </h1>
         </div>
@@ -112,7 +112,7 @@ function Shell() {
         <button
           onClick={() => setShowAddPhrase(true)}
           disabled={languages.length === 0}
-          className="fixed bottom-6 right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-white shadow-lg shadow-black/20 transition-transform hover:scale-105 active:scale-95 disabled:opacity-40"
+          className="fixed bottom-6 right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-white shadow-xl shadow-black/40 transition-transform hover:scale-105 active:scale-95 disabled:opacity-40"
           aria-label="Add phrase"
         >
           <Plus size={26} strokeWidth={2.5} />
@@ -122,8 +122,9 @@ function Shell() {
       {showAddPhrase && (
         <AddPhraseModal
           categories={categories}
+          languages={languages}
           onClose={() => setShowAddPhrase(false)}
-          onSubmit={(english, categoryName) => addPhrase(english, categoryName)}
+          onSubmit={(english, categoryName, languageIds) => addPhrase(english, categoryName, languageIds)}
         />
       )}
 

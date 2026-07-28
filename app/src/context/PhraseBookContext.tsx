@@ -41,7 +41,7 @@ interface PhraseBookContextValue {
   refreshPhrases: () => Promise<void>
   toggleLearned: (translationId: number, learned: boolean) => Promise<void>
   reorder: (orderedTranslationIds: number[]) => Promise<void>
-  addPhrase: (english: string, categoryName: string | null) => Promise<void>
+  addPhrase: (english: string, categoryName: string | null, languageIds: number[]) => Promise<void>
   editPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
   deleteOneLanguage: (translationId: number) => Promise<void>
   deleteAllLanguages: (phraseConceptId: number) => Promise<void>
@@ -124,28 +124,34 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   )
 
   const addPhrase = useCallback(
-    async (english: string, categoryName: string | null) => {
+    async (english: string, categoryName: string | null, languageIds: number[]) => {
       let translations: { languageId: number; text: string }[] = []
       let finalCategory = categoryName
 
-      try {
-        const result = await translatePhrase(
-          english,
-          languages.map((l) => l.code),
-          categoryName,
-          categories.map((c) => c.name),
-          Object.fromEntries(languages.map((l) => [l.code, l.name])),
-        )
-        translations = languages
-          .filter((l) => result.translations[l.code])
-          .map((l) => ({ languageId: l.id, text: result.translations[l.code] }))
-        if (!categoryName) finalCategory = result.suggestedCategory
-      } catch (err) {
-        // Proxy unreachable/not configured yet — still create the phrase (blank
-        // translations to fill in manually) rather than blocking the user.
-        console.error('Auto-translate failed, adding phrase untranslated:', err)
+      const targetLanguages = languages.filter((l) => languageIds.includes(l.id))
+
+      if (targetLanguages.length > 0) {
+        try {
+          const result = await translatePhrase(
+            english,
+            targetLanguages.map((l) => l.code),
+            categoryName,
+            categories.map((c) => c.name),
+            Object.fromEntries(targetLanguages.map((l) => [l.code, l.name])),
+          )
+          translations = targetLanguages
+            .filter((l) => result.translations[l.code])
+            .map((l) => ({ languageId: l.id, text: result.translations[l.code] }))
+          if (!categoryName) finalCategory = result.suggestedCategory
+        } catch (err) {
+          // Proxy unreachable/not configured yet — still create the phrase (blank
+          // translations to fill in manually) rather than blocking the user.
+          console.error('Auto-translate failed, adding phrase untranslated:', err)
+        }
       }
 
+      // Every tracked language still gets a row here (blank for any not in `translations`) —
+      // languageIds only controls which ones get an automatic translation.
       await addPhraseConcept({ english, categoryName: finalCategory, translations })
       await refreshCategories()
       await refreshPhrases()

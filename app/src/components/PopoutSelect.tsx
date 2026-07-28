@@ -23,7 +23,7 @@ export function PopoutSelect<T extends string | number>({ value, options, onChan
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-1.5 rounded-lg border border-hairline bg-surface px-3 py-2 text-sm text-ink"
+        className="flex w-full items-center gap-1.5 rounded-full border border-hairline bg-surface px-3.5 py-2 text-sm text-ink"
       >
         <span className="flex-1 text-left truncate">{activeLabel}</span>
         <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-[var(--accent)]" />
@@ -35,7 +35,7 @@ export function PopoutSelect<T extends string | number>({ value, options, onChan
           <div
             className={`absolute ${
               align === 'right' ? 'right-0' : 'left-0'
-            } top-full z-50 mt-2 w-48 max-h-64 overflow-y-auto rounded-xl border border-hairline bg-surface p-1.5 shadow-lg`}
+            } top-full z-50 mt-2 w-48 max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl`}
           >
             {options.map((opt) => (
               <button

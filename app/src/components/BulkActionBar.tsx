@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Check, Tag, Trash2, X } from 'lucide-react'
 import type { Category } from '../db/types'
-import { Select } from './Select'
+import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
 
@@ -45,28 +45,30 @@ export function BulkActionBar({
     <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-hairline bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.4)]">
       {panel === 'category' && (
         <div className="flex items-center gap-2 px-4 py-2 border-b border-hairline">
-          <Select wrapperClassName="flex-1 min-w-0" value={categoryChoice} onChange={(e) => setCategoryChoice(e.target.value)} className="py-1.5">
-            <option value="">Uncategorized</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.name}
-              </option>
-            ))}
-            <option value={NEW_CATEGORY}>+ New category...</option>
-          </Select>
+          <PopoutSelect
+            className="flex-1 min-w-0"
+            align="left"
+            value={categoryChoice}
+            onChange={setCategoryChoice}
+            options={[
+              { value: '', label: 'Uncategorized' },
+              ...categories.map((c) => ({ value: c.name, label: c.name })),
+              { value: NEW_CATEGORY, label: '+ New category...' },
+            ]}
+          />
           {categoryChoice === NEW_CATEGORY && (
             <input
               autoFocus
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="New category name"
-              className="flex-1 min-w-0 rounded-lg border border-hairline bg-transparent text-ink px-2 py-1.5 text-sm"
+              className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-2 py-1.5 text-sm"
             />
           )}
           <button
             onClick={applyCategory}
             disabled={busy || (categoryChoice === NEW_CATEGORY && !newCategory.trim())}
-            className="shrink-0 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
+            className="shrink-0 rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-40"
           >
             Apply
           </button>
@@ -87,7 +89,7 @@ export function BulkActionBar({
                 setPanel(null)
               }}
               disabled={busy}
-              className="flex-1 rounded-lg border border-red-800 px-3 py-1.5 text-sm font-medium text-red-400 disabled:opacity-40"
+              className="flex-1 rounded-full border border-red-800 px-3 py-1.5 text-sm font-medium text-red-400 disabled:opacity-40"
             >
               {languageName} only
             </button>
@@ -99,7 +101,7 @@ export function BulkActionBar({
                 setPanel(null)
               }}
               disabled={busy}
-              className="flex-1 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
+              className="flex-1 rounded-full bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-40"
             >
               All languages
             </button>
@@ -112,21 +114,21 @@ export function BulkActionBar({
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onMarkLearned(true)}
-            className="flex items-center gap-1 rounded-lg border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+            className="flex items-center gap-1 rounded-full border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
           >
             <Check size={13} strokeWidth={2} />
             Learned
           </button>
           <button
             onClick={() => setPanel(panel === 'category' ? null : 'category')}
-            className="flex items-center gap-1 rounded-lg border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+            className="flex items-center gap-1 rounded-full border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
           >
             <Tag size={13} strokeWidth={2} />
             Category
           </button>
           <button
             onClick={() => setPanel(panel === 'delete' ? null : 'delete')}
-            className="flex items-center gap-1 rounded-lg border border-red-800 px-2.5 py-1.5 text-xs font-medium text-red-400 hover:bg-red-950/40 transition-colors"
+            className="flex items-center gap-1 rounded-full border border-red-800 px-2.5 py-1.5 text-xs font-medium text-red-400 hover:bg-red-950/40 transition-colors"
           >
             <Trash2 size={13} strokeWidth={2} />
             Delete

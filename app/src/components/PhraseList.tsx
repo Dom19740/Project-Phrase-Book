@@ -215,7 +215,7 @@ export function PhraseList({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search phrases"
-              className="w-full rounded-lg border border-hairline bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted"
+              className="w-full rounded-full border border-hairline bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted"
             />
             {search && (
               <button
@@ -247,7 +247,7 @@ export function PhraseList({
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="w-[78px] shrink-0 rounded-md px-2 py-1 text-xs font-semibold text-center border border-[var(--accent)] text-[var(--accent)]"
+            className="w-[78px] shrink-0 rounded-full px-2 py-1 text-xs font-semibold text-center border border-[var(--accent)] text-[var(--accent)]"
             title="Cycle: Unlearned → Learned → All"
           >
             {LEARNED_FILTER_LABEL[learnedFilter]}
@@ -262,7 +262,7 @@ export function PhraseList({
                 key={b.label}
                 onClick={() => jumpTo(b.label)}
                 disabled={!hasMatch}
-                className="rounded-md px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-30 transition-colors"
+                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-30 transition-colors"
               >
                 {b.label}
               </button>
@@ -271,7 +271,7 @@ export function PhraseList({
 
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className="ml-auto flex items-center gap-1.5 shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+            className="ml-auto flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors"
             style={
               selectionMode
                 ? { backgroundColor: 'var(--accent)', color: 'white' }
