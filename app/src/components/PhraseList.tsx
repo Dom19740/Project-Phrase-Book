@@ -6,6 +6,7 @@ import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
 import { ManageCategoriesModal } from './ManageCategoriesModal'
 import { PhraseRow } from './PhraseRow'
+import { SortDropdown } from './SortDropdown'
 
 interface Props {
   phrases: PhraseListItem[]
@@ -204,9 +205,23 @@ export function PhraseList({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="shrink-0 flex flex-col gap-2.5 px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="flex items-center justify-between gap-2">
+    <div className="flex h-full flex-col" style={{ '--accent': accent } as React.CSSProperties}>
+      <div className="shrink-0 flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[140px]">
+            <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--accent)] pointer-events-none" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search phrases"
+              className="w-full rounded-lg border border-hairline bg-surface pl-8 pr-3 py-2 text-sm placeholder:text-muted"
+            />
+          </div>
+          <SortDropdown value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
           {allCategoryNames.length > 1 ? (
             <CategoryFilterPopout
               allCategoryNames={allCategoryNames}
@@ -221,50 +236,28 @@ export function PhraseList({
           )}
 
           <button
+            onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
+            className="w-[78px] shrink-0 rounded-md px-2 py-1 text-xs font-semibold text-center border border-[var(--accent)] text-[var(--accent)]"
+            title="Cycle: Unlearned → Learned → All"
+          >
+            {LEARNED_FILTER_LABEL[learnedFilter]}
+          </button>
+
+          <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className={`flex items-center gap-1.5 shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+            className="ml-auto flex items-center gap-1.5 shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+            style={
               selectionMode
-                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                : 'border border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300'
-            }`}
+                ? { backgroundColor: 'var(--accent)', color: 'white' }
+                : { borderWidth: 1, borderColor: 'var(--accent)', color: 'var(--accent)' }
+            }
           >
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
             {selectionMode ? 'Cancel' : 'Select'}
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[140px]">
-            <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search phrases or categories..."
-              className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 pl-8 pr-3 py-2 text-sm placeholder:text-neutral-400"
-            />
-          </div>
-          <select
-            value={sortMode}
-            onChange={(e) => setSortMode(e.target.value as SortMode)}
-            className="rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1.5 text-sm"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="flex flex-wrap items-center gap-1">
-          <button
-            onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="w-[78px] shrink-0 rounded-md px-2 py-1 text-xs font-medium text-center border border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 mr-1"
-            title="Cycle: Unlearned → Learned → All"
-          >
-            {LEARNED_FILTER_LABEL[learnedFilter]}
-          </button>
           {ALPHA_BUCKETS.map((b) => {
             const hasMatch = bucketTargets.has(b.label)
             return (
@@ -272,7 +265,7 @@ export function PhraseList({
                 key={b.label}
                 onClick={() => jumpTo(b.label)}
                 disabled={!hasMatch}
-                className="rounded-md px-1.5 py-1 text-xs font-medium border border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 disabled:opacity-30"
+                className="rounded-md px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-30 transition-colors"
               >
                 {b.label}
               </button>
@@ -283,18 +276,22 @@ export function PhraseList({
 
       <div className={`flex-1 overflow-y-auto px-4 py-3 ${selectionMode && selectedIds.size > 0 ? 'pb-24' : 'pb-20'}`}>
         <div className="flex flex-col gap-4">
-          {primaryItems.length === 0 && <p className="text-center text-neutral-400 text-sm py-8">No phrases here — add one to get started.</p>}
+          {primaryItems.length === 0 && <p className="text-center text-muted text-sm py-8">No phrases here — add one to get started.</p>}
 
           {primaryItems.length > 0 && (
             <div>
               <button
                 onClick={() => setPrimaryExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400"
+                className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-muted"
               >
                 <span>
                   {primaryLabel} ({primaryItems.length})
                 </span>
-                {primaryExpanded ? <ChevronDown size={16} strokeWidth={2} /> : <ChevronRight size={16} strokeWidth={2} />}
+                {primaryExpanded ? (
+                  <ChevronDown size={16} strokeWidth={2} className="text-[var(--accent)]" />
+                ) : (
+                  <ChevronRight size={16} strokeWidth={2} className="text-[var(--accent)]" />
+                )}
               </button>
               {primaryExpanded && (
                 <div className="mt-1.5 flex flex-col gap-3">
@@ -305,7 +302,7 @@ export function PhraseList({
                         {groupByCategoryOn && (
                           <button
                             onClick={() => setCollapsed((c) => ({ ...c, [group.categoryName]: !isCollapsed }))}
-                            className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400"
+                            className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-muted"
                           >
                             <span>{group.categoryName}</span>
                             {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
@@ -321,15 +318,19 @@ export function PhraseList({
           )}
 
           {secondaryItems.length > 0 && (
-            <div className="border-t border-neutral-200 dark:border-neutral-800 pt-3">
+            <div className="border-t border-hairline pt-3">
               <button
                 onClick={() => setSecondaryExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400"
+                className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-muted"
               >
                 <span>
                   {secondaryLabel} ({secondaryItems.length})
                 </span>
-                {secondaryExpanded ? <ChevronDown size={16} strokeWidth={2} /> : <ChevronRight size={16} strokeWidth={2} />}
+                {secondaryExpanded ? (
+                  <ChevronDown size={16} strokeWidth={2} className="text-[var(--accent)]" />
+                ) : (
+                  <ChevronRight size={16} strokeWidth={2} className="text-[var(--accent)]" />
+                )}
               </button>
               {secondaryExpanded && <div className="mt-1.5 flex flex-col gap-1.5">{secondarySorted.map((item) => renderRow(item))}</div>}
             </div>

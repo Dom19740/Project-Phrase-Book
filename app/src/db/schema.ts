@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS languages (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   name        TEXT NOT NULL,
   code        TEXT NOT NULL UNIQUE,
+  color       TEXT NOT NULL DEFAULT '#207781',
   sort_order  INTEGER NOT NULL DEFAULT 0
 );
 

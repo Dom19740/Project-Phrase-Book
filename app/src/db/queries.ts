@@ -3,20 +3,21 @@ import type { Category, Language, PhraseListItem } from './types'
 
 export async function getLanguages(): Promise<Language[]> {
   const db = await getDb()
-  const res = await db.query('SELECT id, name, code, sort_order FROM languages ORDER BY sort_order, id;')
+  const res = await db.query('SELECT id, name, code, color, sort_order FROM languages ORDER BY sort_order, id;')
   return (res.values ?? []).map((r) => ({
     id: r.id,
     name: r.name,
     code: r.code,
+    color: r.color,
     sortOrder: r.sort_order,
   }))
 }
 
-export async function addLanguage(name: string, code: string): Promise<Language> {
+export async function addLanguage(name: string, code: string, color: string): Promise<Language> {
   const db = await getDb()
   const maxOrder = await db.query('SELECT COALESCE(MAX(sort_order), -1) AS m FROM languages;')
   const sortOrder = (maxOrder.values?.[0]?.m ?? -1) + 1
-  const res = await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [name, code, sortOrder])
+  const res = await db.run('INSERT INTO languages (name, code, color, sort_order) VALUES (?, ?, ?, ?);', [name, code, color, sortOrder])
   const languageId = res.changes?.lastId ?? 0
 
   // Every phrase concept must exist in every tracked language, so a newly added
@@ -29,7 +30,13 @@ export async function addLanguage(name: string, code: string): Promise<Language>
   if (sets.length > 0) await db.executeSet(sets)
 
   await persist()
-  return { id: languageId, name, code, sortOrder }
+  return { id: languageId, name, code, color, sortOrder }
+}
+
+export async function updateLanguageColor(languageId: number, color: string): Promise<void> {
+  const db = await getDb()
+  await db.run('UPDATE languages SET color = ? WHERE id = ?;', [color, languageId])
+  await persist()
 }
 
 export async function deleteLanguage(languageId: number): Promise<void> {

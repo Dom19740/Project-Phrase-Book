@@ -19,6 +19,7 @@ import {
   renameCategory as renameCategoryQuery,
   reorderTranslations,
   setLearned,
+  updateLanguageColor as updateLanguageColorQuery,
   updatePhrase,
 } from '../db/queries'
 import { backfillSeedCategories, seedIfEmpty } from '../db/seed'
@@ -51,8 +52,9 @@ interface PhraseBookContextValue {
   createCategory: (name: string) => Promise<void>
   renameCategory: (categoryId: number, newName: string) => Promise<void>
   deleteCategory: (categoryId: number) => Promise<void>
-  createLanguage: (name: string, code: string) => Promise<void>
+  createLanguage: (name: string, code: string, color: string) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
+  updateLanguageColor: (languageId: number, color: string) => Promise<void>
   backUpNow: () => Promise<void>
   exportBackupJson: () => Promise<string>
   restoreFromBackupJson: (json: string) => Promise<void>
@@ -257,8 +259,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const createLanguage = useCallback(
-    async (name: string, code: string) => {
-      const lang = await addLanguage(name, code)
+    async (name: string, code: string, color: string) => {
+      const lang = await addLanguage(name, code, color)
       await refreshLanguages()
       setActiveLanguageId(lang.id)
 
@@ -280,9 +282,11 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
         console.error('Bulk auto-translate failed for new language:', err)
       }
 
-      await refreshPhrases()
+      // Use lang.id directly rather than refreshPhrases(), whose closure may still be
+      // bound to the previous activeLanguageId until React re-renders after setActiveLanguageId above.
+      setPhrases(await getPhraseList(lang.id))
     },
-    [refreshLanguages, refreshPhrases],
+    [refreshLanguages],
   )
 
   const removeLanguage = useCallback(
@@ -292,6 +296,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       if (activeLanguageId === languageId) setActiveLanguageId(langs[0]?.id ?? null)
     },
     [refreshLanguages, activeLanguageId],
+  )
+
+  const updateLanguageColor = useCallback(
+    async (languageId: number, color: string) => {
+      await updateLanguageColorQuery(languageId, color)
+      await refreshLanguages()
+    },
+    [refreshLanguages],
   )
 
   const value = useMemo<PhraseBookContextValue>(
@@ -318,6 +330,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       createLanguage,
       removeLanguage,
+      updateLanguageColor,
       backUpNow,
       exportBackupJson,
       restoreFromBackupJson,
@@ -348,6 +361,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       createLanguage,
       removeLanguage,
+      updateLanguageColor,
     ],
   )
 

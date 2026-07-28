@@ -1,79 +1,111 @@
 import { useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, Plus, Trash2 } from 'lucide-react'
 import type { Language } from '../db/types'
-
-const ACCENTS = ['#e11d48', '#2563eb', '#16a34a', '#d97706', '#7c3aed', '#0891b2']
-
-export function accentFor(index: number): string {
-  return ACCENTS[index % ACCENTS.length]
-}
+import { DEFAULT_LANGUAGE_COLOR, nextAvailableColor } from '../lib/colorPalette'
+import { AddLanguageModal } from './AddLanguageModal'
 
 interface Props {
   languages: Language[]
   activeLanguageId: number | null
   onSelect: (id: number) => void
-  onAddLanguage: () => void
+  onAddLanguage: (name: string, code: string, color: string) => Promise<void>
   onRemoveLanguage: (id: number) => void
 }
 
 export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLanguage, onRemoveLanguage }: Props) {
-  const [confirming, setConfirming] = useState(false)
-  const activeLanguage = languages.find((l) => l.id === activeLanguageId)
+  const [open, setOpen] = useState(false)
+  const [showAddLanguage, setShowAddLanguage] = useState(false)
+  const [confirmingRemoveId, setConfirmingRemoveId] = useState<number | null>(null)
 
-  if (confirming && activeLanguage) {
-    return (
-      <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-        <span className="text-sm">Remove {activeLanguage.name}? This deletes all its translations.</span>
-        <div className="flex gap-2 shrink-0">
-          <button
-            onClick={() => {
-              onRemoveLanguage(activeLanguage.id)
-              setConfirming(false)
-            }}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium bg-red-600 text-white"
-          >
-            Remove
-          </button>
-          <button onClick={() => setConfirming(false)} className="rounded-lg px-3 py-1.5 text-xs font-medium text-neutral-500">
-            Cancel
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const activeLanguage = languages.find((l) => l.id === activeLanguageId)
+  const accent = activeLanguage?.color ?? DEFAULT_LANGUAGE_COLOR
 
   return (
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-      <select
-        value={activeLanguageId ?? ''}
-        onChange={(e) => onSelect(Number(e.target.value))}
-        className="flex-1 min-w-0 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm font-medium"
-      >
-        {languages.map((lang) => (
-          <option key={lang.id} value={lang.id}>
-            {lang.name}
-          </option>
-        ))}
-      </select>
-
-      <button
-        onClick={onAddLanguage}
-        className="shrink-0 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700 p-2 text-neutral-500 dark:text-neutral-400 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
-        aria-label="Add language"
-        title="Add language"
-      >
-        <Plus size={16} strokeWidth={2} />
-      </button>
-
-      {activeLanguage && (
+    <div className="px-4 py-3 border-b border-hairline">
+      <div className="relative">
         <button
-          onClick={() => setConfirming(true)}
-          className="shrink-0 rounded-lg p-2 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-          aria-label={`Remove ${activeLanguage.name}`}
-          title="Remove language"
+          onClick={() => setOpen((v) => !v)}
+          className="w-full flex items-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-semibold"
+          style={{ borderColor: accent, color: accent }}
         >
-          <Trash2 size={16} strokeWidth={2} />
+          <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
+          <span className="flex-1 text-left truncate">{activeLanguage?.name ?? 'Select a language'}</span>
+          <ChevronDown size={16} strokeWidth={2.5} />
         </button>
+
+        {open && (
+          <>
+            <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close language menu" />
+            <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-xl border border-hairline bg-surface p-2 shadow-lg">
+              <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                {languages.map((lang) => (
+                  <div key={lang.id} className="flex items-center gap-1 rounded-lg hover:bg-surfacehover">
+                    {confirmingRemoveId === lang.id ? (
+                      <div className="flex flex-1 items-center justify-between gap-2 px-2 py-1.5">
+                        <span className="text-xs text-ink">Remove {lang.name}?</span>
+                        <div className="flex gap-1 shrink-0">
+                          <button
+                            onClick={() => {
+                              onRemoveLanguage(lang.id)
+                              setConfirmingRemoveId(null)
+                            }}
+                            className="rounded px-2 py-1 text-xs font-medium bg-red-600 text-white"
+                          >
+                            Remove
+                          </button>
+                          <button onClick={() => setConfirmingRemoveId(null)} className="rounded px-2 py-1 text-xs font-medium text-muted">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            onSelect(lang.id)
+                            setOpen(false)
+                          }}
+                          className="flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm text-left text-ink"
+                        >
+                          <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: lang.color }} />
+                          {lang.name}
+                        </button>
+                        {languages.length > 1 && (
+                          <button
+                            onClick={() => setConfirmingRemoveId(lang.id)}
+                            className="shrink-0 rounded-lg p-2 text-muted hover:text-red-400"
+                            aria-label={`Remove ${lang.name}`}
+                          >
+                            <Trash2 size={14} strokeWidth={2} />
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  setOpen(false)
+                  setShowAddLanguage(true)
+                }}
+                className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline px-2 pt-2 pb-1 text-sm"
+                style={{ color: accent }}
+              >
+                <Plus size={15} strokeWidth={2.5} />
+                Add language
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {showAddLanguage && (
+        <AddLanguageModal
+          defaultColor={nextAvailableColor(languages.map((l) => l.color))}
+          onClose={() => setShowAddLanguage(false)}
+          onSubmit={onAddLanguage}
+        />
       )}
     </div>
   )

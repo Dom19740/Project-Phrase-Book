@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { getLastBackupAt } from '../lib/autoBackup'
 import type { Language } from '../db/types'
+import { Select } from './Select'
 
 interface Props {
   languages: Language[]
@@ -75,22 +76,19 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 sm:pt-24" onClick={onClose}>
-      <div
-        className="w-full sm:max-w-md rounded-2xl bg-white dark:bg-neutral-900 p-5 shadow-xl mx-4 sm:mx-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-lg font-semibold mb-1">Backup</h2>
-        <p className="text-xs text-neutral-500 mb-4">
+      <div className="w-full sm:max-w-md rounded-2xl bg-surface p-5 shadow-xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-semibold mb-1 text-ink">Backup</h2>
+        <p className="text-xs text-muted mb-4">
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}
         </p>
 
         {confirmingImport ? (
           <div className="flex flex-col gap-3">
-            <p className="text-sm">
+            <p className="text-sm text-ink">
               This replaces <strong>everything</strong> currently in the app with the contents of "{confirmingImport.name}". This can't be undone.
             </p>
             <div className="flex gap-2">
-              <button onClick={() => setConfirmingImport(null)} disabled={busy} className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-neutral-500">
+              <button onClick={() => setConfirmingImport(null)} disabled={busy} className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-muted">
                 Cancel
               </button>
               <button
@@ -107,17 +105,17 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
             <button
               onClick={handleBackUpNow}
               disabled={busy}
-              className="rounded-lg bg-neutral-900 dark:bg-white dark:text-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+              className="rounded-lg bg-brandteal px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
             >
               Back up now
             </button>
-            <button onClick={handleExport} disabled={busy} className="rounded-lg border border-neutral-300 dark:border-neutral-700 px-4 py-2 text-sm font-medium disabled:opacity-40">
+            <button onClick={handleExport} disabled={busy} className="rounded-lg border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40">
               Export as JSON file
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={busy}
-              className="rounded-lg border border-neutral-300 dark:border-neutral-700 px-4 py-2 text-sm font-medium disabled:opacity-40"
+              className="rounded-lg border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40"
             >
               Restore from JSON file...
             </button>
@@ -134,39 +132,35 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
             />
 
             {languages.length > 0 && (
-              <div className="mt-2 border-t border-neutral-100 dark:border-neutral-800 pt-3">
-                <label className="block text-sm font-medium mb-1">Export phrases (CSV)</label>
+              <div className="mt-2 border-t border-hairline pt-3">
+                <label className="block text-sm font-medium mb-1 text-ink">Export phrases (CSV)</label>
                 <div className="flex gap-2">
-                  <select
-                    value={csvLanguageId}
-                    onChange={(e) => setCsvLanguageId(Number(e.target.value))}
-                    className="flex-1 min-w-0 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm"
-                  >
+                  <Select wrapperClassName="flex-1 min-w-0" value={csvLanguageId} onChange={(e) => setCsvLanguageId(Number(e.target.value))}>
                     {languages.map((lang) => (
                       <option key={lang.id} value={lang.id}>
                         {lang.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <button
                     onClick={handleExportCsv}
                     disabled={busy}
-                    className="shrink-0 rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-sm font-medium disabled:opacity-40"
+                    className="shrink-0 rounded-lg border border-hairline text-ink px-3 py-2 text-sm font-medium disabled:opacity-40"
                   >
                     Export
                   </button>
                 </div>
-                <p className="text-xs text-neutral-500 mt-1">English, Translation, Category columns — opens in Excel/Sheets or any text editor.</p>
+                <p className="text-xs text-muted mt-1">English, Translation, Category columns — opens in Excel/Sheets or any text editor.</p>
               </div>
             )}
           </div>
         )}
 
-        {status && <p className="mt-3 text-sm text-neutral-500">{status}</p>}
+        {status && <p className="mt-3 text-sm text-muted">{status}</p>}
 
         {!confirmingImport && (
           <div className="flex justify-end mt-4">
-            <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-neutral-500">
+            <button onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-muted">
               Close
             </button>
           </div>

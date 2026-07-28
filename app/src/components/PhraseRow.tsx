@@ -28,13 +28,14 @@ export function PhraseRow({
   return (
     <div
       id={`phrase-row-${phrase.translationId}`}
-      className="group flex items-center gap-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 px-2 py-1 shadow-sm transition-colors hover:border-neutral-300 dark:hover:border-neutral-700"
+      className="group flex items-center gap-1.5 rounded-xl bg-surface border border-hairline px-2 py-1 shadow-sm transition-colors hover:border-neutral-600"
     >
       <button
         type="button"
         onClick={() => speak(phrase.text, languageCode)}
         disabled={!phrase.text}
-        className="shrink-0 rounded-full p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 disabled:opacity-25 transition-colors"
+        className="shrink-0 rounded-full p-1.5 hover:bg-surfacehover disabled:opacity-25 disabled:text-muted transition-colors"
+        style={phrase.text ? { color: accent } : undefined}
         aria-label="Speak phrase"
         title="Speak"
       >
@@ -48,11 +49,11 @@ export function PhraseRow({
         title={selectionMode ? 'Tap to select' : 'Tap to edit'}
       >
         <p className="sm:truncate text-sm leading-5">
-          <span className="text-neutral-500 dark:text-neutral-400">{phrase.english} </span>
+          <span className="text-muted">{phrase.english} </span>
           {phrase.text ? (
-            <span className="font-semibold text-neutral-900 dark:text-neutral-100">{phrase.text}</span>
+            <span className="font-semibold text-ink">{phrase.text}</span>
           ) : (
-            <span className="italic text-neutral-400 dark:text-neutral-600">needs translation</span>
+            <span className="italic text-neutral-600">needs translation</span>
           )}
         </p>
       </button>

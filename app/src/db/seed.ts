@@ -1,4 +1,5 @@
 import { seedVietnamese } from '../data/seedVietnamese'
+import { DEFAULT_LANGUAGE_COLOR } from '../lib/colorPalette'
 import { addLanguage, addPhraseConcept, backfillCategoriesByEnglish, getLanguages } from './queries'
 
 let seedPromise: Promise<void> | null = null
@@ -7,7 +8,7 @@ async function runSeed(): Promise<void> {
   const languages = await getLanguages()
   if (languages.length > 0) return
 
-  const vietnamese = await addLanguage('Vietnamese', 'vi')
+  const vietnamese = await addLanguage('Vietnamese', 'vi', DEFAULT_LANGUAGE_COLOR)
 
   for (const phrase of seedVietnamese) {
     await addPhraseConcept({

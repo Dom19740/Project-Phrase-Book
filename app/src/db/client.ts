@@ -26,9 +26,19 @@ async function openConnection(): Promise<SQLiteDBConnection> {
 
   await db.open()
   await db.execute(CREATE_TABLES_SQL)
+  await migrate(db)
   if (isWeb) await sqlite.saveToStore(DB_NAME)
 
   return db
+}
+
+/** One-off column additions for databases created before a schema change — CREATE TABLE IF NOT EXISTS doesn't retrofit existing tables. */
+async function migrate(db: SQLiteDBConnection): Promise<void> {
+  const columns = await db.query('PRAGMA table_info(languages);')
+  const hasColor = (columns.values ?? []).some((c) => c.name === 'color')
+  if (!hasColor) {
+    await db.execute("ALTER TABLE languages ADD COLUMN color TEXT NOT NULL DEFAULT '#207781';")
+  }
 }
 
 /** Lazily opens (or reuses) the single app-wide SQLite connection. */
