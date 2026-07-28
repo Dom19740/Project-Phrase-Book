@@ -12,9 +12,18 @@ interface Props<T> {
   onChange: (value: T) => void
   className?: string
   align?: 'left' | 'right'
+  /** Which way the panel opens relative to the trigger. Use 'up' when the trigger sits near the bottom of the screen (e.g. a fixed bottom bar), so the panel doesn't render under the system gesture bar. */
+  dropDirection?: 'down' | 'up'
 }
 
-export function PopoutSelect<T extends string | number>({ value, options, onChange, className, align = 'right' }: Props<T>) {
+export function PopoutSelect<T extends string | number>({
+  value,
+  options,
+  onChange,
+  className,
+  align = 'right',
+  dropDirection = 'down',
+}: Props<T>) {
   const [open, setOpen] = useState(false)
   const activeLabel = options.find((o) => o.value === value)?.label ?? ''
 
@@ -33,9 +42,9 @@ export function PopoutSelect<T extends string | number>({ value, options, onChan
         <>
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close menu" />
           <div
-            className={`absolute ${
-              align === 'right' ? 'right-0' : 'left-0'
-            } top-full z-50 mt-2 w-48 max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl`}
+            className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
+              dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+            } z-50 w-48 max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl`}
           >
             {options.map((opt) => (
               <button

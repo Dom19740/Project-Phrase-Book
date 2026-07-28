@@ -57,7 +57,10 @@ function Shell() {
   const activeLanguageName = activeLanguage?.name ?? ''
 
   return (
-    <div className="flex h-full flex-col bg-appbg text-ink" style={{ '--accent': accent } as React.CSSProperties}>
+    <div
+      className="flex h-full flex-col bg-appbg text-ink"
+      style={{ '--accent': accent, paddingTop: 'var(--safe-area-inset-top, 0px)' } as React.CSSProperties}
+    >
       <header className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3 rounded-full border-2 px-4 py-2 shadow-sm" style={{ borderColor: 'var(--accent)' }}>
           <Logo size={44} className="text-white shrink-0" />
@@ -112,7 +115,8 @@ function Shell() {
         <button
           onClick={() => setShowAddPhrase(true)}
           disabled={languages.length === 0}
-          className="fixed bottom-6 right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-white shadow-xl shadow-black/40 transition-transform hover:scale-105 active:scale-95 disabled:opacity-40"
+          className="fixed right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-white shadow-xl shadow-black/40 transition-transform hover:scale-105 active:scale-95 disabled:opacity-40"
+          style={{ bottom: 'calc(1.5rem + var(--safe-area-inset-bottom, 0px))' }}
           aria-label="Add phrase"
         >
           <Plus size={26} strokeWidth={2.5} />

@@ -75,7 +75,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
   const lastBackupAt = getLastBackupAt()
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 sm:pt-24" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
       <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-semibold mb-1 text-ink">Backup</h2>
         <p className="text-xs text-muted mb-4">

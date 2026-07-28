@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronRight, ListChecks, Search, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, ListChecks, Search, Undo2, X } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
@@ -110,10 +110,30 @@ export function PhraseList({
   const [showManageCategories, setShowManageCategories] = useState(false)
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [undoStack, setUndoStack] = useState<{ translationId: number; previousLearned: boolean }[]>([])
 
   useEffect(() => {
     onSelectionModeChange?.(selectionMode)
   }, [selectionMode, onSelectionModeChange])
+
+  useEffect(() => {
+    setUndoStack([])
+  }, [languageCode])
+
+  function handleToggleLearned(translationId: number, learned: boolean) {
+    const current = phrases.find((p) => p.translationId === translationId)
+    if (current) setUndoStack((prev) => [...prev.slice(-19), { translationId, previousLearned: current.learned }])
+    onToggleLearned(translationId, learned)
+  }
+
+  function handleUndo() {
+    setUndoStack((prev) => {
+      if (prev.length === 0) return prev
+      const last = prev[prev.length - 1]
+      onToggleLearned(last.translationId, last.previousLearned)
+      return prev.slice(0, -1)
+    })
+  }
 
   const allCategoryNames = useMemo(() => {
     const names = new Set<string>()
@@ -195,7 +215,7 @@ export function PhraseList({
         phrase={item}
         accent={accent}
         languageCode={languageCode}
-        onToggleLearned={onToggleLearned}
+        onToggleLearned={handleToggleLearned}
         onEdit={onEdit}
         selectionMode={selectionMode}
         selected={selectedIds.has(item.translationId)}
@@ -252,6 +272,19 @@ export function PhraseList({
           >
             {LEARNED_FILTER_LABEL[learnedFilter]}
           </button>
+
+          <button
+            onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
+            className="ml-auto flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors"
+            style={
+              selectionMode
+                ? { backgroundColor: 'var(--accent)', color: 'white' }
+                : { borderWidth: 1, borderColor: 'var(--accent)', color: 'var(--accent)' }
+            }
+          >
+            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
+            {selectionMode ? 'Cancel' : 'Select'}
+          </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
@@ -269,22 +302,25 @@ export function PhraseList({
             )
           })}
 
-          <button
-            onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className="ml-auto flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors"
-            style={
-              selectionMode
-                ? { backgroundColor: 'var(--accent)', color: 'white' }
-                : { borderWidth: 1, borderColor: 'var(--accent)', color: 'var(--accent)' }
-            }
-          >
-            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
-            {selectionMode ? 'Cancel' : 'Select'}
-          </button>
+          {undoStack.length > 0 && (
+            <button
+              onClick={handleUndo}
+              className="ml-auto flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1.5 text-xs font-medium text-ink hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+              title="Undo last learned/unlearned toggle"
+            >
+              <Undo2 size={14} strokeWidth={2} />
+              Undo
+            </button>
+          )}
         </div>
       </div>
 
-      <div className={`flex-1 overflow-y-auto px-4 py-3 ${selectionMode && selectedIds.size > 0 ? 'pb-24' : 'pb-20'}`}>
+      <div
+        className="flex-1 overflow-y-auto px-4 py-3"
+        style={{
+          paddingBottom: `calc(${selectionMode && selectedIds.size > 0 ? '6rem' : '5rem'} + var(--safe-area-inset-bottom, 0px))`,
+        }}
+      >
         <div className="flex flex-col gap-4">
           {primaryItems.length === 0 && <p className="text-center text-muted text-sm py-8">No phrases here — add one to get started.</p>}
 

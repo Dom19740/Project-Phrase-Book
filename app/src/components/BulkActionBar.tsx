@@ -42,12 +42,16 @@ export function BulkActionBar({
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-hairline bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.4)]">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-hairline bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.4)]"
+      style={{ paddingBottom: 'var(--safe-area-inset-bottom, 0px)' }}
+    >
       {panel === 'category' && (
         <div className="flex items-center gap-2 px-4 py-2 border-b border-hairline">
           <PopoutSelect
             className="flex-1 min-w-0"
             align="left"
+            dropDirection="up"
             value={categoryChoice}
             onChange={setCategoryChoice}
             options={[
