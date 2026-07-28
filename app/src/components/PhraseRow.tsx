@@ -1,4 +1,4 @@
-import { Volume2 } from 'lucide-react'
+import { Check, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
 import type { PhraseListItem } from '../db/types'
 
@@ -23,12 +23,11 @@ export function PhraseRow({
   selected = false,
   onToggleSelect,
 }: Props) {
-  const checked = selectionMode ? selected : phrase.learned
-
   return (
     <div
       id={`phrase-row-${phrase.translationId}`}
       className="group flex items-center gap-1.5 rounded-xl bg-surface border border-hairline px-2 py-1 shadow-sm transition-colors hover:border-neutral-600"
+      style={phrase.learned ? { borderColor: accent } : undefined}
     >
       <button
         type="button"
@@ -58,15 +57,30 @@ export function PhraseRow({
         </p>
       </button>
 
-      <label className="shrink-0 flex items-center justify-center p-1.5 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => (selectionMode ? onToggleSelect?.(phrase.translationId) : onToggleLearned(phrase.translationId, e.target.checked))}
-          className="size-4 shrink-0 rounded accent-current cursor-pointer"
-          style={{ color: accent }}
-        />
-      </label>
+      {selectionMode ? (
+        <label className="shrink-0 flex items-center justify-center p-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={() => onToggleSelect?.(phrase.translationId)}
+            className="size-4 shrink-0 rounded accent-current cursor-pointer"
+            style={{ color: accent }}
+          />
+        </label>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onToggleLearned(phrase.translationId, !phrase.learned)}
+          className={`shrink-0 flex items-center justify-center p-1.5 rounded-full hover:bg-surfacehover transition-colors ${
+            phrase.learned ? '' : 'text-muted'
+          }`}
+          style={phrase.learned ? { color: accent } : undefined}
+          aria-label={phrase.learned ? 'Mark as unlearned' : 'Mark as learned'}
+          title={phrase.learned ? 'Mark as unlearned' : 'Mark as learned'}
+        >
+          <Check size={18} strokeWidth={2.5} />
+        </button>
+      )}
     </div>
   )
 }

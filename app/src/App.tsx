@@ -32,6 +32,7 @@ function Shell() {
     deleteCategory,
     createLanguage,
     removeLanguage,
+    updateLanguageColor,
     backUpNow,
     exportBackupJson,
     restoreFromBackupJson,
@@ -56,12 +57,12 @@ function Shell() {
   const activeLanguageName = activeLanguage?.name ?? ''
 
   return (
-    <div className="flex h-full flex-col bg-appbg text-ink">
-      <header className="flex items-center justify-between px-4 pt-5 pb-2">
-        <div className="flex items-center gap-2.5">
-          <Logo size={38} className="text-brandteal shrink-0" />
-          <h1 className="text-xl font-bold tracking-tight text-ink">
-            Travel <span className="text-brandteal">Chatter</span>
+    <div className="flex h-full flex-col bg-appbg text-ink" style={{ '--accent': accent } as React.CSSProperties}>
+      <header className="flex items-center justify-between px-4 py-4">
+        <div className="flex items-center gap-3 rounded-2xl border-2 px-3 py-2" style={{ borderColor: 'var(--accent)' }}>
+          <Logo size={44} className="text-white shrink-0" />
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
+            Travel <span style={{ color: 'var(--accent)' }}>Chatter</span>
           </h1>
         </div>
         <button
@@ -70,7 +71,7 @@ function Shell() {
           aria-label="Backup settings"
           title="Backup"
         >
-          <Settings size={20} strokeWidth={2} />
+          <Settings size={22} strokeWidth={2} />
         </button>
       </header>
 
@@ -80,6 +81,7 @@ function Shell() {
         onSelect={setActiveLanguageId}
         onAddLanguage={createLanguage}
         onRemoveLanguage={removeLanguage}
+        onUpdateColor={updateLanguageColor}
       />
 
       <main className="flex-1 overflow-hidden">

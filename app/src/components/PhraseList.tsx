@@ -6,7 +6,7 @@ import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
 import { ManageCategoriesModal } from './ManageCategoriesModal'
 import { PhraseRow } from './PhraseRow'
-import { SortDropdown } from './SortDropdown'
+import { PopoutSelect } from './PopoutSelect'
 
 interface Props {
   phrases: PhraseListItem[]
@@ -205,20 +205,30 @@ export function PhraseList({
   }
 
   return (
-    <div className="flex h-full flex-col" style={{ '--accent': accent } as React.CSSProperties}>
+    <div className="flex h-full flex-col">
       <div className="shrink-0 flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[140px]">
             <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--accent)] pointer-events-none" />
             <input
-              type="search"
+              type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search phrases"
-              className="w-full rounded-lg border border-hairline bg-surface pl-8 pr-3 py-2 text-sm placeholder:text-muted"
+              className="w-full rounded-lg border border-hairline bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted hover:text-ink"
+                aria-label="Clear search"
+              >
+                <X size={14} strokeWidth={2} />
+              </button>
+            )}
           </div>
-          <SortDropdown value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} />
+          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} className="w-40" />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -242,19 +252,6 @@ export function PhraseList({
           >
             {LEARNED_FILTER_LABEL[learnedFilter]}
           </button>
-
-          <button
-            onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className="ml-auto flex items-center gap-1.5 shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
-            style={
-              selectionMode
-                ? { backgroundColor: 'var(--accent)', color: 'white' }
-                : { borderWidth: 1, borderColor: 'var(--accent)', color: 'var(--accent)' }
-            }
-          >
-            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
-            {selectionMode ? 'Cancel' : 'Select'}
-          </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
@@ -271,6 +268,19 @@ export function PhraseList({
               </button>
             )
           })}
+
+          <button
+            onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
+            className="ml-auto flex items-center gap-1.5 shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+            style={
+              selectionMode
+                ? { backgroundColor: 'var(--accent)', color: 'white' }
+                : { borderWidth: 1, borderColor: 'var(--accent)', color: 'var(--accent)' }
+            }
+          >
+            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
+            {selectionMode ? 'Cancel' : 'Select'}
+          </button>
         </div>
       </div>
 
@@ -282,7 +292,7 @@ export function PhraseList({
             <div>
               <button
                 onClick={() => setPrimaryExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-muted"
+                className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-[var(--accent)]"
               >
                 <span>
                   {primaryLabel} ({primaryItems.length})
@@ -302,7 +312,7 @@ export function PhraseList({
                         {groupByCategoryOn && (
                           <button
                             onClick={() => setCollapsed((c) => ({ ...c, [group.categoryName]: !isCollapsed }))}
-                            className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-muted"
+                            className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-[var(--accent)]"
                           >
                             <span>{group.categoryName}</span>
                             {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
@@ -321,7 +331,7 @@ export function PhraseList({
             <div className="border-t border-hairline pt-3">
               <button
                 onClick={() => setSecondaryExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-sm font-semibold uppercase tracking-wide text-muted"
+                className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-[var(--accent)]"
               >
                 <span>
                   {secondaryLabel} ({secondaryItems.length})

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { getLastBackupAt } from '../lib/autoBackup'
 import type { Language } from '../db/types'
-import { Select } from './Select'
+import { PopoutSelect } from './PopoutSelect'
 
 interface Props {
   languages: Language[]
@@ -135,13 +135,13 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
               <div className="mt-2 border-t border-hairline pt-3">
                 <label className="block text-sm font-medium mb-1 text-ink">Export phrases (CSV)</label>
                 <div className="flex gap-2">
-                  <Select wrapperClassName="flex-1 min-w-0" value={csvLanguageId} onChange={(e) => setCsvLanguageId(Number(e.target.value))}>
-                    {languages.map((lang) => (
-                      <option key={lang.id} value={lang.id}>
-                        {lang.name}
-                      </option>
-                    ))}
-                  </Select>
+                  <PopoutSelect
+                    className="flex-1 min-w-0"
+                    align="left"
+                    value={csvLanguageId}
+                    onChange={setCsvLanguageId}
+                    options={languages.map((lang) => ({ value: lang.id, label: lang.name }))}
+                  />
                   <button
                     onClick={handleExportCsv}
                     disabled={busy}

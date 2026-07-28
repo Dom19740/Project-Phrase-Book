@@ -3,6 +3,7 @@ import { ChevronDown, Plus, Trash2 } from 'lucide-react'
 import type { Language } from '../db/types'
 import { DEFAULT_LANGUAGE_COLOR, nextAvailableColor } from '../lib/colorPalette'
 import { AddLanguageModal } from './AddLanguageModal'
+import { ColorSwatchBar } from './ColorSwatchBar'
 
 interface Props {
   languages: Language[]
@@ -10,12 +11,14 @@ interface Props {
   onSelect: (id: number) => void
   onAddLanguage: (name: string, code: string, color: string) => Promise<void>
   onRemoveLanguage: (id: number) => void
+  onUpdateColor: (id: number, color: string) => Promise<void>
 }
 
-export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLanguage, onRemoveLanguage }: Props) {
+export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLanguage, onRemoveLanguage, onUpdateColor }: Props) {
   const [open, setOpen] = useState(false)
   const [showAddLanguage, setShowAddLanguage] = useState(false)
   const [confirmingRemoveId, setConfirmingRemoveId] = useState<number | null>(null)
+  const [editingColorId, setEditingColorId] = useState<number | null>(null)
 
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
   const accent = activeLanguage?.color ?? DEFAULT_LANGUAGE_COLOR
@@ -39,47 +42,67 @@ export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLangu
             <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-xl border border-hairline bg-surface p-2 shadow-lg">
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                 {languages.map((lang) => (
-                  <div key={lang.id} className="flex items-center gap-1 rounded-lg hover:bg-surfacehover">
-                    {confirmingRemoveId === lang.id ? (
-                      <div className="flex flex-1 items-center justify-between gap-2 px-2 py-1.5">
-                        <span className="text-xs text-ink">Remove {lang.name}?</span>
-                        <div className="flex gap-1 shrink-0">
+                  <div key={lang.id} className="flex flex-col rounded-lg hover:bg-surfacehover">
+                    <div className="flex items-center gap-1">
+                      {confirmingRemoveId === lang.id ? (
+                        <div className="flex flex-1 items-center justify-between gap-2 px-2 py-1.5">
+                          <span className="text-xs text-ink">Remove {lang.name}?</span>
+                          <div className="flex gap-1 shrink-0">
+                            <button
+                              onClick={() => {
+                                onRemoveLanguage(lang.id)
+                                setConfirmingRemoveId(null)
+                              }}
+                              className="rounded px-2 py-1 text-xs font-medium bg-red-600 text-white"
+                            >
+                              Remove
+                            </button>
+                            <button onClick={() => setConfirmingRemoveId(null)} className="rounded px-2 py-1 text-xs font-medium text-muted">
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => setEditingColorId((id) => (id === lang.id ? null : lang.id))}
+                            className="shrink-0 rounded-lg p-2"
+                            aria-label={`Change accent color for ${lang.name}`}
+                            title="Change accent color"
+                          >
+                            <span className="size-2.5 rounded-full block" style={{ backgroundColor: lang.color }} />
+                          </button>
                           <button
                             onClick={() => {
-                              onRemoveLanguage(lang.id)
-                              setConfirmingRemoveId(null)
+                              onSelect(lang.id)
+                              setOpen(false)
                             }}
-                            className="rounded px-2 py-1 text-xs font-medium bg-red-600 text-white"
+                            className="flex flex-1 items-center rounded-lg py-2 pr-2 text-sm text-left text-ink"
                           >
-                            Remove
+                            {lang.name}
                           </button>
-                          <button onClick={() => setConfirmingRemoveId(null)} className="rounded px-2 py-1 text-xs font-medium text-muted">
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => {
-                            onSelect(lang.id)
-                            setOpen(false)
+                          {languages.length > 1 && (
+                            <button
+                              onClick={() => setConfirmingRemoveId(lang.id)}
+                              className="shrink-0 rounded-lg p-2 text-muted hover:text-red-400"
+                              aria-label={`Remove ${lang.name}`}
+                            >
+                              <Trash2 size={14} strokeWidth={2} />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    {editingColorId === lang.id && (
+                      <div className="px-2 pb-2 pt-1">
+                        <ColorSwatchBar
+                          value={lang.color}
+                          onChange={(color) => {
+                            onUpdateColor(lang.id, color)
+                            setEditingColorId(null)
                           }}
-                          className="flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm text-left text-ink"
-                        >
-                          <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: lang.color }} />
-                          {lang.name}
-                        </button>
-                        {languages.length > 1 && (
-                          <button
-                            onClick={() => setConfirmingRemoveId(lang.id)}
-                            className="shrink-0 rounded-lg p-2 text-muted hover:text-red-400"
-                            aria-label={`Remove ${lang.name}`}
-                          >
-                            <Trash2 size={14} strokeWidth={2} />
-                          </button>
-                        )}
-                      </>
+                        />
+                      </div>
                     )}
                   </div>
                 ))}
