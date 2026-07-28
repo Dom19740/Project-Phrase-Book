@@ -1,0 +1,361 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+  addLanguage,
+  addPhraseConcept,
+  bulkDeletePhraseConcepts,
+  bulkDeleteTranslations,
+  bulkSetCategory,
+  bulkSetLearned,
+  bulkSetTranslationText,
+  deleteCategory as deleteCategoryQuery,
+  deleteLanguage as deleteLanguageQuery,
+  deletePhraseConcept,
+  deleteTranslation,
+  findOrCreateCategory,
+  getAllPhraseConcepts,
+  getCategories,
+  getLanguages,
+  getPhraseList,
+  renameCategory as renameCategoryQuery,
+  reorderTranslations,
+  setLearned,
+  updatePhrase,
+} from '../db/queries'
+import { backfillSeedCategories, seedIfEmpty } from '../db/seed'
+import type { Category, Language, PhraseListItem } from '../db/types'
+import { exportSnapshot, importSnapshot } from '../db/backup'
+import { onMutation } from '../db/client'
+import { backUpNow, scheduleAutoBackup } from '../lib/autoBackup'
+import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
+import { usePersistedState } from '../lib/usePersistedState'
+import { phrasesToCsv } from '../lib/csvExport'
+
+interface PhraseBookContextValue {
+  loading: boolean
+  languages: Language[]
+  categories: Category[]
+  activeLanguageId: number | null
+  setActiveLanguageId: (id: number) => void
+  phrases: PhraseListItem[]
+  refreshPhrases: () => Promise<void>
+  toggleLearned: (translationId: number, learned: boolean) => Promise<void>
+  reorder: (orderedTranslationIds: number[]) => Promise<void>
+  addPhrase: (english: string, categoryName: string | null) => Promise<void>
+  editPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
+  deleteOneLanguage: (translationId: number) => Promise<void>
+  deleteAllLanguages: (phraseConceptId: number) => Promise<void>
+  bulkMarkLearned: (translationIds: number[], learned: boolean) => Promise<void>
+  bulkDeleteOneLanguage: (translationIds: number[]) => Promise<void>
+  bulkDeleteAllLanguages: (phraseConceptIds: number[]) => Promise<void>
+  bulkChangeCategory: (phraseConceptIds: number[], categoryName: string | null) => Promise<void>
+  createCategory: (name: string) => Promise<void>
+  renameCategory: (categoryId: number, newName: string) => Promise<void>
+  deleteCategory: (categoryId: number) => Promise<void>
+  createLanguage: (name: string, code: string) => Promise<void>
+  removeLanguage: (languageId: number) => Promise<void>
+  backUpNow: () => Promise<void>
+  exportBackupJson: () => Promise<string>
+  restoreFromBackupJson: (json: string) => Promise<void>
+  exportLanguageCsv: (languageId: number) => Promise<string>
+}
+
+const PhraseBookContext = createContext<PhraseBookContextValue | null>(null)
+
+export function PhraseBookProvider({ children }: { children: ReactNode }) {
+  const [loading, setLoading] = useState(true)
+  const [languages, setLanguages] = useState<Language[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [activeLanguageId, setActiveLanguageId] = usePersistedState<number | null>('phrasebook-active-language-id', null)
+  const [phrases, setPhrases] = useState<PhraseListItem[]>([])
+
+  const refreshLanguages = useCallback(async () => {
+    const langs = await getLanguages()
+    setLanguages(langs)
+    return langs
+  }, [])
+
+  const refreshCategories = useCallback(async () => {
+    setCategories(await getCategories())
+  }, [])
+
+  const refreshPhrases = useCallback(async () => {
+    if (activeLanguageId == null) return
+    setPhrases(await getPhraseList(activeLanguageId))
+  }, [activeLanguageId])
+
+  useEffect(() => {
+    onMutation(scheduleAutoBackup)
+  }, [])
+
+  useEffect(() => {
+    ;(async () => {
+      await seedIfEmpty()
+      await backfillSeedCategories()
+      const langs = await refreshLanguages()
+      await refreshCategories()
+      setActiveLanguageId((current) => {
+        if (current != null && langs.some((l) => l.id === current)) return current
+        return langs[0]?.id ?? null
+      })
+      setLoading(false)
+    })()
+  }, [refreshLanguages, refreshCategories])
+
+  useEffect(() => {
+    refreshPhrases()
+  }, [refreshPhrases])
+
+  const toggleLearned = useCallback(
+    async (translationId: number, learned: boolean) => {
+      await setLearned(translationId, learned)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
+  const reorder = useCallback(
+    async (orderedTranslationIds: number[]) => {
+      await reorderTranslations(orderedTranslationIds)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
+  const addPhrase = useCallback(
+    async (english: string, categoryName: string | null) => {
+      let translations: { languageId: number; text: string }[] = []
+      let finalCategory = categoryName
+
+      try {
+        const result = await translatePhrase(
+          english,
+          languages.map((l) => l.code),
+          categoryName,
+          categories.map((c) => c.name),
+          Object.fromEntries(languages.map((l) => [l.code, l.name])),
+        )
+        translations = languages
+          .filter((l) => result.translations[l.code])
+          .map((l) => ({ languageId: l.id, text: result.translations[l.code] }))
+        if (!categoryName) finalCategory = result.suggestedCategory
+      } catch (err) {
+        // Proxy unreachable/not configured yet — still create the phrase (blank
+        // translations to fill in manually) rather than blocking the user.
+        console.error('Auto-translate failed, adding phrase untranslated:', err)
+      }
+
+      await addPhraseConcept({ english, categoryName: finalCategory, translations })
+      await refreshCategories()
+      await refreshPhrases()
+    },
+    [languages, categories, refreshCategories, refreshPhrases],
+  )
+
+  const editPhrase = useCallback(
+    async (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => {
+      await updatePhrase(phraseConceptId, translationId, english, text, categoryName)
+      await refreshCategories()
+      await refreshPhrases()
+    },
+    [refreshCategories, refreshPhrases],
+  )
+
+  const deleteOneLanguage = useCallback(
+    async (translationId: number) => {
+      await deleteTranslation(translationId)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
+  const deleteAllLanguages = useCallback(
+    async (phraseConceptId: number) => {
+      await deletePhraseConcept(phraseConceptId)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
+  const bulkMarkLearned = useCallback(
+    async (translationIds: number[], learned: boolean) => {
+      await bulkSetLearned(translationIds, learned)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
+  const bulkDeleteOneLanguage = useCallback(
+    async (translationIds: number[]) => {
+      await bulkDeleteTranslations(translationIds)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
+  const bulkDeleteAllLanguages = useCallback(
+    async (phraseConceptIds: number[]) => {
+      await bulkDeletePhraseConcepts(phraseConceptIds)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
+  const bulkChangeCategory = useCallback(
+    async (phraseConceptIds: number[], categoryName: string | null) => {
+      await bulkSetCategory(phraseConceptIds, categoryName)
+      await refreshCategories()
+      await refreshPhrases()
+    },
+    [refreshCategories, refreshPhrases],
+  )
+
+  const createCategory = useCallback(
+    async (name: string) => {
+      await findOrCreateCategory(name)
+      await refreshCategories()
+    },
+    [refreshCategories],
+  )
+
+  const renameCategory = useCallback(
+    async (categoryId: number, newName: string) => {
+      await renameCategoryQuery(categoryId, newName)
+      await refreshCategories()
+      await refreshPhrases()
+    },
+    [refreshCategories, refreshPhrases],
+  )
+
+  const deleteCategory = useCallback(
+    async (categoryId: number) => {
+      await deleteCategoryQuery(categoryId)
+      await refreshCategories()
+      await refreshPhrases()
+    },
+    [refreshCategories, refreshPhrases],
+  )
+
+  const exportBackupJson = useCallback(async () => {
+    const snapshot = await exportSnapshot()
+    return JSON.stringify(snapshot, null, 2)
+  }, [])
+
+  const restoreFromBackupJson = useCallback(
+    async (json: string) => {
+      const snapshot = JSON.parse(json)
+      await importSnapshot(snapshot)
+      const langs = await refreshLanguages()
+      await refreshCategories()
+      setActiveLanguageId(langs[0]?.id ?? null)
+    },
+    [refreshLanguages, refreshCategories],
+  )
+
+  const exportLanguageCsv = useCallback(async (languageId: number) => {
+    const list = await getPhraseList(languageId)
+    return phrasesToCsv(list)
+  }, [])
+
+  const createLanguage = useCallback(
+    async (name: string, code: string) => {
+      const lang = await addLanguage(name, code)
+      await refreshLanguages()
+      setActiveLanguageId(lang.id)
+
+      try {
+        const concepts = await getAllPhraseConcepts()
+        if (concepts.length > 0) {
+          const translations = await translatePhrasesBulk(
+            concepts.map((c) => c.english),
+            lang.code,
+            lang.name,
+          )
+          const entries = concepts
+            .filter((c) => translations[c.english])
+            .map((c) => ({ phraseConceptId: c.id, languageId: lang.id, text: translations[c.english] }))
+          await bulkSetTranslationText(entries)
+        }
+      } catch (err) {
+        // Proxy unreachable/not configured — phrases stay blank ("needs translation") for manual entry.
+        console.error('Bulk auto-translate failed for new language:', err)
+      }
+
+      await refreshPhrases()
+    },
+    [refreshLanguages, refreshPhrases],
+  )
+
+  const removeLanguage = useCallback(
+    async (languageId: number) => {
+      await deleteLanguageQuery(languageId)
+      const langs = await refreshLanguages()
+      if (activeLanguageId === languageId) setActiveLanguageId(langs[0]?.id ?? null)
+    },
+    [refreshLanguages, activeLanguageId],
+  )
+
+  const value = useMemo<PhraseBookContextValue>(
+    () => ({
+      loading,
+      languages,
+      categories,
+      activeLanguageId,
+      setActiveLanguageId,
+      phrases,
+      refreshPhrases,
+      toggleLearned,
+      reorder,
+      addPhrase,
+      editPhrase,
+      deleteOneLanguage,
+      deleteAllLanguages,
+      bulkMarkLearned,
+      bulkDeleteOneLanguage,
+      bulkDeleteAllLanguages,
+      bulkChangeCategory,
+      createCategory,
+      renameCategory,
+      deleteCategory,
+      createLanguage,
+      removeLanguage,
+      backUpNow,
+      exportBackupJson,
+      restoreFromBackupJson,
+      exportLanguageCsv,
+    }),
+    [
+      loading,
+      languages,
+      categories,
+      activeLanguageId,
+      phrases,
+      refreshPhrases,
+      toggleLearned,
+      reorder,
+      addPhrase,
+      editPhrase,
+      exportBackupJson,
+      restoreFromBackupJson,
+      exportLanguageCsv,
+      deleteOneLanguage,
+      deleteAllLanguages,
+      bulkMarkLearned,
+      bulkDeleteOneLanguage,
+      bulkDeleteAllLanguages,
+      bulkChangeCategory,
+      createCategory,
+      renameCategory,
+      deleteCategory,
+      createLanguage,
+      removeLanguage,
+    ],
+  )
+
+  return <PhraseBookContext.Provider value={value}>{children}</PhraseBookContext.Provider>
+}
+
+export function usePhraseBook(): PhraseBookContextValue {
+  const ctx = useContext(PhraseBookContext)
+  if (!ctx) throw new Error('usePhraseBook must be used within a PhraseBookProvider')
+  return ctx
+}
