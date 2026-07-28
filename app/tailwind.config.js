@@ -4,12 +4,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        appbg: '#121212',
-        surface: '#1E1E1E',
-        surfacehover: '#292929',
-        hairline: '#333333',
-        ink: '#D1D5DB',
-        muted: '#9CA3AF',
+        appbg: 'var(--color-appbg)',
+        surface: 'var(--color-surface)',
+        surfacehover: 'var(--color-surfacehover)',
+        hairline: 'var(--color-hairline)',
+        ink: 'var(--color-ink)',
+        muted: 'var(--color-muted)',
         brandteal: '#207781',
         fabpink: '#EC1D8B',
       },

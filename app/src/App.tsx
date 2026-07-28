@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, Settings } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Moon, Plus, Settings, Sun } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { EditPhraseModal } from './components/EditPhraseModal'
@@ -8,7 +8,10 @@ import { Logo } from './components/Logo'
 import { PhraseList } from './components/PhraseList'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
 import { DEFAULT_LANGUAGE_COLOR } from './lib/colorPalette'
+import { usePersistedState } from './lib/usePersistedState'
 import type { PhraseListItem } from './db/types'
+
+type Theme = 'dark' | 'light'
 
 function Shell() {
   const {
@@ -42,6 +45,11 @@ function Shell() {
   const [showBackup, setShowBackup] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
+  const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', 'dark')
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
 
   if (loading) {
     return (
@@ -63,19 +71,29 @@ function Shell() {
     >
       <header className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3 rounded-full border-2 px-4 py-2 shadow-sm" style={{ borderColor: 'var(--accent)' }}>
-          <Logo size={44} className="text-white shrink-0" />
+          <Logo size={44} className="text-ink shrink-0" />
           <h1 className="text-2xl font-black tracking-tight text-ink">
             Travel <span style={{ color: 'var(--accent)' }}>Chatter</span>
           </h1>
         </div>
-        <button
-          onClick={() => setShowBackup(true)}
-          className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink transition-colors"
-          aria-label="Backup settings"
-          title="Backup"
-        >
-          <Settings size={22} strokeWidth={2} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+            className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink transition-colors"
+            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={theme === 'dark' ? 'Light theme' : 'Dark theme'}
+          >
+            {theme === 'dark' ? <Sun size={22} strokeWidth={2} /> : <Moon size={22} strokeWidth={2} />}
+          </button>
+          <button
+            onClick={() => setShowBackup(true)}
+            className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink transition-colors"
+            aria-label="Backup settings"
+            title="Backup"
+          >
+            <Settings size={22} strokeWidth={2} />
+          </button>
+        </div>
       </header>
 
       <LanguageTabs
