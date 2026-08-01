@@ -25,6 +25,7 @@ export interface Translation {
   languageId: number
   text: string
   learned: boolean
+  favorite: boolean
   sortOrder: number
 }
 
@@ -36,6 +37,7 @@ export interface PhraseListItem {
   english: string
   text: string
   learned: boolean
+  favorite: boolean
   sortOrder: number
   categoryId: number | null
   categoryName: string | null

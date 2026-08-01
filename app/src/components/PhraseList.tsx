@@ -15,6 +15,7 @@ interface Props {
   languageName: string
   categories: Category[]
   onToggleLearned: (id: number, learned: boolean) => void
+  onToggleFavorite: (id: number, favorite: boolean) => void
   onEdit: (phrase: PhraseListItem) => void
   onSelectionModeChange?: (active: boolean) => void
   onBulkMarkLearned: (translationIds: number[], learned: boolean) => Promise<void>
@@ -61,7 +62,10 @@ function bucketFor(value: string): string {
 
 function sortItems(items: PhraseListItem[], mode: SortMode): PhraseListItem[] {
   const dir = mode.endsWith('asc') ? 1 : -1
-  return [...items].sort((a, b) => dir * sortKey(a, mode).localeCompare(sortKey(b, mode)))
+  return [...items].sort((a, b) => {
+    if (a.favorite !== b.favorite) return a.favorite ? -1 : 1
+    return dir * sortKey(a, mode).localeCompare(sortKey(b, mode))
+  })
 }
 
 type LearnedFilter = 'unlearned' | 'learned' | 'all'
@@ -88,6 +92,7 @@ export function PhraseList({
   languageName,
   categories,
   onToggleLearned,
+  onToggleFavorite,
   onEdit,
   onSelectionModeChange,
   onBulkMarkLearned,
@@ -105,6 +110,7 @@ export function PhraseList({
   const [learnedFilter, setLearnedFilter] = usePersistedState<LearnedFilter>('phrasebook-learned-filter', 'unlearned')
   const [primaryExpanded, setPrimaryExpanded] = useState(true)
   const [secondaryExpanded, setSecondaryExpanded] = useState(false)
+  const [favoritesOnly, setFavoritesOnly] = usePersistedState('phrasebook-favorites-only', false)
   const [hiddenCategoryList, setHiddenCategoryList] = usePersistedState<string[]>('phrasebook-hidden-categories', [])
   const hiddenCategories = useMemo(() => new Set(hiddenCategoryList), [hiddenCategoryList])
   const [showManageCategories, setShowManageCategories] = useState(false)
@@ -146,10 +152,11 @@ export function PhraseList({
     return phrases.filter((p) => {
       const categoryName = p.categoryName ?? 'Uncategorized'
       if (hiddenCategories.has(categoryName)) return false
+      if (favoritesOnly && !p.favorite) return false
       if (!q) return true
       return p.english.toLowerCase().includes(q) || p.text.toLowerCase().includes(q) || categoryName.toLowerCase().includes(q)
     })
-  }, [phrases, search, hiddenCategories])
+  }, [phrases, search, hiddenCategories, favoritesOnly])
 
   const unlearnedItems = useMemo(() => filtered.filter((p) => !p.learned), [filtered])
   const learnedItems = useMemo(() => filtered.filter((p) => p.learned), [filtered])
@@ -216,6 +223,7 @@ export function PhraseList({
         accent={accent}
         languageCode={languageCode}
         onToggleLearned={handleToggleLearned}
+        onToggleFavorite={onToggleFavorite}
         onEdit={onEdit}
         selectionMode={selectionMode}
         selected={selectedIds.has(item.translationId)}
@@ -252,18 +260,16 @@ export function PhraseList({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {allCategoryNames.length > 1 ? (
-            <CategoryFilterPopout
-              allCategoryNames={allCategoryNames}
-              hiddenCategories={hiddenCategories}
-              onToggleCategoryVisible={toggleCategoryVisible}
-              onManageCategories={() => setShowManageCategories(true)}
-              groupByCategoryOn={groupByCategoryOn}
-              onToggleGroupByCategory={setGroupByCategoryOn}
-            />
-          ) : (
-            <span />
-          )}
+          <CategoryFilterPopout
+            allCategoryNames={allCategoryNames}
+            hiddenCategories={hiddenCategories}
+            onToggleCategoryVisible={toggleCategoryVisible}
+            onManageCategories={() => setShowManageCategories(true)}
+            groupByCategoryOn={groupByCategoryOn}
+            onToggleGroupByCategory={setGroupByCategoryOn}
+            favoritesOnly={favoritesOnly}
+            onToggleFavoritesOnly={setFavoritesOnly}
+          />
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}

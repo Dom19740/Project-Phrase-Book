@@ -6,6 +6,7 @@ interface BackupTranslation {
   languageCode: string
   text: string
   learned: boolean
+  favorite: boolean
 }
 
 interface BackupPhrase {
@@ -37,13 +38,21 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
   )
   const concepts = (conceptsRes.values ?? []) as { id: number; english: string; category_name: string | null }[]
 
-  const translationsRes = await db.query('SELECT phrase_concept_id, language_id, text, learned FROM translations ORDER BY phrase_concept_id;')
+  const translationsRes = await db.query(
+    'SELECT phrase_concept_id, language_id, text, learned, favorite FROM translations ORDER BY phrase_concept_id;',
+  )
   const translationsByConcept = new Map<number, BackupTranslation[]>()
-  for (const row of (translationsRes.values ?? []) as { phrase_concept_id: number; language_id: number; text: string; learned: number }[]) {
+  for (const row of (translationsRes.values ?? []) as {
+    phrase_concept_id: number
+    language_id: number
+    text: string
+    learned: number
+    favorite: number
+  }[]) {
     const languageCode = languageCodeById.get(row.language_id)
     if (!languageCode) continue
     const list = translationsByConcept.get(row.phrase_concept_id) ?? []
-    list.push({ languageCode, text: row.text, learned: !!row.learned })
+    list.push({ languageCode, text: row.text, learned: !!row.learned, favorite: !!row.favorite })
     translationsByConcept.set(row.phrase_concept_id, list)
   }
 
@@ -96,8 +105,8 @@ export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
     const sets = phrase.translations
       .filter((t) => languageIdByCode.has(t.languageCode))
       .map((t) => ({
-        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, learned, sort_order) VALUES (?, ?, ?, ?, ?);',
-        values: [conceptId, languageIdByCode.get(t.languageCode), t.text, t.learned ? 1 : 0, i],
+        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, learned, favorite, sort_order) VALUES (?, ?, ?, ?, ?, ?);',
+        values: [conceptId, languageIdByCode.get(t.languageCode), t.text, t.learned ? 1 : 0, t.favorite ? 1 : 0, i],
       }))
     if (sets.length > 0) await db.executeSet(sets)
   }

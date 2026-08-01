@@ -72,6 +72,41 @@ export async function translateWithGemini(
   }
 }
 
+const ALTERNATIVES_COUNT = 4
+
+/** Generates several distinct phrasings for one phrase in one target language — the "retranslate / alternatives" action on an existing translation. */
+export async function translateAlternativesWithGemini(english: string, targetLang: TargetLanguage): Promise<string[]> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured')
+
+  const prompt = `Give ${ALTERNATIVES_COUNT} different natural ways to translate this English travel-phrasebook entry into ${targetLang.name} (${targetLang.code}). Each should be a phrasing a native speaker would actually say (not stiff or literal), and they should meaningfully differ from each other — e.g. different register (formal/casual), common regional variants, or synonymous wording — rather than trivial rewordings. Order them from most to least commonly used.\n\nPhrase (English): "${english}"\n\nReturn a JSON array of exactly ${ALTERNATIVES_COUNT} strings.`
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: { type: 'ARRAY', items: { type: 'STRING' }, minItems: ALTERNATIVES_COUNT, maxItems: ALTERNATIVES_COUNT },
+        temperature: 1.1,
+      },
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Gemini alternatives request failed (${res.status}): ${body}`)
+  }
+
+  const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] }
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!text) throw new Error('Gemini returned no content')
+
+  const parsed = JSON.parse(text) as string[]
+  return [...new Set(parsed.map((s) => s.trim()).filter(Boolean))]
+}
+
 const BULK_BATCH_SIZE = 40
 
 /** Translates many phrases into one target language in as few Gemini calls as possible (chunked to keep prompts reasonably sized). */

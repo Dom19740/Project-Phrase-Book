@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ListFilter, Settings2 } from 'lucide-react'
+import { ListFilter, Settings2, Star } from 'lucide-react'
 
 interface Props {
   allCategoryNames: string[]
@@ -8,6 +8,8 @@ interface Props {
   onManageCategories: () => void
   groupByCategoryOn: boolean
   onToggleGroupByCategory: (on: boolean) => void
+  favoritesOnly: boolean
+  onToggleFavoritesOnly: (on: boolean) => void
 }
 
 export function CategoryFilterPopout({
@@ -17,6 +19,8 @@ export function CategoryFilterPopout({
   onManageCategories,
   groupByCategoryOn,
   onToggleGroupByCategory,
+  favoritesOnly,
+  onToggleFavoritesOnly,
 }: Props) {
   const [open, setOpen] = useState(false)
   const hiddenCount = hiddenCategories.size
@@ -29,6 +33,9 @@ export function CategoryFilterPopout({
       >
         <ListFilter size={14} strokeWidth={2} />
         Categories
+        {favoritesOnly && (
+          <Star size={12} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
+        )}
         {hiddenCount > 0 && (
           <span className="rounded-full bg-[var(--accent)] text-white text-[10px] leading-none px-1.5 py-0.5">{hiddenCount} hidden</span>
         )}
@@ -38,6 +45,15 @@ export function CategoryFilterPopout({
         <>
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close category filter" />
           <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-2xl border border-hairline bg-surface p-3 shadow-xl">
+            <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1">
+              <input
+                type="checkbox"
+                checked={favoritesOnly}
+                onChange={(e) => onToggleFavoritesOnly(e.target.checked)}
+                className="size-4 accent-[var(--accent)]"
+              />
+              Favourites only
+            </label>
             <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 mb-1 border-b border-hairline pb-2">
               <input
                 type="checkbox"

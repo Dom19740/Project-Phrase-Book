@@ -125,6 +125,7 @@ export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLangu
 
       {showAddLanguage && (
         <AddLanguageModal
+          languages={languages}
           defaultColor={nextAvailableColor(languages.map((l) => l.color))}
           onClose={() => setShowAddLanguage(false)}
           onSubmit={onAddLanguage}

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS translations (
   language_id         INTEGER NOT NULL REFERENCES languages(id) ON DELETE CASCADE,
   text                TEXT NOT NULL,
   learned             INTEGER NOT NULL DEFAULT 0,
+  favorite            INTEGER NOT NULL DEFAULT 0,
   sort_order          INTEGER NOT NULL DEFAULT 0,
   UNIQUE (phrase_concept_id, language_id)
 );

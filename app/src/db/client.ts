@@ -34,10 +34,16 @@ async function openConnection(): Promise<SQLiteDBConnection> {
 
 /** One-off column additions for databases created before a schema change — CREATE TABLE IF NOT EXISTS doesn't retrofit existing tables. */
 async function migrate(db: SQLiteDBConnection): Promise<void> {
-  const columns = await db.query('PRAGMA table_info(languages);')
-  const hasColor = (columns.values ?? []).some((c) => c.name === 'color')
+  const languageColumns = await db.query('PRAGMA table_info(languages);')
+  const hasColor = (languageColumns.values ?? []).some((c) => c.name === 'color')
   if (!hasColor) {
     await db.execute("ALTER TABLE languages ADD COLUMN color TEXT NOT NULL DEFAULT '#207781';")
+  }
+
+  const translationColumns = await db.query('PRAGMA table_info(translations);')
+  const hasFavorite = (translationColumns.values ?? []).some((c) => c.name === 'favorite')
+  if (!hasFavorite) {
+    await db.execute('ALTER TABLE translations ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;')
   }
 }
 

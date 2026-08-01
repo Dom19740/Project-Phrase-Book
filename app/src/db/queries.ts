@@ -108,6 +108,7 @@ export async function getPhraseList(languageId: number): Promise<PhraseListItem[
        pc.english,
        t.text,
        t.learned,
+       t.favorite,
        t.sort_order,
        pc.category_id,
        c.name AS category_name
@@ -125,6 +126,7 @@ export async function getPhraseList(languageId: number): Promise<PhraseListItem[
     english: r.english,
     text: r.text,
     learned: !!r.learned,
+    favorite: !!r.favorite,
     sortOrder: r.sort_order,
     categoryId: r.category_id,
     categoryName: r.category_name,
@@ -222,6 +224,12 @@ export async function deletePhraseConcept(phraseConceptId: number): Promise<void
 export async function setLearned(translationId: number, learned: boolean): Promise<void> {
   const db = await getDb()
   await db.run('UPDATE translations SET learned = ? WHERE id = ?;', [learned ? 1 : 0, translationId])
+  await persist()
+}
+
+export async function setFavorite(translationId: number, favorite: boolean): Promise<void> {
+  const db = await getDb()
+  await db.run('UPDATE translations SET favorite = ? WHERE id = ?;', [favorite ? 1 : 0, translationId])
   await persist()
 }
 

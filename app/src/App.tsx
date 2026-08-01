@@ -22,6 +22,7 @@ function Shell() {
     setActiveLanguageId,
     phrases,
     toggleLearned,
+    toggleFavorite,
     addPhrase,
     editPhrase,
     deleteOneLanguage,
@@ -116,6 +117,7 @@ function Shell() {
             languageName={activeLanguageName}
             categories={categories}
             onToggleLearned={(id, learned) => toggleLearned(id, learned)}
+            onToggleFavorite={(id, favorite) => toggleFavorite(id, favorite)}
             onEdit={setEditingPhrase}
             onSelectionModeChange={setSelectionModeActive}
             onBulkMarkLearned={bulkMarkLearned}
@@ -153,6 +155,7 @@ function Shell() {
       {editingPhrase && (
         <EditPhraseModal
           phrase={editingPhrase}
+          languageCode={activeLanguageCode}
           languageName={activeLanguageName}
           categories={categories}
           onClose={() => setEditingPhrase(null)}

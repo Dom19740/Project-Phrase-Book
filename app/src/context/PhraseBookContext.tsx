@@ -18,6 +18,7 @@ import {
   getPhraseList,
   renameCategory as renameCategoryQuery,
   reorderTranslations,
+  setFavorite,
   setLearned,
   updateLanguageColor as updateLanguageColorQuery,
   updatePhrase,
@@ -40,6 +41,7 @@ interface PhraseBookContextValue {
   phrases: PhraseListItem[]
   refreshPhrases: () => Promise<void>
   toggleLearned: (translationId: number, learned: boolean) => Promise<void>
+  toggleFavorite: (translationId: number, favorite: boolean) => Promise<void>
   reorder: (orderedTranslationIds: number[]) => Promise<void>
   addPhrase: (english: string, categoryName: string | null, languageIds: number[]) => Promise<void>
   editPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
@@ -110,6 +112,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const toggleLearned = useCallback(
     async (translationId: number, learned: boolean) => {
       await setLearned(translationId, learned)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
+  const toggleFavorite = useCallback(
+    async (translationId: number, favorite: boolean) => {
+      await setFavorite(translationId, favorite)
       await refreshPhrases()
     },
     [refreshPhrases],
@@ -322,6 +332,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       phrases,
       refreshPhrases,
       toggleLearned,
+      toggleFavorite,
       reorder,
       addPhrase,
       editPhrase,
@@ -350,6 +361,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       phrases,
       refreshPhrases,
       toggleLearned,
+      toggleFavorite,
       reorder,
       addPhrase,
       editPhrase,

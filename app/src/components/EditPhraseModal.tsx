@@ -1,11 +1,14 @@
 import { useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
+import { translateAlternatives } from '../lib/translateApi'
 import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
 
 interface Props {
   phrase: PhraseListItem
+  languageCode: string
   languageName: string
   categories: Category[]
   onClose: () => void
@@ -16,6 +19,7 @@ interface Props {
 
 export function EditPhraseModal({
   phrase,
+  languageCode,
   languageName,
   categories,
   onClose,
@@ -30,8 +34,25 @@ export function EditPhraseModal({
   const [saving, setSaving] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [alternatives, setAlternatives] = useState<string[] | null>(null)
+  const [loadingAlternatives, setLoadingAlternatives] = useState(false)
+  const [alternativesError, setAlternativesError] = useState<string | null>(null)
 
   const canSubmit = english.trim().length > 0 && (categoryChoice !== NEW_CATEGORY || newCategory.trim().length > 0)
+
+  async function handleRetranslate() {
+    if (!english.trim()) return
+    setLoadingAlternatives(true)
+    setAlternativesError(null)
+    try {
+      const results = await translateAlternatives(english.trim(), languageCode, languageName)
+      setAlternatives(results)
+    } catch (err) {
+      setAlternativesError(err instanceof Error ? err.message : 'Translation failed')
+    } finally {
+      setLoadingAlternatives(false)
+    }
+  }
 
   async function handleSubmit() {
     if (!canSubmit) return
@@ -74,7 +95,11 @@ export function EditPhraseModal({
               >
                 Delete from all languages
               </button>
-              <button onClick={() => setConfirmingDelete(false)} disabled={deleting} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
+              <button
+                onClick={() => setConfirmingDelete(false)}
+                disabled={deleting}
+                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink disabled:opacity-40"
+              >
                 Cancel
               </button>
             </div>
@@ -91,13 +116,44 @@ export function EditPhraseModal({
               className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
             />
 
-            <label className="block text-sm font-medium mb-1 text-ink">Translation</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-ink">Translation</label>
+              <button
+                type="button"
+                onClick={handleRetranslate}
+                disabled={!english.trim() || loadingAlternatives}
+                className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-[var(--accent)] disabled:opacity-40"
+                title="Get alternative translations"
+              >
+                <RefreshCw size={12} strokeWidth={2.5} className={loadingAlternatives ? 'animate-spin' : ''} />
+                {loadingAlternatives ? 'Translating...' : 'Retranslate'}
+              </button>
+            </div>
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
               className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
               placeholder="Leave blank if not translated yet"
             />
+
+            {alternativesError && <p className="text-xs text-red-400 -mt-2 mb-3">{alternativesError}</p>}
+
+            {alternatives && alternatives.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 -mt-2 mb-3">
+                {alternatives.map((alt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setText(alt)}
+                    className={`rounded-full border px-3 py-1.5 text-sm text-left transition-colors ${
+                      alt === text ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-hairline text-ink hover:border-[var(--accent)]'
+                    }`}
+                  >
+                    {alt}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <label className="block text-sm font-medium mb-1 text-ink">Category</label>
             <PopoutSelect
@@ -123,11 +179,14 @@ export function EditPhraseModal({
             )}
 
             <div className="flex items-center justify-between gap-2 mt-1">
-              <button onClick={() => setConfirmingDelete(true)} className="rounded-full px-3 py-2 text-sm font-medium text-red-400">
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                className="rounded-full border border-red-800 px-3 py-2 text-sm font-medium text-red-400"
+              >
                 Delete...
               </button>
               <div className="flex gap-2">
-                <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
+                <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink">
                   Cancel
                 </button>
                 <button
