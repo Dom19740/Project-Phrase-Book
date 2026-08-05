@@ -1,4 +1,4 @@
-package com.buzugbe.phrasebook;
+package com.dpbcreative.travelchatter;
 
 import com.getcapacitor.BridgeActivity;
 
