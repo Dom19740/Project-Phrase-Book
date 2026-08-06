@@ -39,8 +39,7 @@ function Shell() {
     removeLanguage,
     updateLanguageColor,
     backUpNow,
-    exportBackupJson,
-    restoreFromBackupJson,
+    restoreBackup,
     exportLanguageCsv,
   } = usePhraseBook()
   const [showAddPhrase, setShowAddPhrase] = useState(false)
@@ -178,8 +177,7 @@ function Shell() {
           languages={languages}
           onClose={() => setShowBackup(false)}
           onBackUpNow={backUpNow}
-          onExport={exportBackupJson}
-          onImport={restoreFromBackupJson}
+          onRestoreBackup={restoreBackup}
           onExportCsv={exportLanguageCsv}
         />
       )}

@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { getLastBackupAt } from '../lib/autoBackup'
+import { getBackupLocation, requestDocumentsPermission, setBackupLocation, type BackupLocation } from '../lib/backupTarget'
 import { exportFile } from '../lib/exportFile'
 import type { Language } from '../db/types'
 import { PopoutSelect } from './PopoutSelect'
@@ -8,17 +9,21 @@ interface Props {
   languages: Language[]
   onClose: () => void
   onBackUpNow: () => Promise<void>
-  onExport: () => Promise<string>
-  onImport: (json: string) => Promise<void>
+  onRestoreBackup: () => Promise<void>
   onExportCsv: (languageId: number) => Promise<string>
 }
 
-export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImport, onExportCsv }: Props) {
+const LOCATION_OPTIONS: { value: BackupLocation; label: string }[] = [
+  { value: 'app', label: 'This app (default)' },
+  { value: 'documents', label: 'Documents folder' },
+]
+
+export function BackupModal({ languages, onClose, onBackUpNow, onRestoreBackup, onExportCsv }: Props) {
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [confirmingImport, setConfirmingImport] = useState<File | null>(null)
+  const [confirmingRestore, setConfirmingRestore] = useState(false)
   const [csvLanguageId, setCsvLanguageId] = useState<number | ''>(languages[0]?.id ?? '')
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [backupLocation, setBackupLocationState] = useState<BackupLocation>(getBackupLocation())
 
   async function handleBackUpNow() {
     setBusy(true)
@@ -32,16 +37,17 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
     setBusy(false)
   }
 
-  async function handleExport() {
-    setBusy(true)
+  async function handleLocationChange(location: BackupLocation) {
     setStatus(null)
-    try {
-      const json = await onExport()
-      await exportFile(json, `phrasebook-backup-${new Date().toISOString().slice(0, 10)}.json`, 'application/json')
-    } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'Export failed.')
+    if (location === 'documents') {
+      const granted = await requestDocumentsPermission()
+      if (!granted) {
+        setStatus('Permission denied — staying on "This app".')
+        return
+      }
     }
-    setBusy(false)
+    setBackupLocation(location)
+    setBackupLocationState(location)
   }
 
   async function handleExportCsv() {
@@ -58,19 +64,17 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
     setBusy(false)
   }
 
-  async function confirmImport() {
-    if (!confirmingImport) return
+  async function confirmRestore() {
     setBusy(true)
     setStatus(null)
     try {
-      const text = await confirmingImport.text()
-      await onImport(text)
+      await onRestoreBackup()
       setStatus('Restored from backup.')
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'Import failed — check the file is a valid backup.')
+      setStatus(err instanceof Error ? err.message : 'Restore failed.')
     }
     setBusy(false)
-    setConfirmingImport(null)
+    setConfirmingRestore(false)
   }
 
   const lastBackupAt = getLastBackupAt()
@@ -83,17 +87,17 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}
         </p>
 
-        {confirmingImport ? (
+        {confirmingRestore ? (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-ink">
-              This replaces <strong>everything</strong> currently in the app with the contents of "{confirmingImport.name}". This can't be undone.
+              This replaces <strong>everything</strong> currently in the app with the last backup. This can't be undone.
             </p>
             <div className="flex gap-2">
-              <button onClick={() => setConfirmingImport(null)} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted">
+              <button onClick={() => setConfirmingRestore(false)} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted">
                 Cancel
               </button>
               <button
-                onClick={confirmImport}
+                onClick={confirmRestore}
                 disabled={busy}
                 className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
               >
@@ -110,27 +114,31 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
             >
               Back up now
             </button>
-            <button onClick={handleExport} disabled={busy} className="rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40">
-              Export as JSON file
-            </button>
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => setConfirmingRestore(true)}
               disabled={busy}
               className="rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40"
             >
-              Restore from JSON file...
+              Restore backup
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) setConfirmingImport(file)
-                e.target.value = ''
-              }}
-            />
+
+            <div className="mt-2 border-t border-hairline pt-3">
+              <label className="block text-sm font-medium mb-1 text-ink">Backup location</label>
+              <div className="flex gap-2">
+                {LOCATION_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleLocationChange(opt.value)}
+                    disabled={busy}
+                    className={`flex-1 rounded-full border px-3 py-2 text-xs font-medium transition-colors disabled:opacity-40 ${
+                      backupLocation === opt.value ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-hairline text-ink'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {languages.length > 0 && (
               <div className="mt-2 border-t border-hairline pt-3">
@@ -151,7 +159,6 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
                     Export
                   </button>
                 </div>
-                <p className="text-xs text-muted mt-1">English, Translation, Category columns — opens in Excel/Sheets or any text editor.</p>
               </div>
             )}
           </div>
@@ -159,7 +166,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
 
         {status && <p className="mt-3 text-sm text-muted">{status}</p>}
 
-        {!confirmingImport && (
+        {!confirmingRestore && (
           <div className="flex justify-end mt-4">
             <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
               Close

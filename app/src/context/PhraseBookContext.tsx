@@ -26,9 +26,10 @@ import {
 } from '../db/queries'
 import { backfillSeedCategories, seedIfEmpty } from '../db/seed'
 import type { Category, Language, PhraseListItem } from '../db/types'
-import { exportSnapshot, importSnapshot } from '../db/backup'
+import { importSnapshot } from '../db/backup'
 import { onMutation } from '../db/client'
 import { backUpNow, scheduleAutoBackup } from '../lib/autoBackup'
+import { readBackupFile } from '../lib/backupTarget'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
 import { usePersistedState } from '../lib/usePersistedState'
 import { phrasesToCsv } from '../lib/csvExport'
@@ -60,8 +61,7 @@ interface PhraseBookContextValue {
   removeLanguage: (languageId: number) => Promise<void>
   updateLanguageColor: (languageId: number, color: string) => Promise<void>
   backUpNow: () => Promise<void>
-  exportBackupJson: () => Promise<string>
-  restoreFromBackupJson: (json: string) => Promise<void>
+  restoreBackup: () => Promise<void>
   exportLanguageCsv: (languageId: number) => Promise<string>
 }
 
@@ -263,21 +263,15 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     [refreshCategories, refreshPhrases],
   )
 
-  const exportBackupJson = useCallback(async () => {
-    const snapshot = await exportSnapshot()
-    return JSON.stringify(snapshot, null, 2)
-  }, [])
-
-  const restoreFromBackupJson = useCallback(
-    async (json: string) => {
-      const snapshot = JSON.parse(json)
-      await importSnapshot(snapshot)
-      const langs = await refreshLanguages()
-      await refreshCategories()
-      setActiveLanguageId(langs[0]?.id ?? null)
-    },
-    [refreshLanguages, refreshCategories],
-  )
+  const restoreBackup = useCallback(async () => {
+    const json = await readBackupFile()
+    if (!json) throw new Error('No backup found at the configured backup location.')
+    const snapshot = JSON.parse(json)
+    await importSnapshot(snapshot)
+    const langs = await refreshLanguages()
+    await refreshCategories()
+    setActiveLanguageId(langs[0]?.id ?? null)
+  }, [refreshLanguages, refreshCategories])
 
   const exportLanguageCsv = useCallback(async (languageId: number) => {
     const list = await getPhraseList(languageId)
@@ -360,8 +354,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       removeLanguage,
       updateLanguageColor,
       backUpNow,
-      exportBackupJson,
-      restoreFromBackupJson,
+      restoreBackup,
       exportLanguageCsv,
     }),
     [
@@ -376,8 +369,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       reorder,
       addPhrase,
       editPhrase,
-      exportBackupJson,
-      restoreFromBackupJson,
+      restoreBackup,
       exportLanguageCsv,
       deleteOneLanguage,
       deleteAllLanguages,
