@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { getLastBackupAt } from '../lib/autoBackup'
+import { exportFile } from '../lib/exportFile'
 import type { Language } from '../db/types'
 import { PopoutSelect } from './PopoutSelect'
 
@@ -31,29 +32,29 @@ export function BackupModal({ languages, onClose, onBackUpNow, onExport, onImpor
     setBusy(false)
   }
 
-  function downloadFile(content: string, filename: string, mimeType: string) {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
   async function handleExport() {
     setBusy(true)
-    const json = await onExport()
-    downloadFile(json, `phrasebook-backup-${new Date().toISOString().slice(0, 10)}.json`, 'application/json')
+    setStatus(null)
+    try {
+      const json = await onExport()
+      await exportFile(json, `phrasebook-backup-${new Date().toISOString().slice(0, 10)}.json`, 'application/json')
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Export failed.')
+    }
     setBusy(false)
   }
 
   async function handleExportCsv() {
     if (csvLanguageId === '') return
     setBusy(true)
-    const language = languages.find((l) => l.id === csvLanguageId)
-    const csv = await onExportCsv(csvLanguageId)
-    downloadFile(csv, `${(language?.name ?? 'phrases').toLowerCase()}-phrases.csv`, 'text/csv')
+    setStatus(null)
+    try {
+      const language = languages.find((l) => l.id === csvLanguageId)
+      const csv = await onExportCsv(csvLanguageId)
+      await exportFile(csv, `${(language?.name ?? 'phrases').toLowerCase()}-phrases.csv`, 'text/csv')
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Export failed.')
+    }
     setBusy(false)
   }
 
