@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
 import type { Language } from '../db/types'
 import { DEFAULT_LANGUAGE_COLOR, nextAvailableColor } from '../lib/colorPalette'
 import { AddLanguageModal } from './AddLanguageModal'
@@ -12,9 +12,20 @@ interface Props {
   onAddLanguage: (name: string, code: string, color: string) => Promise<void>
   onRemoveLanguage: (id: number) => void
   onUpdateColor: (id: number, color: string) => Promise<void>
+  search: string
+  onSearchChange: (value: string) => void
 }
 
-export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLanguage, onRemoveLanguage, onUpdateColor }: Props) {
+export function LanguageTabs({
+  languages,
+  activeLanguageId,
+  onSelect,
+  onAddLanguage,
+  onRemoveLanguage,
+  onUpdateColor,
+  search,
+  onSearchChange,
+}: Props) {
   const [open, setOpen] = useState(false)
   const [showAddLanguage, setShowAddLanguage] = useState(false)
   const [confirmingRemoveId, setConfirmingRemoveId] = useState<number | null>(null)
@@ -24,8 +35,8 @@ export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLangu
   const accent = activeLanguage?.color ?? DEFAULT_LANGUAGE_COLOR
 
   return (
-    <div className="px-4 py-3 border-b border-hairline">
-      <div className="relative">
+    <div className="px-4 py-2 border-b border-hairline flex items-center gap-2">
+      <div className="relative flex-1">
         <button
           onClick={() => setOpen((v) => !v)}
           className="w-full flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-semibold shadow-sm"
@@ -120,6 +131,27 @@ export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLangu
               </button>
             </div>
           </>
+        )}
+      </div>
+
+      <div className="relative w-36 shrink-0">
+        <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--accent)] pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search"
+          className="w-full rounded-full border border-hairline bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => onSearchChange('')}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted hover:text-ink"
+            aria-label="Clear search"
+          >
+            <X size={14} strokeWidth={2} />
+          </button>
         )}
       </div>
 

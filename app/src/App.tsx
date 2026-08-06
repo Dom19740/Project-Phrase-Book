@@ -47,6 +47,7 @@ function Shell() {
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
   const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', 'dark')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -70,10 +71,10 @@ function Shell() {
       className="flex h-full flex-col bg-appbg text-ink"
       style={{ '--accent': accent, paddingTop: 'var(--safe-area-inset-top, 0px)' } as React.CSSProperties}
     >
-      <header className="flex items-center justify-between px-4 py-4">
-        <div className="flex items-center gap-3 rounded-full border-2 px-4 py-2 shadow-sm" style={{ borderColor: 'var(--accent)' }}>
-          <Logo size={44} className="text-ink shrink-0" />
-          <h1 className="text-2xl font-black tracking-tight text-ink">
+      <header className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center gap-2 rounded-full border-2 px-3 py-1 shadow-sm" style={{ borderColor: 'var(--accent)' }}>
+          <Logo size={32} className="text-ink shrink-0" />
+          <h1 className="text-xl font-black tracking-tight text-ink">
             Travel <span style={{ color: 'var(--accent)' }}>Chatter</span>
           </h1>
         </div>
@@ -84,7 +85,7 @@ function Shell() {
             aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
             title={theme === 'dark' ? 'Light theme' : 'Dark theme'}
           >
-            {theme === 'dark' ? <Sun size={22} strokeWidth={2} /> : <Moon size={22} strokeWidth={2} />}
+            {theme === 'dark' ? <Sun size={20} strokeWidth={2} /> : <Moon size={20} strokeWidth={2} />}
           </button>
           <button
             onClick={() => setShowBackup(true)}
@@ -92,7 +93,7 @@ function Shell() {
             aria-label="Backup settings"
             title="Backup"
           >
-            <Settings size={22} strokeWidth={2} />
+            <Settings size={20} strokeWidth={2} />
           </button>
         </div>
       </header>
@@ -104,6 +105,8 @@ function Shell() {
         onAddLanguage={createLanguage}
         onRemoveLanguage={removeLanguage}
         onUpdateColor={updateLanguageColor}
+        search={search}
+        onSearchChange={setSearch}
       />
 
       <main className="flex-1 overflow-hidden">
@@ -116,6 +119,7 @@ function Shell() {
             languageCode={activeLanguageCode}
             languageName={activeLanguageName}
             categories={categories}
+            search={search}
             onToggleLearned={(id, learned) => toggleLearned(id, learned)}
             onToggleFavorite={(id, favorite) => toggleFavorite(id, favorite)}
             onEdit={setEditingPhrase}

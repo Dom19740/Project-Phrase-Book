@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronRight, ListChecks, Search, Undo2, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, ListChecks, Undo2, X } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
@@ -14,6 +14,7 @@ interface Props {
   languageCode: string
   languageName: string
   categories: Category[]
+  search: string
   onToggleLearned: (id: number, learned: boolean) => void
   onToggleFavorite: (id: number, favorite: boolean) => void
   onEdit: (phrase: PhraseListItem) => void
@@ -35,14 +36,13 @@ interface Group {
 type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc'
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
-  { value: 'english-asc', label: 'English A→Z' },
-  { value: 'english-desc', label: 'English Z→A' },
-  { value: 'translation-asc', label: 'Translation A→Z' },
-  { value: 'translation-desc', label: 'Translation Z→A' },
+  { value: 'english-asc', label: 'English A>Z' },
+  { value: 'english-desc', label: 'English Z>A' },
+  { value: 'translation-asc', label: 'Translation A>Z' },
+  { value: 'translation-desc', label: 'Translation Z>A' },
 ]
 
 const ALPHA_BUCKETS: { label: string; letters: string }[] = [
-  { label: '#', letters: '' },
   { label: 'A-D', letters: 'ABCD' },
   { label: 'E-H', letters: 'EFGH' },
   { label: 'I-L', letters: 'IJKL' },
@@ -91,6 +91,7 @@ export function PhraseList({
   languageCode,
   languageName,
   categories,
+  search,
   onToggleLearned,
   onToggleFavorite,
   onEdit,
@@ -103,7 +104,6 @@ export function PhraseList({
   onRenameCategory,
   onDeleteCategory,
 }: Props) {
-  const [search, setSearch] = useState('')
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
   const [groupByCategoryOn, setGroupByCategoryOn] = usePersistedState('phrasebook-group-by-category', false)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
@@ -235,28 +235,33 @@ export function PhraseList({
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0 flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[140px]">
-            <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--accent)] pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search phrases"
-              className="w-full rounded-full border border-hairline bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted"
-            />
-            {search && (
+        <div className="flex flex-wrap items-center gap-1">
+          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} className="w-25" align="left" />
+
+          {ALPHA_BUCKETS.map((b) => {
+            const hasMatch = bucketTargets.has(b.label)
+            return (
               <button
-                type="button"
-                onClick={() => setSearch('')}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted hover:text-ink"
-                aria-label="Clear search"
+                key={b.label}
+                onClick={() => jumpTo(b.label)}
+                disabled={!hasMatch}
+                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-30 transition-colors"
               >
-                <X size={14} strokeWidth={2} />
+                {b.label}
               </button>
-            )}
-          </div>
-          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} className="w-40" />
+            )
+          })}
+
+          {undoStack.length > 0 && (
+            <button
+              onClick={handleUndo}
+              className="ml-auto flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1.5 text-xs font-medium text-ink hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+              title="Undo last learned/unlearned toggle"
+            >
+              <Undo2 size={14} strokeWidth={2} />
+              Undo
+            </button>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -291,33 +296,6 @@ export function PhraseList({
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
             {selectionMode ? 'Cancel' : 'Select'}
           </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1">
-          {ALPHA_BUCKETS.map((b) => {
-            const hasMatch = bucketTargets.has(b.label)
-            return (
-              <button
-                key={b.label}
-                onClick={() => jumpTo(b.label)}
-                disabled={!hasMatch}
-                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-30 transition-colors"
-              >
-                {b.label}
-              </button>
-            )
-          })}
-
-          {undoStack.length > 0 && (
-            <button
-              onClick={handleUndo}
-              className="ml-auto flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1.5 text-xs font-medium text-ink hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
-              title="Undo last learned/unlearned toggle"
-            >
-              <Undo2 size={14} strokeWidth={2} />
-              Undo
-            </button>
-          )}
         </div>
       </div>
 
