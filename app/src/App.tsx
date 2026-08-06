@@ -28,6 +28,7 @@ function Shell() {
     deleteOneLanguage,
     deleteAllLanguages,
     bulkMarkLearned,
+    bulkMarkFavorite,
     bulkDeleteOneLanguage,
     bulkDeleteAllLanguages,
     bulkChangeCategory,
@@ -125,6 +126,7 @@ function Shell() {
             onEdit={setEditingPhrase}
             onSelectionModeChange={setSelectionModeActive}
             onBulkMarkLearned={bulkMarkLearned}
+            onBulkMarkFavorite={bulkMarkFavorite}
             onBulkDeleteOneLanguage={bulkDeleteOneLanguage}
             onBulkDeleteAllLanguages={bulkDeleteAllLanguages}
             onBulkChangeCategory={bulkChangeCategory}

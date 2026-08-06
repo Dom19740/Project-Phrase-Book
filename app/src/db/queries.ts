@@ -244,6 +244,17 @@ export async function bulkSetLearned(translationIds: number[], learned: boolean)
   await persist()
 }
 
+export async function bulkSetFavorite(translationIds: number[], favorite: boolean): Promise<void> {
+  if (translationIds.length === 0) return
+  const db = await getDb()
+  const sets = translationIds.map((id) => ({
+    statement: 'UPDATE translations SET favorite = ? WHERE id = ?;',
+    values: [favorite ? 1 : 0, id],
+  }))
+  await db.executeSet(sets)
+  await persist()
+}
+
 export async function bulkDeleteTranslations(translationIds: number[]): Promise<void> {
   if (translationIds.length === 0) return
   const db = await getDb()

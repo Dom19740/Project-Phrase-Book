@@ -5,6 +5,7 @@ import {
   bulkDeletePhraseConcepts,
   bulkDeleteTranslations,
   bulkSetCategory,
+  bulkSetFavorite,
   bulkSetLearned,
   bulkSetTranslationText,
   deleteCategory as deleteCategoryQuery,
@@ -48,6 +49,7 @@ interface PhraseBookContextValue {
   deleteOneLanguage: (translationId: number) => Promise<void>
   deleteAllLanguages: (phraseConceptId: number) => Promise<void>
   bulkMarkLearned: (translationIds: number[], learned: boolean) => Promise<void>
+  bulkMarkFavorite: (translationIds: number[], favorite: boolean) => Promise<void>
   bulkDeleteOneLanguage: (translationIds: number[]) => Promise<void>
   bulkDeleteAllLanguages: (phraseConceptIds: number[]) => Promise<void>
   bulkChangeCategory: (phraseConceptIds: number[], categoryName: string | null) => Promise<void>
@@ -202,6 +204,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     [refreshPhrases],
   )
 
+  const bulkMarkFavorite = useCallback(
+    async (translationIds: number[], favorite: boolean) => {
+      await bulkSetFavorite(translationIds, favorite)
+      await refreshPhrases()
+    },
+    [refreshPhrases],
+  )
+
   const bulkDeleteOneLanguage = useCallback(
     async (translationIds: number[]) => {
       await bulkDeleteTranslations(translationIds)
@@ -339,6 +349,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteOneLanguage,
       deleteAllLanguages,
       bulkMarkLearned,
+      bulkMarkFavorite,
       bulkDeleteOneLanguage,
       bulkDeleteAllLanguages,
       bulkChangeCategory,
@@ -371,6 +382,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteOneLanguage,
       deleteAllLanguages,
       bulkMarkLearned,
+      bulkMarkFavorite,
       bulkDeleteOneLanguage,
       bulkDeleteAllLanguages,
       bulkChangeCategory,

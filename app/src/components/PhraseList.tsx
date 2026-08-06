@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronRight, ListChecks, Undo2, X } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, ListChecks, X } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
@@ -20,6 +20,7 @@ interface Props {
   onEdit: (phrase: PhraseListItem) => void
   onSelectionModeChange?: (active: boolean) => void
   onBulkMarkLearned: (translationIds: number[], learned: boolean) => Promise<void>
+  onBulkMarkFavorite: (translationIds: number[], favorite: boolean) => Promise<void>
   onBulkDeleteOneLanguage: (translationIds: number[]) => Promise<void>
   onBulkDeleteAllLanguages: (phraseConceptIds: number[]) => Promise<void>
   onBulkChangeCategory: (phraseConceptIds: number[], categoryName: string | null) => Promise<void>
@@ -97,6 +98,7 @@ export function PhraseList({
   onEdit,
   onSelectionModeChange,
   onBulkMarkLearned,
+  onBulkMarkFavorite,
   onBulkDeleteOneLanguage,
   onBulkDeleteAllLanguages,
   onBulkChangeCategory,
@@ -116,30 +118,10 @@ export function PhraseList({
   const [showManageCategories, setShowManageCategories] = useState(false)
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
-  const [undoStack, setUndoStack] = useState<{ translationId: number; previousLearned: boolean }[]>([])
 
   useEffect(() => {
     onSelectionModeChange?.(selectionMode)
   }, [selectionMode, onSelectionModeChange])
-
-  useEffect(() => {
-    setUndoStack([])
-  }, [languageCode])
-
-  function handleToggleLearned(translationId: number, learned: boolean) {
-    const current = phrases.find((p) => p.translationId === translationId)
-    if (current) setUndoStack((prev) => [...prev.slice(-19), { translationId, previousLearned: current.learned }])
-    onToggleLearned(translationId, learned)
-  }
-
-  function handleUndo() {
-    setUndoStack((prev) => {
-      if (prev.length === 0) return prev
-      const last = prev[prev.length - 1]
-      onToggleLearned(last.translationId, last.previousLearned)
-      return prev.slice(0, -1)
-    })
-  }
 
   const allCategoryNames = useMemo(() => {
     const names = new Set<string>()
@@ -222,7 +204,7 @@ export function PhraseList({
         phrase={item}
         accent={accent}
         languageCode={languageCode}
-        onToggleLearned={handleToggleLearned}
+        onToggleLearned={onToggleLearned}
         onToggleFavorite={onToggleFavorite}
         onEdit={onEdit}
         selectionMode={selectionMode}
@@ -251,17 +233,6 @@ export function PhraseList({
               </button>
             )
           })}
-
-          {undoStack.length > 0 && (
-            <button
-              onClick={handleUndo}
-              className="ml-auto flex items-center gap-1 rounded-full border border-hairline px-2.5 py-1.5 text-xs font-medium text-ink hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
-              title="Undo last learned/unlearned toggle"
-            >
-              <Undo2 size={14} strokeWidth={2} />
-              Undo
-            </button>
-          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -278,9 +249,10 @@ export function PhraseList({
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="w-[78px] shrink-0 rounded-full px-2 py-1 text-xs font-semibold text-center border border-[var(--accent)] text-[var(--accent)]"
+            className="flex items-center gap-1.5 shrink-0 rounded-full border border-[var(--accent)] px-2.5 py-1.5 text-xs font-medium text-[var(--accent)]"
             title="Cycle: Unlearned → Learned → All"
           >
+            <Check size={13} strokeWidth={2} />
             {LEARNED_FILTER_LABEL[learnedFilter]}
           </button>
 
@@ -299,10 +271,39 @@ export function PhraseList({
         </div>
       </div>
 
+      {selectionMode && selectedIds.size > 0 && (
+        <BulkActionBar
+          selectedCount={selectedIds.size}
+          languageName={languageName}
+          categories={categories}
+          onMarkLearned={async (learnedVal) => {
+            await onBulkMarkLearned(selectedTranslationIds, learnedVal)
+            exitSelectionMode()
+          }}
+          onMarkFavorite={async (favoriteVal) => {
+            await onBulkMarkFavorite(selectedTranslationIds, favoriteVal)
+            exitSelectionMode()
+          }}
+          onChangeCategory={async (categoryName) => {
+            await onBulkChangeCategory(selectedConceptIds, categoryName)
+            exitSelectionMode()
+          }}
+          onDeleteOneLanguage={async () => {
+            await onBulkDeleteOneLanguage(selectedTranslationIds)
+            exitSelectionMode()
+          }}
+          onDeleteAllLanguages={async () => {
+            await onBulkDeleteAllLanguages(selectedConceptIds)
+            exitSelectionMode()
+          }}
+          onCancel={exitSelectionMode}
+        />
+      )}
+
       <div
         className="flex-1 overflow-y-auto px-4 py-3"
         style={{
-          paddingBottom: `calc(${selectionMode && selectedIds.size > 0 ? '6rem' : '5rem'} + var(--safe-area-inset-bottom, 0px))`,
+          paddingBottom: `calc(5rem + var(--safe-area-inset-bottom, 0px))`,
         }}
       >
         <div className="flex flex-col gap-4">
@@ -367,31 +368,6 @@ export function PhraseList({
           )}
         </div>
       </div>
-
-      {selectionMode && selectedIds.size > 0 && (
-        <BulkActionBar
-          selectedCount={selectedIds.size}
-          languageName={languageName}
-          categories={categories}
-          onMarkLearned={async (learnedVal) => {
-            await onBulkMarkLearned(selectedTranslationIds, learnedVal)
-            exitSelectionMode()
-          }}
-          onChangeCategory={async (categoryName) => {
-            await onBulkChangeCategory(selectedConceptIds, categoryName)
-            exitSelectionMode()
-          }}
-          onDeleteOneLanguage={async () => {
-            await onBulkDeleteOneLanguage(selectedTranslationIds)
-            exitSelectionMode()
-          }}
-          onDeleteAllLanguages={async () => {
-            await onBulkDeleteAllLanguages(selectedConceptIds)
-            exitSelectionMode()
-          }}
-          onCancel={exitSelectionMode}
-        />
-      )}
 
       {showManageCategories && (
         <ManageCategoriesModal

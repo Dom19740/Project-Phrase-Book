@@ -27,7 +27,10 @@ export function PhraseQuickMenu({ accent, learned, favorite, onToggleLearned, on
       >
         <button
           type="button"
-          onClick={onToggleLearned}
+          onClick={() => {
+            onToggleLearned()
+            onClose()
+          }}
           className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover"
         >
           <Check size={16} strokeWidth={2.5} className={learned ? '' : 'text-muted'} style={learned ? { color: accent } : undefined} />
@@ -35,7 +38,10 @@ export function PhraseQuickMenu({ accent, learned, favorite, onToggleLearned, on
         </button>
         <button
           type="button"
-          onClick={onToggleFavorite}
+          onClick={() => {
+            onToggleFavorite()
+            onClose()
+          }}
           className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover"
         >
           <Star

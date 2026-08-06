@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Tag, Trash2, X } from 'lucide-react'
+import { Check, Star, Tag, Trash2, X } from 'lucide-react'
 import type { Category } from '../db/types'
 import { PopoutSelect } from './PopoutSelect'
 
@@ -10,6 +10,7 @@ interface Props {
   languageName: string
   categories: Category[]
   onMarkLearned: (learned: boolean) => Promise<void>
+  onMarkFavorite: (favorite: boolean) => Promise<void>
   onChangeCategory: (categoryName: string | null) => Promise<void>
   onDeleteOneLanguage: () => Promise<void>
   onDeleteAllLanguages: () => Promise<void>
@@ -23,6 +24,7 @@ export function BulkActionBar({
   languageName,
   categories,
   onMarkLearned,
+  onMarkFavorite,
   onChangeCategory,
   onDeleteOneLanguage,
   onDeleteAllLanguages,
@@ -42,16 +44,12 @@ export function BulkActionBar({
   }
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-hairline bg-surface shadow-[0_-4px_16px_rgba(0,0,0,0.4)]"
-      style={{ paddingBottom: 'var(--safe-area-inset-bottom, 0px)' }}
-    >
+    <div className="shrink-0 border-b border-hairline bg-surface">
       {panel === 'category' && (
         <div className="flex items-center gap-2 px-4 py-2 border-b border-hairline">
           <PopoutSelect
             className="flex-1 min-w-0"
             align="left"
-            dropDirection="up"
             value={categoryChoice}
             onChange={setCategoryChoice}
             options={[
@@ -113,15 +111,27 @@ export function BulkActionBar({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-2 px-4 py-3">
-        <span className="text-sm font-medium text-ink">{selectedCount} selected</span>
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-col gap-2 px-4 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium text-ink">{selectedCount} selected</span>
+          <button onClick={onCancel} className="rounded-lg p-1.5 text-muted hover:text-ink" aria-label="Cancel selection">
+            <X size={16} strokeWidth={2} />
+          </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
           <button
             onClick={() => onMarkLearned(true)}
             className="flex items-center gap-1 rounded-full border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
           >
             <Check size={13} strokeWidth={2} />
             Learned
+          </button>
+          <button
+            onClick={() => onMarkFavorite(true)}
+            className="flex items-center gap-1 rounded-full border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+          >
+            <Star size={13} strokeWidth={2} />
+            Favourite
           </button>
           <button
             onClick={() => setPanel(panel === 'category' ? null : 'category')}
@@ -136,9 +146,6 @@ export function BulkActionBar({
           >
             <Trash2 size={13} strokeWidth={2} />
             Delete
-          </button>
-          <button onClick={onCancel} className="rounded-lg p-1.5 text-muted hover:text-ink">
-            <X size={16} strokeWidth={2} />
           </button>
         </div>
       </div>
