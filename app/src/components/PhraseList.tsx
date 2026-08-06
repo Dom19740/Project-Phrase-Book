@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Check, ChevronDown, ChevronRight, ListChecks, X } from 'lucide-react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { ArrowDownAZ, ArrowUpZA, Check, ChevronDown, ChevronRight, Languages, ListChecks, X } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
@@ -36,12 +36,44 @@ interface Group {
 
 type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc'
 
-const SORT_OPTIONS: { value: SortMode; label: string }[] = [
+const SORT_ICON_BOX = 'inline-flex w-4 h-4 shrink-0 items-center justify-center'
+
+function SortIcon({ mode }: { mode: SortMode }) {
+  return (
+    <span className={`${SORT_ICON_BOX} shrink-0`}>
+      {mode.startsWith('english') ? (
+        <span className="text-xs font-semibold leading-none">EN</span>
+      ) : (
+        <Languages size={14} strokeWidth={2} />
+      )}
+    </span>
+  )
+}
+
+function SortDirectionIcon({ mode }: { mode: SortMode }) {
+  return (
+    <span className={SORT_ICON_BOX}>
+      {mode.endsWith('asc') ? <ArrowDownAZ size={14} strokeWidth={2} /> : <ArrowUpZA size={14} strokeWidth={2} />}
+    </span>
+  )
+}
+
+const SORT_OPTION_LABELS: { value: SortMode; label: string }[] = [
   { value: 'english-asc', label: 'English A>Z' },
   { value: 'english-desc', label: 'English Z>A' },
   { value: 'translation-asc', label: 'Translation A>Z' },
   { value: 'translation-desc', label: 'Translation Z>A' },
 ]
+
+const SORT_OPTIONS: { value: SortMode; label: string; shortLabel: ReactNode }[] = SORT_OPTION_LABELS.map((opt) => ({
+  ...opt,
+  shortLabel: (
+    <>
+      <SortIcon mode={opt.value} />
+      <SortDirectionIcon mode={opt.value} />
+    </>
+  ),
+}))
 
 const ALPHA_BUCKETS: { label: string; letters: string }[] = [
   { label: 'A-D', letters: 'ABCD' },
@@ -217,24 +249,6 @@ export function PhraseList({
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0 flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
-        <div className="flex flex-wrap items-center gap-1">
-          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} className="w-25" align="left" />
-
-          {ALPHA_BUCKETS.map((b) => {
-            const hasMatch = bucketTargets.has(b.label)
-            return (
-              <button
-                key={b.label}
-                onClick={() => jumpTo(b.label)}
-                disabled={!hasMatch}
-                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-30 transition-colors"
-              >
-                {b.label}
-              </button>
-            )
-          })}
-        </div>
-
         <div className="flex flex-wrap items-center gap-2">
           <CategoryFilterPopout
             allCategoryNames={allCategoryNames}
@@ -258,7 +272,7 @@ export function PhraseList({
 
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className="ml-auto flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors"
             style={
               selectionMode
                 ? { backgroundColor: 'var(--accent)', color: 'white' }
@@ -268,6 +282,24 @@ export function PhraseList({
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
             {selectionMode ? 'Cancel' : 'Select'}
           </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1">
+          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" borderColor="accent" />
+
+          {ALPHA_BUCKETS.map((b) => {
+            const hasMatch = bucketTargets.has(b.label)
+            return (
+              <button
+                key={b.label}
+                onClick={() => jumpTo(b.label)}
+                disabled={!hasMatch}
+                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-30 transition-colors"
+              >
+                {b.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 

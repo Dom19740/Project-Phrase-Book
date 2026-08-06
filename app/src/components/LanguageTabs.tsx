@@ -141,7 +141,7 @@ export function LanguageTabs({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search"
-          className="w-full rounded-full border border-hairline bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted"
+          className="w-full rounded-full border border-[var(--accent)] bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-0"
         />
         {search && (
           <button

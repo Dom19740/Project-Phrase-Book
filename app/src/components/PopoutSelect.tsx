@@ -1,9 +1,12 @@
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 interface Option<T> {
   value: T
   label: string
+  /** Compact content shown on the closed trigger instead of `label` (e.g. an icon). Falls back to `label`. */
+  shortLabel?: ReactNode
 }
 
 interface Props<T> {
@@ -14,6 +17,8 @@ interface Props<T> {
   align?: 'left' | 'right'
   /** Which way the panel opens relative to the trigger. Use 'up' when the trigger sits near the bottom of the screen (e.g. a fixed bottom bar), so the panel doesn't render under the system gesture bar. */
   dropDirection?: 'down' | 'up'
+  /** Border color on the closed trigger. 'accent' matches the colored-pill controls elsewhere in the toolbar. */
+  borderColor?: 'hairline' | 'accent'
 }
 
 export function PopoutSelect<T extends string | number>({
@@ -23,18 +28,22 @@ export function PopoutSelect<T extends string | number>({
   className,
   align = 'right',
   dropDirection = 'down',
+  borderColor = 'hairline',
 }: Props<T>) {
   const [open, setOpen] = useState(false)
-  const activeLabel = options.find((o) => o.value === value)?.label ?? ''
+  const activeOption = options.find((o) => o.value === value)
+  const activeTrigger = activeOption?.shortLabel ?? activeOption?.label ?? ''
 
   return (
     <div className={`relative shrink-0 ${className ?? ''}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-1.5 rounded-full border border-hairline bg-surface px-3.5 py-2 text-sm text-ink"
+        className={`flex w-full items-center gap-1.5 rounded-full border bg-surface px-3.5 py-2 text-sm text-ink ${
+          borderColor === 'accent' ? 'border-[var(--accent)]' : 'border-hairline'
+        }`}
       >
-        <span className="flex-1 text-left truncate">{activeLabel}</span>
+        <span className="flex-1 flex items-center gap-1 text-left truncate">{activeTrigger}</span>
         <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-[var(--accent)]" />
       </button>
 
@@ -50,15 +59,23 @@ export function PopoutSelect<T extends string | number>({
               <button
                 key={String(opt.value)}
                 type="button"
+                title={opt.label}
                 onClick={() => {
                   onChange(opt.value)
                   setOpen(false)
                 }}
-                className={`flex w-full items-center rounded-lg px-2.5 py-2 text-sm text-left ${
+                className={`flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left ${
                   opt.value === value ? 'text-[var(--accent)] font-medium' : 'text-ink'
                 }`}
               >
-                {opt.label}
+                {opt.shortLabel ? (
+                  <>
+                    {opt.shortLabel}
+                    <span className="sr-only">{opt.label}</span>
+                  </>
+                ) : (
+                  opt.label
+                )}
               </button>
             ))}
           </div>

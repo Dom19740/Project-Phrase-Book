@@ -100,7 +100,7 @@ export function PhraseRow({
       </div>
 
       {selectionMode ? (
-        <label className="shrink-0 flex items-center justify-center p-1.5 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+        <label className="shrink-0 flex items-center justify-center gap-0.5 size-9 cursor-pointer" onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
             checked={selected}
@@ -110,7 +110,7 @@ export function PhraseRow({
           />
         </label>
       ) : (
-        <div className="shrink-0 flex items-center gap-0.5 p-1.5">
+        <div className="shrink-0 flex items-center justify-center gap-0.5 size-9">
           {phrase.favorite && <Star size={16} strokeWidth={2.5} fill={accent} style={{ color: accent }} aria-label="Favourite" />}
           <Check
             size={18}
