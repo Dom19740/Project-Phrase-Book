@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
 import type { Language } from '../db/types'
-import { DEFAULT_LANGUAGE_COLOR, nextAvailableColor } from '../lib/colorPalette'
+import { nextAvailableColor } from '../lib/colorPalette'
 import { AddLanguageModal } from './AddLanguageModal'
 import { ColorSwatchBar } from './ColorSwatchBar'
 
@@ -32,17 +32,15 @@ export function LanguageTabs({
   const [editingColorId, setEditingColorId] = useState<number | null>(null)
 
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
-  const accent = activeLanguage?.color ?? DEFAULT_LANGUAGE_COLOR
 
   return (
     <div className="px-4 py-2 border-b border-hairline flex items-center gap-2">
       <div className="relative flex-1">
         <button
           onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-semibold shadow-sm"
-          style={{ borderColor: accent, color: accent }}
+          className="w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 py-2 text-sm font-semibold text-fabpink shadow-sm"
         >
-          <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
+          <span className="size-2.5 rounded-full shrink-0 bg-fabpink" />
           <span className="flex-1 text-left truncate">{activeLanguage?.name ?? 'Select a language'}</span>
           <ChevronDown size={16} strokeWidth={2.5} />
         </button>
@@ -123,8 +121,7 @@ export function LanguageTabs({
                   setOpen(false)
                   setShowAddLanguage(true)
                 }}
-                className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline px-2 pt-2 pb-1 text-sm"
-                style={{ color: accent }}
+                className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline px-2 pt-2 pb-1 text-sm text-fabpink"
               >
                 <Plus size={15} strokeWidth={2.5} />
                 Add language
@@ -135,13 +132,13 @@ export function LanguageTabs({
       </div>
 
       <div className="relative w-36 shrink-0">
-        <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--accent)] pointer-events-none" />
+        <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fabpink pointer-events-none" />
         <input
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search"
-          className="w-full rounded-full border border-[var(--accent)] bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-0"
+          className="w-full rounded-full border border-fabpink bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted outline-none focus:ring-2 focus:ring-fabpink focus:ring-offset-0"
         />
         {search && (
           <button
