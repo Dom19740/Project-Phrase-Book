@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   addLanguage,
   addPhraseConcept,
@@ -41,6 +41,7 @@ interface PhraseBookContextValue {
   activeLanguageId: number | null
   setActiveLanguageId: (id: number) => void
   phrases: PhraseListItem[]
+  backgroundTranslation: { languageId: number; languageName: string } | null
   refreshPhrases: () => Promise<void>
   toggleLearned: (translationId: number, learned: boolean) => Promise<void>
   toggleFavorite: (translationId: number, favorite: boolean) => Promise<void>
@@ -66,6 +67,9 @@ interface PhraseBookContextValue {
   exportLanguageCsv: (languageId: number) => Promise<string>
 }
 
+/** Phrases translated per request when auto-translating a newly added language in the background. */
+const TRANSLATE_CHUNK_SIZE = 20
+
 const PhraseBookContext = createContext<PhraseBookContextValue | null>(null)
 
 export function PhraseBookProvider({ children }: { children: ReactNode }) {
@@ -74,6 +78,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const [categories, setCategories] = useState<Category[]>([])
   const [activeLanguageId, setActiveLanguageId] = usePersistedState<number | null>('phrasebook-active-language-id', null)
   const [phrases, setPhrases] = useState<PhraseListItem[]>([])
+  const [backgroundTranslation, setBackgroundTranslation] = useState<{ languageId: number; languageName: string } | null>(null)
+
+  // Background translation runs detached from React's render cycle, so it needs the *current*
+  // active language at the time each chunk finishes, not the value closed over when it started.
+  const activeLanguageIdRef = useRef(activeLanguageId)
+  useEffect(() => {
+    activeLanguageIdRef.current = activeLanguageId
+  }, [activeLanguageId])
 
   const refreshLanguages = useCallback(async () => {
     const langs = await getLanguages()
@@ -295,27 +307,42 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       await refreshLanguages()
       setActiveLanguageId(lang.id)
 
-      try {
-        const concepts = await getAllPhraseConcepts()
-        if (concepts.length > 0) {
-          const translations = await translatePhrasesBulk(
-            concepts.map((c) => c.english),
-            lang.code,
-            lang.name,
-          )
-          const entries = concepts
-            .filter((c) => translations[c.english])
-            .map((c) => ({ phraseConceptId: c.id, languageId: lang.id, text: translations[c.english] }))
-          await bulkSetTranslationText(entries)
-        }
-      } catch (err) {
-        // Proxy unreachable/not configured — phrases stay blank ("needs translation") for manual entry.
-        console.error('Bulk auto-translate failed for new language:', err)
-      }
-
       // Use lang.id directly rather than refreshPhrases(), whose closure may still be
       // bound to the previous activeLanguageId until React re-renders after setActiveLanguageId above.
       setPhrases(await getPhraseList(lang.id))
+
+      const concepts = await getAllPhraseConcepts()
+      if (concepts.length === 0) return
+
+      // Translating everything can take a while (many phrases, a slow/mobile connection) — run it
+      // in the background instead of blocking the caller, so the "add language" modal can close
+      // right away. Chunked (rather than one giant request) so a single slow/failed batch doesn't
+      // leave every phrase blank, and so each request is less likely to time out.
+      setBackgroundTranslation({ languageId: lang.id, languageName: lang.name })
+      ;(async () => {
+        for (let i = 0; i < concepts.length; i += TRANSLATE_CHUNK_SIZE) {
+          const batch = concepts.slice(i, i + TRANSLATE_CHUNK_SIZE)
+          try {
+            const translations = await translatePhrasesBulk(
+              batch.map((c) => c.english),
+              lang.code,
+              lang.name,
+            )
+            const entries = batch
+              .filter((c) => translations[c.english])
+              .map((c) => ({ phraseConceptId: c.id, languageId: lang.id, text: translations[c.english] }))
+            if (entries.length > 0) {
+              await bulkSetTranslationText(entries)
+              if (activeLanguageIdRef.current === lang.id) setPhrases(await getPhraseList(lang.id))
+            }
+          } catch (err) {
+            // Proxy unreachable/rate-limited/timed out — this batch's phrases stay blank
+            // ("needs translation") for manual entry; the remaining batches still run.
+            console.error('Bulk auto-translate failed for a batch of the new language:', err)
+          }
+        }
+        setBackgroundTranslation((current) => (current?.languageId === lang.id ? null : current))
+      })()
     },
     [refreshLanguages],
   )
@@ -345,6 +372,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       activeLanguageId,
       setActiveLanguageId,
       phrases,
+      backgroundTranslation,
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
@@ -375,6 +403,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       categories,
       activeLanguageId,
       phrases,
+      backgroundTranslation,
       refreshPhrases,
       toggleLearned,
       toggleFavorite,

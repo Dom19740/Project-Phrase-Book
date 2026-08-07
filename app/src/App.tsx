@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Moon, Plus, Settings, Sun } from 'lucide-react'
+import { Loader2, Moon, Plus, Settings, Sun } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { EditPhraseModal } from './components/EditPhraseModal'
@@ -21,6 +21,7 @@ function Shell() {
     activeLanguageId,
     setActiveLanguageId,
     phrases,
+    backgroundTranslation,
     toggleLearned,
     toggleFavorite,
     addPhrase,
@@ -136,6 +137,16 @@ function Shell() {
           />
         )}
       </main>
+
+      {backgroundTranslation && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink shadow-xl"
+          style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
+        >
+          <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
+          <span className="truncate">Translating {backgroundTranslation.languageName} in the background&hellip;</span>
+        </div>
+      )}
 
       {!selectionModeActive && (
         <button

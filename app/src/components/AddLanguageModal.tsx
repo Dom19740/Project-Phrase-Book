@@ -47,7 +47,9 @@ export function AddLanguageModal({ languages, defaultColor, onClose, onSubmit }:
         {selected ? (
           <>
             <h2 className="text-lg font-semibold mb-1 text-ink">Add {selected.name}</h2>
-            <p className="text-xs text-muted mb-4">All existing phrases get translated into this language automatically.</p>
+            <p className="text-xs text-muted mb-4">
+              All existing phrases get translated into this language automatically — that happens in the background after you add it.
+            </p>
 
             <label className="block text-sm font-medium mb-2 text-ink">Accent color</label>
             <div className="mb-4">
@@ -68,7 +70,7 @@ export function AddLanguageModal({ languages, defaultColor, onClose, onSubmit }:
                 className="rounded-full px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
                 style={{ backgroundColor: color }}
               >
-                {saving ? 'Adding & translating...' : 'Add language'}
+                {saving ? 'Adding...' : 'Add language'}
               </button>
             </div>
           </>
