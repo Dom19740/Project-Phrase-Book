@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Moon, Plus, Settings, Sun } from 'lucide-react'
+import { Loader2, Moon, Plus, Settings, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { EditPhraseModal } from './components/EditPhraseModal'
@@ -26,6 +26,7 @@ function Shell() {
     setActiveLanguageId,
     phrases,
     backgroundTranslation,
+    translationIncomplete,
     toggleLearned,
     toggleFavorite,
     addPhrase,
@@ -145,6 +146,19 @@ function Shell() {
         >
           <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
           <span className="truncate">Translating {backgroundTranslation.languageName} in the background&hellip;</span>
+        </div>
+      )}
+
+      {!backgroundTranslation && translationIncomplete && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink shadow-xl"
+          style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
+        >
+          <TriangleAlert size={15} strokeWidth={2.5} className="shrink-0 text-fabpink" />
+          <span className="truncate">
+            {translationIncomplete.count} phrase{translationIncomplete.count === 1 ? '' : 's'} in {translationIncomplete.languageName} need
+            translation &mdash; add manually when ready.
+          </span>
         </div>
       )}
 

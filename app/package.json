@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "android:sync": "npm run build && npx cap sync android"
+    "android:sync": "npm run build && npx cap sync android",
+    "test": "tsc -p tsconfig.test.json && node --test"
   },
   "dependencies": {
     "@capacitor-community/sqlite": "^8.1.0",

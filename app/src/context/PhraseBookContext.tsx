@@ -30,6 +30,7 @@ import { onMutation } from '../db/client'
 import { scheduleAutoBackup } from '../lib/autoBackup'
 import { readBackupFromPickedLocation, saveBackupToPickedLocation } from '../lib/backupFile'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
+import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
 import { usePersistedState } from '../lib/usePersistedState'
 import { phrasesToCsv } from '../lib/csvExport'
 
@@ -41,6 +42,7 @@ interface PhraseBookContextValue {
   setActiveLanguageId: (id: number) => void
   phrases: PhraseListItem[]
   backgroundTranslation: { languageId: number; languageName: string } | null
+  translationIncomplete: { languageName: string; count: number } | null
   refreshPhrases: () => Promise<void>
   toggleLearned: (translationId: number, learned: boolean) => Promise<void>
   toggleFavorite: (translationId: number, favorite: boolean) => Promise<void>
@@ -77,6 +79,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const [activeLanguageId, setActiveLanguageId] = usePersistedState<number | null>('phrasebook-active-language-id', null)
   const [phrases, setPhrases] = useState<PhraseListItem[]>([])
   const [backgroundTranslation, setBackgroundTranslation] = useState<{ languageId: number; languageName: string } | null>(null)
+  const [translationIncomplete, setTranslationIncomplete] = useState<{ languageName: string; count: number } | null>(null)
 
   // Background translation runs detached from React's render cycle, so it needs the *current*
   // active language at the time each chunk finishes, not the value closed over when it started.
@@ -317,29 +320,47 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       // right away. Chunked (rather than one giant request) so a single slow/failed batch doesn't
       // leave every phrase blank, and so each request is less likely to time out.
       setBackgroundTranslation({ languageId: lang.id, languageName: lang.name })
+      setTranslationIncomplete(null)
       ;(async () => {
-        for (let i = 0; i < concepts.length; i += TRANSLATE_CHUNK_SIZE) {
-          const batch = concepts.slice(i, i + TRANSLATE_CHUNK_SIZE)
+        // Translates one chunk and reports whether every phrase in it actually got a translation
+        // back. A chunk that fails outright (network error, proxy 5xx/429/503) or comes back with
+        // some entries missing (e.g. Gemini didn't return a value for one of them) both count as
+        // "not fully done", so translateInChunksWithRetry gives it a second chance rather than
+        // leaving those phrases silently blank forever.
+        async function translateChunk(chunk: { id: number; english: string }[]): Promise<boolean> {
           try {
             const translations = await translatePhrasesBulk(
-              batch.map((c) => c.english),
+              chunk.map((c) => c.english),
               lang.code,
               lang.name,
             )
-            const entries = batch
+            const entries = chunk
               .filter((c) => translations[c.english])
               .map((c) => ({ phraseConceptId: c.id, languageId: lang.id, text: translations[c.english] }))
             if (entries.length > 0) {
               await bulkSetTranslationText(entries)
               if (activeLanguageIdRef.current === lang.id) setPhrases(await getPhraseList(lang.id))
             }
+            return entries.length === chunk.length
           } catch (err) {
-            // Proxy unreachable/rate-limited/timed out — this batch's phrases stay blank
-            // ("needs translation") for manual entry; the remaining batches still run.
-            console.error('Bulk auto-translate failed for a batch of the new language:', err)
+            console.error('Bulk auto-translate failed for a chunk of the new language:', err)
+            return false
           }
         }
+
+        const failed = await translateInChunksWithRetry(concepts, TRANSLATE_CHUNK_SIZE, translateChunk)
+
         setBackgroundTranslation((current) => (current?.languageId === lang.id ? null : current))
+
+        // Only reached if phrases are still untranslated after a full retry pass — tell the user
+        // instead of letting the "Translating…" indicator just vanish as if everything finished.
+        if (failed.length > 0) {
+          console.error(`Add language: ${failed.length} phrase(s) could not be auto-translated after retrying.`)
+          setTranslationIncomplete({ languageName: lang.name, count: failed.length })
+          setTimeout(() => {
+            setTranslationIncomplete((current) => (current?.languageName === lang.name ? null : current))
+          }, 8000)
+        }
       })()
     },
     [refreshLanguages],
@@ -363,6 +384,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       setActiveLanguageId,
       phrases,
       backgroundTranslation,
+      translationIncomplete,
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
@@ -393,6 +415,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       activeLanguageId,
       phrases,
       backgroundTranslation,
+      translationIncomplete,
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
