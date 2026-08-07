@@ -100,7 +100,7 @@ export function AddLanguageModal({ languages, defaultColor, onClose, onSubmit }:
               <button
                 onClick={() => setSelected({ name: manualName.trim(), code: manualCode.trim() })}
                 disabled={!canSubmitManual}
-                className="rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
               >
                 Next
               </button>

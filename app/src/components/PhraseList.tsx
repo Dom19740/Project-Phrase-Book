@@ -263,7 +263,7 @@ export function PhraseList({
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-white"
+            className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-ink"
             title="Cycle: Unlearned → Learned → All"
           >
             <Check size={13} strokeWidth={2} className="text-fabpink" />
@@ -273,7 +273,7 @@ export function PhraseList({
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
             className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors ${
-              selectionMode ? 'bg-fabpink text-white' : 'border border-fabpink text-white'
+              selectionMode ? 'bg-fabpink text-white' : 'border border-fabpink text-ink'
             }`}
           >
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
@@ -291,7 +291,7 @@ export function PhraseList({
                 key={b.label}
                 onClick={() => jumpTo(b.label)}
                 disabled={!hasMatch}
-                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-white enabled:hover:border-fabpink enabled:hover:text-fabpink disabled:opacity-30 transition-colors"
+                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-fabpink enabled:hover:text-fabpink disabled:opacity-30 transition-colors"
               >
                 {b.label}
               </button>
@@ -342,15 +342,15 @@ export function PhraseList({
             <div>
               <button
                 onClick={() => setPrimaryExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-[var(--accent)]"
+                className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-fabpink"
               >
                 <span>
                   {primaryLabel} ({primaryItems.length})
                 </span>
                 {primaryExpanded ? (
-                  <ChevronDown size={16} strokeWidth={2} className="text-[var(--accent)]" />
+                  <ChevronDown size={16} strokeWidth={2} className="text-fabpink" />
                 ) : (
-                  <ChevronRight size={16} strokeWidth={2} className="text-[var(--accent)]" />
+                  <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
                 )}
               </button>
               {primaryExpanded && (
@@ -362,7 +362,7 @@ export function PhraseList({
                         {groupByCategoryOn && (
                           <button
                             onClick={() => setCollapsed((c) => ({ ...c, [group.categoryName]: !isCollapsed }))}
-                            className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-[var(--accent)]"
+                            className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-fabpink"
                           >
                             <span>{group.categoryName}</span>
                             {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
@@ -381,15 +381,15 @@ export function PhraseList({
             <div className="border-t border-hairline pt-3">
               <button
                 onClick={() => setSecondaryExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-[var(--accent)]"
+                className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-fabpink"
               >
                 <span>
                   {secondaryLabel} ({secondaryItems.length})
                 </span>
                 {secondaryExpanded ? (
-                  <ChevronDown size={16} strokeWidth={2} className="text-[var(--accent)]" />
+                  <ChevronDown size={16} strokeWidth={2} className="text-fabpink" />
                 ) : (
-                  <ChevronRight size={16} strokeWidth={2} className="text-[var(--accent)]" />
+                  <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
                 )}
               </button>
               {secondaryExpanded && <div className="mt-1.5 flex flex-col gap-1.5">{secondarySorted.map((item) => renderRow(item))}</div>}

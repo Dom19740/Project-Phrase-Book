@@ -65,7 +65,6 @@ export function PhraseRow({
     <div
       id={`phrase-row-${phrase.translationId}`}
       className="group relative flex items-center gap-1.5 rounded-2xl bg-surface border border-hairline px-2 py-1 shadow-md transition-colors hover:border-neutral-600 cursor-pointer select-none"
-      style={phrase.learned ? { borderColor: accent } : undefined}
       onPointerDown={handlePointerDown}
       onPointerUp={clearPressTimer}
       onPointerLeave={clearPressTimer}
@@ -104,8 +103,7 @@ export function PhraseRow({
             type="checkbox"
             checked={selected}
             onChange={() => onToggleSelect?.(phrase.translationId)}
-            className="size-4 shrink-0 rounded accent-current cursor-pointer"
-            style={{ color: accent }}
+            className="size-4 shrink-0 rounded accent-fabpink cursor-pointer"
           />
         </label>
       ) : (

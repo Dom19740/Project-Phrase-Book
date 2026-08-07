@@ -104,7 +104,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
             <button
               onClick={handleBackUpNow}
               disabled={busy}
-              className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+              className="rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
             >
               Back up now
             </button>

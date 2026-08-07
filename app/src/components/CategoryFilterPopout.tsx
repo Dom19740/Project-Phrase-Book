@@ -29,7 +29,7 @@ export function CategoryFilterPopout({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-fabpink px-3 py-1.5 text-xs font-medium text-white"
+        className="flex items-center gap-1.5 rounded-full border border-fabpink px-3 py-1.5 text-xs font-medium text-ink"
       >
         <ListFilter size={14} strokeWidth={2} className="text-fabpink" />
         Categories

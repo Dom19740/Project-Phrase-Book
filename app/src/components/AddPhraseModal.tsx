@@ -137,7 +137,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
           <button
             onClick={handleSubmit}
             disabled={!canSubmit || saving}
-            className="rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
           >
             {saving ? 'Saving...' : 'Add phrase'}
           </button>

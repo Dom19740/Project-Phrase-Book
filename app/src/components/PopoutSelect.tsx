@@ -17,8 +17,8 @@ interface Props<T> {
   align?: 'left' | 'right'
   /** Which way the panel opens relative to the trigger. Use 'up' when the trigger sits near the bottom of the screen (e.g. a fixed bottom bar), so the panel doesn't render under the system gesture bar. */
   dropDirection?: 'down' | 'up'
-  /** Border color on the closed trigger. 'accent' matches the language's color; 'pink' matches the fixed brand pink used by the toolbar. */
-  borderColor?: 'hairline' | 'accent' | 'pink'
+  /** Border color on the closed trigger. */
+  borderColor?: 'hairline' | 'pink'
 }
 
 export function PopoutSelect<T extends string | number>({
@@ -33,9 +33,7 @@ export function PopoutSelect<T extends string | number>({
   const [open, setOpen] = useState(false)
   const activeOption = options.find((o) => o.value === value)
   const activeTrigger = activeOption?.shortLabel ?? activeOption?.label ?? ''
-  const isPink = borderColor === 'pink'
-  const borderClass = borderColor === 'hairline' ? 'border-hairline' : isPink ? 'border-fabpink' : 'border-[var(--accent)]'
-  const tintTextClass = isPink ? 'text-fabpink' : 'text-[var(--accent)]'
+  const borderClass = borderColor === 'pink' ? 'border-fabpink' : 'border-hairline'
 
   return (
     <div className={`relative shrink-0 ${className ?? ''}`}>
@@ -45,7 +43,7 @@ export function PopoutSelect<T extends string | number>({
         className={`flex w-full items-center gap-1.5 rounded-full border bg-surface px-3.5 py-2 text-sm text-ink ${borderClass}`}
       >
         <span className="flex-1 flex items-center gap-1 text-left truncate">{activeTrigger}</span>
-        <ChevronDown size={14} strokeWidth={2} className={`shrink-0 ${tintTextClass}`} />
+        <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-fabpink" />
       </button>
 
       {open && (
@@ -66,7 +64,7 @@ export function PopoutSelect<T extends string | number>({
                   setOpen(false)
                 }}
                 className={`flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left ${
-                  opt.value === value ? `${tintTextClass} font-medium` : 'text-ink'
+                  opt.value === value ? 'text-fabpink font-medium' : 'text-ink'
                 }`}
               >
                 {opt.shortLabel ? (

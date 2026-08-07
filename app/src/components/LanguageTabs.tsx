@@ -42,7 +42,7 @@ export function LanguageTabs({
           className="w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 py-2 text-sm font-semibold shadow-sm"
         >
           <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
-          <span className="flex-1 text-left truncate text-white">{activeLanguage?.name ?? 'Select a language'}</span>
+          <span className="flex-1 text-left truncate text-ink">{activeLanguage?.name ?? 'Select a language'}</span>
           <ChevronDown size={16} strokeWidth={2.5} className="text-fabpink" />
         </button>
 

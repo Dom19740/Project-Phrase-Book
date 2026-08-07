@@ -122,7 +122,7 @@ export function EditPhraseModal({
                 type="button"
                 onClick={handleRetranslate}
                 disabled={!english.trim() || loadingAlternatives}
-                className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-[var(--accent)] disabled:opacity-40"
+                className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-fabpink disabled:opacity-40"
                 title="Get alternative translations"
               >
                 <RefreshCw size={12} strokeWidth={2.5} className={loadingAlternatives ? 'animate-spin' : ''} />
@@ -146,7 +146,7 @@ export function EditPhraseModal({
                     type="button"
                     onClick={() => setText(alt)}
                     className={`rounded-full border px-3 py-1.5 text-sm text-left transition-colors ${
-                      alt === text ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-hairline text-ink hover:border-[var(--accent)]'
+                      alt === text ? 'border-fabpink text-fabpink' : 'border-hairline text-ink hover:border-fabpink'
                     }`}
                   >
                     {alt}
@@ -192,7 +192,7 @@ export function EditPhraseModal({
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || saving}
-                  className="rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                  className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>

@@ -70,7 +70,7 @@ export function BulkActionBar({
           <button
             onClick={applyCategory}
             disabled={busy || (categoryChoice === NEW_CATEGORY && !newCategory.trim())}
-            className="shrink-0 rounded-full bg-[var(--accent)] px-3.5 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+            className="shrink-0 rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-40"
           >
             Apply
           </button>
@@ -121,21 +121,21 @@ export function BulkActionBar({
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             onClick={() => onMarkLearned(true)}
-            className="flex items-center gap-1 rounded-full border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
           >
             <Check size={13} strokeWidth={2} />
             Learned
           </button>
           <button
             onClick={() => onMarkFavorite(true)}
-            className="flex items-center gap-1 rounded-full border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
           >
             <Star size={13} strokeWidth={2} />
             Favourite
           </button>
           <button
             onClick={() => setPanel(panel === 'category' ? null : 'category')}
-            className="flex items-center gap-1 rounded-full border border-[var(--accent)] text-[var(--accent)] px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
           >
             <Tag size={13} strokeWidth={2} />
             Category
