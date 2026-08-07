@@ -157,14 +157,23 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       const targetLanguages = languages.filter((l) => languageIds.includes(l.id))
 
       if (targetLanguages.length > 0) {
-        try {
-          const result = await translatePhrase(
+        const callTranslate = () =>
+          translatePhrase(
             english,
             targetLanguages.map((l) => l.code),
             categoryName,
             categories.map((c) => c.name),
             Object.fromEntries(targetLanguages.map((l) => [l.code, l.name])),
           )
+
+        try {
+          // One retry before giving up — a single transient failure (a slow response, a
+          // one-off network blip) shouldn't leave the phrase untranslated when trying again
+          // immediately would likely have worked, same reasoning as the Add Language retry.
+          const result = await callTranslate().catch((err) => {
+            console.error('Auto-translate failed, retrying once:', err)
+            return callTranslate()
+          })
           translations = targetLanguages
             .filter((l) => result.translations[l.code])
             .map((l) => ({ languageId: l.id, text: result.translations[l.code] }))
@@ -172,7 +181,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
         } catch (err) {
           // Proxy unreachable/not configured yet — still create the phrase (blank
           // translations to fill in manually) rather than blocking the user.
-          console.error('Auto-translate failed, adding phrase untranslated:', err)
+          console.error('Auto-translate failed twice, adding phrase untranslated:', err)
         }
       }
 
