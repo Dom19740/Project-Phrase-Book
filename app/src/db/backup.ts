@@ -70,45 +70,70 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
   }
 }
 
-/** Replaces the entire database with the contents of a snapshot (full restore, not a merge). */
+/** Reads the id assigned to the row just inserted on this connection, more reliably than trusting the plugin's own `lastId` reporting. */
+async function lastInsertId(db: Awaited<ReturnType<typeof getDb>>): Promise<number> {
+  const res = await db.query('SELECT last_insert_rowid() AS id;')
+  return (res.values?.[0]?.id as number | undefined) ?? 0
+}
+
+/**
+ * Replaces the entire database with the contents of a snapshot (full restore, not a merge).
+ *
+ * Runs as a single explicit transaction (every statement passes `transaction: false` so the
+ * plugin doesn't wrap each one in its own auto-committing transaction) so a failure partway
+ * through — e.g. a translation insert going wrong — rolls back the deletes and inserts that
+ * already ran instead of leaving the DB in a half-restored state that then collides with retries.
+ */
 export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
   const db = await getDb()
 
-  await db.execute('DELETE FROM translations; DELETE FROM phrase_concepts; DELETE FROM categories; DELETE FROM languages;')
+  await db.beginTransaction()
+  try {
+    // The plugin only splits multi-statement strings on ";\n" (a literal newline after the
+    // semicolon) — "; " on one line is treated as a single statement and Android's execSQL()
+    // silently only runs the first clause, so each DELETE must be on its own line.
+    await db.execute(
+      'DELETE FROM translations;\nDELETE FROM phrase_concepts;\nDELETE FROM categories;\nDELETE FROM languages;',
+      false,
+    )
 
-  const languageIdByCode = new Map<string, number>()
-  for (const [i, lang] of snapshot.languages.entries()) {
-    const res = await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [lang.name, lang.code, i])
-    languageIdByCode.set(lang.code, res.changes?.lastId ?? 0)
-  }
+    const languageIdByCode = new Map<string, number>()
+    for (const [i, lang] of snapshot.languages.entries()) {
+      await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [lang.name, lang.code, i], false)
+      languageIdByCode.set(lang.code, await lastInsertId(db))
+    }
 
-  const categoryIdByName = new Map<string, number>()
+    const categoryIdByName = new Map<string, number>()
 
-  for (const [i, phrase] of snapshot.phrases.entries()) {
-    let categoryId: number | null = null
-    if (phrase.category) {
-      categoryId = categoryIdByName.get(phrase.category) ?? null
-      if (categoryId == null) {
-        const res = await db.run('INSERT INTO categories (name) VALUES (?);', [phrase.category])
-        categoryId = res.changes?.lastId ?? 0
-        categoryIdByName.set(phrase.category, categoryId)
+    for (const [i, phrase] of snapshot.phrases.entries()) {
+      let categoryId: number | null = null
+      if (phrase.category) {
+        categoryId = categoryIdByName.get(phrase.category) ?? null
+        if (categoryId == null) {
+          await db.run('INSERT INTO categories (name) VALUES (?);', [phrase.category], false)
+          categoryId = await lastInsertId(db)
+          categoryIdByName.set(phrase.category, categoryId)
+        }
+      }
+
+      await db.run('INSERT INTO phrase_concepts (english, category_id, sort_order) VALUES (?, ?, ?);', [phrase.english, categoryId, i], false)
+      const conceptId = await lastInsertId(db)
+
+      for (const t of phrase.translations) {
+        const languageId = languageIdByCode.get(t.languageCode)
+        if (languageId == null) continue
+        await db.run(
+          'INSERT INTO translations (phrase_concept_id, language_id, text, learned, favorite, sort_order) VALUES (?, ?, ?, ?, ?, ?);',
+          [conceptId, languageId, t.text, t.learned ? 1 : 0, t.favorite ? 1 : 0, i],
+          false,
+        )
       }
     }
 
-    const conceptRes = await db.run('INSERT INTO phrase_concepts (english, category_id, sort_order) VALUES (?, ?, ?);', [
-      phrase.english,
-      categoryId,
-      i,
-    ])
-    const conceptId = conceptRes.changes?.lastId ?? 0
-
-    const sets = phrase.translations
-      .filter((t) => languageIdByCode.has(t.languageCode))
-      .map((t) => ({
-        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, learned, favorite, sort_order) VALUES (?, ?, ?, ?, ?, ?);',
-        values: [conceptId, languageIdByCode.get(t.languageCode), t.text, t.learned ? 1 : 0, t.favorite ? 1 : 0, i],
-      }))
-    if (sets.length > 0) await db.executeSet(sets)
+    await db.commitTransaction()
+  } catch (err) {
+    await db.rollbackTransaction()
+    throw err
   }
 
   await persist()

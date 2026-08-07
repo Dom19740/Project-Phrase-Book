@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { getLastBackupAt } from '../lib/autoBackup'
 import { exportFile } from '../lib/exportFile'
 import type { BackupSnapshot } from '../db/backup'
@@ -19,6 +19,9 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
   const [busy, setBusy] = useState(false)
   const [pendingRestore, setPendingRestore] = useState<{ name: string; snapshot: BackupSnapshot } | null>(null)
   const [csvLanguageId, setCsvLanguageId] = useState<number | ''>(languages[0]?.id ?? '')
+  // React's `busy` state only re-renders (and disables the button) on the next frame, which a fast
+  // double-tap can beat — this ref blocks re-entry synchronously so two restores never run at once.
+  const restoringRef = useRef(false)
 
   async function handleBackUpNow() {
     setBusy(true)
@@ -58,7 +61,8 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
   }
 
   async function confirmRestore() {
-    if (!pendingRestore) return
+    if (!pendingRestore || restoringRef.current) return
+    restoringRef.current = true
     setBusy(true)
     setStatus(null)
     try {
@@ -69,6 +73,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
     }
     setBusy(false)
     setPendingRestore(null)
+    restoringRef.current = false
   }
 
   const lastBackupAt = getLastBackupAt()

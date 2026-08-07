@@ -289,7 +289,12 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       await importSnapshot(snapshot)
       const langs = await refreshLanguages()
       await refreshCategories()
-      setActiveLanguageId(langs[0]?.id ?? null)
+      const nextLanguageId = langs[0]?.id ?? null
+      setActiveLanguageId(nextLanguageId)
+
+      // Use nextLanguageId directly rather than refreshPhrases(), whose closure may still be
+      // bound to the previous activeLanguageId until React re-renders after setActiveLanguageId above.
+      setPhrases(nextLanguageId == null ? [] : await getPhraseList(nextLanguageId))
     },
     [refreshLanguages, refreshCategories],
   )
