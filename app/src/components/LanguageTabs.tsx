@@ -55,22 +55,19 @@ export function LanguageTabs({
                   <div key={lang.id} className="flex flex-col rounded-lg hover:bg-surfacehover">
                     <div className="flex items-center gap-1">
                       {confirmingRemoveId === lang.id ? (
-                        <div className="flex flex-1 items-center justify-between gap-2 px-2 py-1.5">
-                          <span className="text-xs text-ink">Remove {lang.name}?</span>
-                          <div className="flex gap-1 shrink-0">
-                            <button
-                              onClick={() => {
-                                onRemoveLanguage(lang.id)
-                                setConfirmingRemoveId(null)
-                              }}
-                              className="rounded-full px-2.5 py-1 text-xs font-medium bg-red-600 text-white"
-                            >
-                              Remove
-                            </button>
-                            <button onClick={() => setConfirmingRemoveId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
-                              Cancel
-                            </button>
-                          </div>
+                        <div className="flex flex-1 items-center justify-end gap-1 px-2 py-1.5">
+                          <button
+                            onClick={() => {
+                              onRemoveLanguage(lang.id)
+                              setConfirmingRemoveId(null)
+                            }}
+                            className="rounded-full px-2.5 py-1 text-xs font-medium bg-red-600 text-white"
+                          >
+                            Remove
+                          </button>
+                          <button onClick={() => setConfirmingRemoveId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
+                            Cancel
+                          </button>
                         </div>
                       ) : (
                         <>
