@@ -73,10 +73,10 @@ function Shell() {
       style={{ '--accent': accent, paddingTop: 'var(--safe-area-inset-top, 0px)' } as React.CSSProperties}
     >
       <header className="flex items-center justify-between px-4 py-2">
-        <div className="flex items-center gap-2 rounded-full border-2 px-3 py-1 shadow-sm" style={{ borderColor: 'var(--accent)' }}>
+        <div className="flex items-center gap-2">
           <Logo size={32} className="text-fabpink shrink-0" />
           <h1 className="text-xl font-black tracking-tight text-ink">
-            Travel <span style={{ color: 'var(--accent)' }}>Chatter</span>
+            Travel <span className="text-fabpink">Chatter</span>
           </h1>
         </div>
         <div className="flex items-center gap-1">
