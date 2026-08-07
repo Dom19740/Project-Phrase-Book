@@ -29,12 +29,12 @@ export function CategoryFilterPopout({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-fabpink px-3 py-1.5 text-xs font-medium text-fabpink"
+        className="flex items-center gap-1.5 rounded-full border border-fabpink px-3 py-1.5 text-xs font-medium text-white"
       >
-        <ListFilter size={14} strokeWidth={2} />
+        <ListFilter size={14} strokeWidth={2} className="text-fabpink" />
         Categories
         {favoritesOnly && (
-          <Star size={12} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
+          <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-hidden="true" />
         )}
         {hiddenCount > 0 && (
           <span className="rounded-full bg-fabpink text-white text-[10px] leading-none px-1.5 py-0.5">{hiddenCount} hidden</span>
@@ -50,7 +50,7 @@ export function CategoryFilterPopout({
                 type="checkbox"
                 checked={favoritesOnly}
                 onChange={(e) => onToggleFavoritesOnly(e.target.checked)}
-                className="size-4 accent-[var(--accent)]"
+                className="size-4 accent-muted"
               />
               Favourites only
             </label>
@@ -59,7 +59,7 @@ export function CategoryFilterPopout({
                 type="checkbox"
                 checked={groupByCategoryOn}
                 onChange={(e) => onToggleGroupByCategory(e.target.checked)}
-                className="size-4 accent-[var(--accent)]"
+                className="size-4 accent-muted"
               />
               Group by category
             </label>
@@ -71,7 +71,7 @@ export function CategoryFilterPopout({
                     type="checkbox"
                     checked={!hiddenCategories.has(name)}
                     onChange={(e) => onToggleCategoryVisible(name, e.target.checked)}
-                    className="size-4 accent-[var(--accent)]"
+                    className="size-4 accent-muted"
                   />
                   {name}
                 </label>

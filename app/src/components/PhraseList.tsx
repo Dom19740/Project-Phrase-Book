@@ -263,20 +263,20 @@ export function PhraseList({
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-fabpink"
+            className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-white"
             title="Cycle: Unlearned → Learned → All"
           >
-            <Check size={13} strokeWidth={2} />
+            <Check size={13} strokeWidth={2} className="text-fabpink" />
             {LEARNED_FILTER_LABEL[learnedFilter]}
           </button>
 
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
             className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors ${
-              selectionMode ? 'bg-fabpink text-white' : 'border border-fabpink text-fabpink'
+              selectionMode ? 'bg-fabpink text-white' : 'border border-fabpink text-white'
             }`}
           >
-            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
+            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
             {selectionMode ? 'Cancel' : 'Select'}
           </button>
         </div>
@@ -291,7 +291,7 @@ export function PhraseList({
                 key={b.label}
                 onClick={() => jumpTo(b.label)}
                 disabled={!hasMatch}
-                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-fabpink enabled:hover:text-fabpink disabled:opacity-30 transition-colors"
+                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-white enabled:hover:border-fabpink enabled:hover:text-fabpink disabled:opacity-30 transition-colors"
               >
                 {b.label}
               </button>

@@ -80,8 +80,7 @@ export function PhraseRow({
           speak(phrase.text, languageCode)
         }}
         disabled={!phrase.text}
-        className="shrink-0 rounded-full p-1.5 hover:bg-surfacehover disabled:opacity-25 disabled:text-muted transition-colors"
-        style={phrase.text ? { color: accent } : undefined}
+        className="shrink-0 rounded-full p-1.5 text-muted hover:bg-surfacehover disabled:opacity-25 transition-colors"
         aria-label="Speak phrase"
         title="Speak"
       >
