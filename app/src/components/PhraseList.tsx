@@ -263,7 +263,7 @@ export function PhraseList({
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full border border-[var(--accent)] px-2.5 py-1.5 text-xs font-medium text-[var(--accent)]"
+            className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-fabpink"
             title="Cycle: Unlearned → Learned → All"
           >
             <Check size={13} strokeWidth={2} />
@@ -272,12 +272,9 @@ export function PhraseList({
 
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className="flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors"
-            style={
-              selectionMode
-                ? { backgroundColor: 'var(--accent)', color: 'white' }
-                : { borderWidth: 1, borderColor: 'var(--accent)', color: 'var(--accent)' }
-            }
+            className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors ${
+              selectionMode ? 'bg-fabpink text-white' : 'border border-fabpink text-fabpink'
+            }`}
           >
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
             {selectionMode ? 'Cancel' : 'Select'}
@@ -285,7 +282,7 @@ export function PhraseList({
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
-          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" borderColor="accent" />
+          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" borderColor="pink" />
 
           {ALPHA_BUCKETS.map((b) => {
             const hasMatch = bucketTargets.has(b.label)
@@ -294,7 +291,7 @@ export function PhraseList({
                 key={b.label}
                 onClick={() => jumpTo(b.label)}
                 disabled={!hasMatch}
-                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-[var(--accent)] enabled:hover:text-[var(--accent)] disabled:opacity-30 transition-colors"
+                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-fabpink enabled:hover:text-fabpink disabled:opacity-30 transition-colors"
               >
                 {b.label}
               </button>

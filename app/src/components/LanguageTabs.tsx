@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
 import type { Language } from '../db/types'
-import { nextAvailableColor } from '../lib/colorPalette'
+import { DEFAULT_LANGUAGE_COLOR, nextAvailableColor } from '../lib/colorPalette'
 import { AddLanguageModal } from './AddLanguageModal'
 import { ColorSwatchBar } from './ColorSwatchBar'
 
@@ -32,17 +32,20 @@ export function LanguageTabs({
   const [editingColorId, setEditingColorId] = useState<number | null>(null)
 
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
+  const accent = activeLanguage?.color ?? DEFAULT_LANGUAGE_COLOR
 
   return (
     <div className="px-4 py-2 border-b border-hairline flex items-center gap-2">
       <div className="relative flex-1">
         <button
           onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 py-2 text-sm font-semibold text-fabpink shadow-sm"
+          className="w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 py-2 text-sm font-semibold shadow-sm"
         >
-          <span className="size-2.5 rounded-full shrink-0 bg-fabpink" />
-          <span className="flex-1 text-left truncate">{activeLanguage?.name ?? 'Select a language'}</span>
-          <ChevronDown size={16} strokeWidth={2.5} />
+          <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: accent }} />
+          <span className="flex-1 text-left truncate" style={{ color: accent }}>
+            {activeLanguage?.name ?? 'Select a language'}
+          </span>
+          <ChevronDown size={16} strokeWidth={2.5} className="text-fabpink" />
         </button>
 
         {open && (

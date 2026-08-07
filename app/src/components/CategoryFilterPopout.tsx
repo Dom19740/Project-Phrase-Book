@@ -29,7 +29,7 @@ export function CategoryFilterPopout({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--accent)]"
+        className="flex items-center gap-1.5 rounded-full border border-fabpink px-3 py-1.5 text-xs font-medium text-fabpink"
       >
         <ListFilter size={14} strokeWidth={2} />
         Categories
@@ -37,7 +37,7 @@ export function CategoryFilterPopout({
           <Star size={12} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
         )}
         {hiddenCount > 0 && (
-          <span className="rounded-full bg-[var(--accent)] text-white text-[10px] leading-none px-1.5 py-0.5">{hiddenCount} hidden</span>
+          <span className="rounded-full bg-fabpink text-white text-[10px] leading-none px-1.5 py-0.5">{hiddenCount} hidden</span>
         )}
       </button>
 
