@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import type { Category } from '../db/types'
 
 interface Props {
@@ -62,9 +63,11 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                     <button
                       onClick={() => handleDelete(c.id)}
                       disabled={busy}
-                      className="rounded-full px-2.5 py-1 text-xs font-medium bg-red-600 text-white disabled:opacity-40"
+                      aria-label="Delete"
+                      title="Delete"
+                      className="rounded-full p-1.5 bg-red-600 text-white disabled:opacity-40"
                     >
-                      Delete
+                      <Trash2 size={13} strokeWidth={2} />
                     </button>
                     <button onClick={() => setConfirmingDeleteId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
                       Cancel
@@ -94,8 +97,13 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                     <button onClick={() => startEdit(c)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted hover:text-ink">
                       Rename
                     </button>
-                    <button onClick={() => setConfirmingDeleteId(c.id)} className="rounded-full px-2.5 py-1 text-xs font-medium text-red-400">
-                      Delete
+                    <button
+                      onClick={() => setConfirmingDeleteId(c.id)}
+                      aria-label="Delete"
+                      title="Delete"
+                      className="rounded-full p-1.5 text-red-400 hover:bg-red-950/40"
+                    >
+                      <Trash2 size={13} strokeWidth={2} />
                     </button>
                   </div>
                 </div>

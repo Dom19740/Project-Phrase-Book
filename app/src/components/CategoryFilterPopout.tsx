@@ -50,7 +50,7 @@ export function CategoryFilterPopout({
                 type="checkbox"
                 checked={favoritesOnly}
                 onChange={(e) => onToggleFavoritesOnly(e.target.checked)}
-                className="size-4 accent-muted"
+                className="size-4 accent-fabpink"
               />
               Favourites only
             </label>
@@ -59,7 +59,7 @@ export function CategoryFilterPopout({
                 type="checkbox"
                 checked={groupByCategoryOn}
                 onChange={(e) => onToggleGroupByCategory(e.target.checked)}
-                className="size-4 accent-muted"
+                className="size-4 accent-fabpink"
               />
               Group by category
             </label>
@@ -71,7 +71,7 @@ export function CategoryFilterPopout({
                     type="checkbox"
                     checked={!hiddenCategories.has(name)}
                     onChange={(e) => onToggleCategoryVisible(name, e.target.checked)}
-                    className="size-4 accent-muted"
+                    className="size-4 accent-fabpink"
                   />
                   {name}
                 </label>

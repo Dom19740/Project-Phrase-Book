@@ -279,7 +279,7 @@ export function PhraseList({
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
-          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" borderColor="pink" />
+          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" />
 
           {ALPHA_BUCKETS.map((b) => {
             const hasMatch = bucketTargets.has(b.label)
@@ -297,7 +297,7 @@ export function PhraseList({
         </div>
       </div>
 
-      {selectionMode && selectedIds.size > 0 && (
+      {selectionMode && (
         <BulkActionBar
           selectedCount={selectedIds.size}
           languageName={languageName}

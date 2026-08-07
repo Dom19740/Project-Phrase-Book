@@ -12,6 +12,11 @@ import type { PhraseListItem } from './db/types'
 
 type Theme = 'dark' | 'light'
 
+/** Used only the very first time the app opens, before the user has ever picked a theme themselves. */
+function getSystemTheme(): Theme {
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 function Shell() {
   const {
     loading,
@@ -46,7 +51,7 @@ function Shell() {
   const [showBackup, setShowBackup] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
-  const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', 'dark')
+  const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', getSystemTheme())
   const [search, setSearch] = useState('')
 
   useEffect(() => {

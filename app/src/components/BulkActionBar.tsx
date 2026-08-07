@@ -121,31 +121,36 @@ export function BulkActionBar({
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             onClick={() => onMarkLearned(true)}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+            disabled={selectedCount === 0}
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
           >
             <Check size={13} strokeWidth={2} />
             Learned
           </button>
           <button
             onClick={() => onMarkFavorite(true)}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+            disabled={selectedCount === 0}
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
           >
             <Star size={13} strokeWidth={2} />
             Favourite
           </button>
           <button
             onClick={() => setPanel(panel === 'category' ? null : 'category')}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors"
+            disabled={selectedCount === 0}
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
           >
             <Tag size={13} strokeWidth={2} />
             Category
           </button>
           <button
             onClick={() => setPanel(panel === 'delete' ? null : 'delete')}
-            className="flex items-center gap-1 rounded-full border border-red-800 px-2.5 py-1.5 text-xs font-medium text-red-400 hover:bg-red-950/40 transition-colors"
+            disabled={selectedCount === 0}
+            aria-label="Delete"
+            title="Delete"
+            className="flex items-center rounded-full border border-red-800 p-1.5 text-red-400 hover:bg-red-950/40 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
           >
             <Trash2 size={13} strokeWidth={2} />
-            Delete
           </button>
         </div>
       </div>

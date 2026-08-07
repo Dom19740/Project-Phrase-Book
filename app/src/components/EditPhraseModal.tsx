@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Trash2 } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { translateAlternatives } from '../lib/translateApi'
 import { PopoutSelect } from './PopoutSelect'
@@ -181,9 +181,11 @@ export function EditPhraseModal({
             <div className="flex items-center justify-between gap-2 mt-1">
               <button
                 onClick={() => setConfirmingDelete(true)}
-                className="rounded-full border border-red-800 px-3 py-2 text-sm font-medium text-red-400"
+                aria-label="Delete phrase"
+                title="Delete phrase"
+                className="rounded-full border border-red-800 p-2 text-red-400"
               >
-                Delete...
+                <Trash2 size={16} strokeWidth={2} />
               </button>
               <div className="flex gap-2">
                 <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink">
