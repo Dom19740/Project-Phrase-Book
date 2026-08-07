@@ -38,8 +38,9 @@ function Shell() {
     createLanguage,
     removeLanguage,
     updateLanguageColor,
-    backUpNow,
-    restoreBackup,
+    backUpToFile,
+    pickBackupFile,
+    applyBackupSnapshot,
     exportLanguageCsv,
   } = usePhraseBook()
   const [showAddPhrase, setShowAddPhrase] = useState(false)
@@ -176,8 +177,9 @@ function Shell() {
         <BackupModal
           languages={languages}
           onClose={() => setShowBackup(false)}
-          onBackUpNow={backUpNow}
-          onRestoreBackup={restoreBackup}
+          onBackUpNow={backUpToFile}
+          onPickBackup={pickBackupFile}
+          onApplyBackup={applyBackupSnapshot}
           onExportCsv={exportLanguageCsv}
         />
       )}

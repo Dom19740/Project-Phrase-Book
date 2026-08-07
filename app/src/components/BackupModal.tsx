@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getLastBackupAt } from '../lib/autoBackup'
-import { getBackupLocation, requestDocumentsPermission, setBackupLocation, type BackupLocation } from '../lib/backupTarget'
 import { exportFile } from '../lib/exportFile'
+import type { BackupSnapshot } from '../db/backup'
 import type { Language } from '../db/types'
 import { PopoutSelect } from './PopoutSelect'
 
@@ -9,21 +9,16 @@ interface Props {
   languages: Language[]
   onClose: () => void
   onBackUpNow: () => Promise<void>
-  onRestoreBackup: () => Promise<void>
+  onPickBackup: () => Promise<{ name: string; snapshot: BackupSnapshot }>
+  onApplyBackup: (snapshot: BackupSnapshot) => Promise<void>
   onExportCsv: (languageId: number) => Promise<string>
 }
 
-const LOCATION_OPTIONS: { value: BackupLocation; label: string }[] = [
-  { value: 'app', label: 'This app (default)' },
-  { value: 'documents', label: 'Documents folder' },
-]
-
-export function BackupModal({ languages, onClose, onBackUpNow, onRestoreBackup, onExportCsv }: Props) {
+export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onApplyBackup, onExportCsv }: Props) {
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [confirmingRestore, setConfirmingRestore] = useState(false)
+  const [pendingRestore, setPendingRestore] = useState<{ name: string; snapshot: BackupSnapshot } | null>(null)
   const [csvLanguageId, setCsvLanguageId] = useState<number | ''>(languages[0]?.id ?? '')
-  const [backupLocation, setBackupLocationState] = useState<BackupLocation>(getBackupLocation())
 
   async function handleBackUpNow() {
     setBusy(true)
@@ -35,19 +30,6 @@ export function BackupModal({ languages, onClose, onBackUpNow, onRestoreBackup, 
       setStatus(err instanceof Error ? err.message : 'Backup failed.')
     }
     setBusy(false)
-  }
-
-  async function handleLocationChange(location: BackupLocation) {
-    setStatus(null)
-    if (location === 'documents') {
-      const granted = await requestDocumentsPermission()
-      if (!granted) {
-        setStatus('Permission denied — staying on "This app".')
-        return
-      }
-    }
-    setBackupLocation(location)
-    setBackupLocationState(location)
   }
 
   async function handleExportCsv() {
@@ -64,17 +46,29 @@ export function BackupModal({ languages, onClose, onBackUpNow, onRestoreBackup, 
     setBusy(false)
   }
 
-  async function confirmRestore() {
+  async function handleRestoreClick() {
     setBusy(true)
     setStatus(null)
     try {
-      await onRestoreBackup()
+      setPendingRestore(await onPickBackup())
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not read that file.')
+    }
+    setBusy(false)
+  }
+
+  async function confirmRestore() {
+    if (!pendingRestore) return
+    setBusy(true)
+    setStatus(null)
+    try {
+      await onApplyBackup(pendingRestore.snapshot)
       setStatus('Restored from backup.')
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Restore failed.')
     }
     setBusy(false)
-    setConfirmingRestore(false)
+    setPendingRestore(null)
   }
 
   const lastBackupAt = getLastBackupAt()
@@ -87,13 +81,13 @@ export function BackupModal({ languages, onClose, onBackUpNow, onRestoreBackup, 
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}
         </p>
 
-        {confirmingRestore ? (
+        {pendingRestore ? (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-ink">
-              This replaces <strong>everything</strong> currently in the app with the last backup. This can't be undone.
+              Replace <strong>everything</strong> currently in the app with <strong>{pendingRestore.name}</strong>? This can't be undone.
             </p>
             <div className="flex gap-2">
-              <button onClick={() => setConfirmingRestore(false)} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted">
+              <button onClick={() => setPendingRestore(null)} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted">
                 Cancel
               </button>
               <button
@@ -115,30 +109,12 @@ export function BackupModal({ languages, onClose, onBackUpNow, onRestoreBackup, 
               Back up now
             </button>
             <button
-              onClick={() => setConfirmingRestore(true)}
+              onClick={handleRestoreClick}
               disabled={busy}
               className="rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40"
             >
               Restore backup
             </button>
-
-            <div className="mt-2 border-t border-hairline pt-3">
-              <label className="block text-sm font-medium mb-1 text-ink">Backup location</label>
-              <div className="flex gap-2">
-                {LOCATION_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => handleLocationChange(opt.value)}
-                    disabled={busy}
-                    className={`flex-1 rounded-full border px-3 py-2 text-xs font-medium transition-colors disabled:opacity-40 ${
-                      backupLocation === opt.value ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-hairline text-ink'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
 
             {languages.length > 0 && (
               <div className="mt-2 border-t border-hairline pt-3">
@@ -166,7 +142,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onRestoreBackup, 
 
         {status && <p className="mt-3 text-sm text-muted">{status}</p>}
 
-        {!confirmingRestore && (
+        {!pendingRestore && (
           <div className="flex justify-end mt-4">
             <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
               Close
