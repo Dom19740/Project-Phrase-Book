@@ -10,7 +10,6 @@ import { PopoutSelect } from './PopoutSelect'
 
 interface Props {
   phrases: PhraseListItem[]
-  accent: string
   languageCode: string
   languageName: string
   categories: Category[]
@@ -120,7 +119,6 @@ function groupByCategory(items: PhraseListItem[], mode: SortMode): Group[] {
 
 export function PhraseList({
   phrases,
-  accent,
   languageCode,
   languageName,
   categories,
@@ -234,7 +232,6 @@ export function PhraseList({
       <PhraseRow
         key={item.translationId}
         phrase={item}
-        accent={accent}
         languageCode={languageCode}
         onToggleLearned={onToggleLearned}
         onToggleFavorite={onToggleFavorite}

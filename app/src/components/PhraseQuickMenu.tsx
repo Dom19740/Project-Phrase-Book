@@ -1,7 +1,6 @@
 import { Check, Star } from 'lucide-react'
 
 interface Props {
-  accent: string
   learned: boolean
   favorite: boolean
   onToggleLearned: () => void
@@ -9,7 +8,7 @@ interface Props {
   onClose: () => void
 }
 
-export function PhraseQuickMenu({ accent, learned, favorite, onToggleLearned, onToggleFavorite, onClose }: Props) {
+export function PhraseQuickMenu({ learned, favorite, onToggleLearned, onToggleFavorite, onClose }: Props) {
   return (
     <>
       <button
@@ -33,7 +32,7 @@ export function PhraseQuickMenu({ accent, learned, favorite, onToggleLearned, on
           }}
           className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover"
         >
-          <Check size={16} strokeWidth={2.5} className={learned ? '' : 'text-muted'} style={learned ? { color: accent } : undefined} />
+          <Check size={16} strokeWidth={2.5} className={learned ? 'text-fabpink' : 'text-muted'} />
           Learnt
         </button>
         <button
@@ -44,13 +43,7 @@ export function PhraseQuickMenu({ accent, learned, favorite, onToggleLearned, on
           }}
           className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover"
         >
-          <Star
-            size={16}
-            strokeWidth={2.5}
-            fill={favorite ? accent : 'none'}
-            className={favorite ? '' : 'text-muted'}
-            style={favorite ? { color: accent } : undefined}
-          />
+          <Star size={16} strokeWidth={2.5} fill={favorite ? 'currentColor' : 'none'} className={favorite ? 'text-fabpink' : 'text-muted'} />
           Favourite
         </button>
       </div>

@@ -21,7 +21,6 @@ import {
   reorderTranslations,
   setFavorite,
   setLearned,
-  updateLanguageColor as updateLanguageColorQuery,
   updatePhrase,
 } from '../db/queries'
 import { backfillSeedCategories, seedIfEmpty } from '../db/seed'
@@ -58,9 +57,8 @@ interface PhraseBookContextValue {
   createCategory: (name: string) => Promise<void>
   renameCategory: (categoryId: number, newName: string) => Promise<void>
   deleteCategory: (categoryId: number) => Promise<void>
-  createLanguage: (name: string, code: string, color: string) => Promise<void>
+  createLanguage: (name: string, code: string) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
-  updateLanguageColor: (languageId: number, color: string) => Promise<void>
   backUpToFile: () => Promise<void>
   pickBackupFile: () => Promise<{ name: string; snapshot: BackupSnapshot }>
   applyBackupSnapshot: (snapshot: BackupSnapshot) => Promise<void>
@@ -302,8 +300,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const createLanguage = useCallback(
-    async (name: string, code: string, color: string) => {
-      const lang = await addLanguage(name, code, color)
+    async (name: string, code: string) => {
+      const lang = await addLanguage(name, code)
       await refreshLanguages()
       setActiveLanguageId(lang.id)
 
@@ -356,14 +354,6 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     [refreshLanguages, activeLanguageId],
   )
 
-  const updateLanguageColor = useCallback(
-    async (languageId: number, color: string) => {
-      await updateLanguageColorQuery(languageId, color)
-      await refreshLanguages()
-    },
-    [refreshLanguages],
-  )
-
   const value = useMemo<PhraseBookContextValue>(
     () => ({
       loading,
@@ -391,7 +381,6 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       createLanguage,
       removeLanguage,
-      updateLanguageColor,
       backUpToFile,
       pickBackupFile,
       applyBackupSnapshot,
@@ -426,7 +415,6 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       createLanguage,
       removeLanguage,
-      updateLanguageColor,
     ],
   )
 

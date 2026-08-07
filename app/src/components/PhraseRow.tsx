@@ -6,7 +6,6 @@ import { PhraseQuickMenu } from './PhraseQuickMenu'
 
 interface Props {
   phrase: PhraseListItem
-  accent: string
   languageCode: string
   onToggleLearned: (id: number, learned: boolean) => void
   onToggleFavorite: (id: number, favorite: boolean) => void
@@ -20,7 +19,6 @@ const LONG_PRESS_MS = 500
 
 export function PhraseRow({
   phrase,
-  accent,
   languageCode,
   onToggleLearned,
   onToggleFavorite,
@@ -108,12 +106,11 @@ export function PhraseRow({
         </label>
       ) : (
         <div className="shrink-0 flex items-center justify-center gap-0.5 size-9">
-          {phrase.favorite && <Star size={16} strokeWidth={2.5} fill={accent} style={{ color: accent }} aria-label="Favourite" />}
+          {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favourite" />}
           <Check
             size={18}
             strokeWidth={2.5}
-            className={phrase.learned ? '' : 'text-muted'}
-            style={phrase.learned ? { color: accent } : undefined}
+            className={phrase.learned ? 'text-fabpink' : 'text-muted'}
             aria-label={phrase.learned ? 'Learned' : 'Not learned'}
           />
         </div>
@@ -121,7 +118,6 @@ export function PhraseRow({
 
       {menuOpen && (
         <PhraseQuickMenu
-          accent={accent}
           learned={phrase.learned}
           favorite={phrase.favorite}
           onToggleLearned={() => onToggleLearned(phrase.translationId, !phrase.learned)}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { Category, Language } from '../db/types'
+import { getLanguageFlag } from '../lib/languageFlags'
 import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
@@ -115,9 +116,9 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
                         type="checkbox"
                         checked={selectedLanguageIds.has(lang.id)}
                         onChange={() => toggleLanguage(lang.id)}
-                        className="size-4"
-                        style={{ accentColor: lang.color }}
+                        className="size-4 accent-fabpink"
                       />
+                      <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
                       {lang.name}
                     </label>
                   ))}

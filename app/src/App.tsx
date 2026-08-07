@@ -7,7 +7,6 @@ import { LanguageTabs } from './components/LanguageTabs'
 import { Logo } from './components/Logo'
 import { PhraseList } from './components/PhraseList'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
-import { DEFAULT_LANGUAGE_COLOR } from './lib/colorPalette'
 import { usePersistedState } from './lib/usePersistedState'
 import type { PhraseListItem } from './db/types'
 
@@ -38,7 +37,6 @@ function Shell() {
     deleteCategory,
     createLanguage,
     removeLanguage,
-    updateLanguageColor,
     backUpToFile,
     pickBackupFile,
     applyBackupSnapshot,
@@ -64,14 +62,13 @@ function Shell() {
   }
 
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
-  const accent = activeLanguage?.color ?? DEFAULT_LANGUAGE_COLOR
   const activeLanguageCode = activeLanguage?.code ?? 'en'
   const activeLanguageName = activeLanguage?.name ?? ''
 
   return (
     <div
       className="flex h-full flex-col bg-appbg text-ink"
-      style={{ '--accent': accent, paddingTop: 'var(--safe-area-inset-top, 0px)' } as React.CSSProperties}
+      style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
       <header className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
@@ -106,7 +103,6 @@ function Shell() {
         onSelect={setActiveLanguageId}
         onAddLanguage={createLanguage}
         onRemoveLanguage={removeLanguage}
-        onUpdateColor={updateLanguageColor}
         search={search}
         onSearchChange={setSearch}
       />
@@ -117,7 +113,6 @@ function Shell() {
         ) : (
           <PhraseList
             phrases={phrases}
-            accent={accent}
             languageCode={activeLanguageCode}
             languageName={activeLanguageName}
             categories={categories}

@@ -1,20 +1,18 @@
 import { useMemo, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import type { Language } from '../db/types'
+import { getLanguageFlag } from '../lib/languageFlags'
 import { LANGUAGE_OPTIONS, type LanguageOption } from '../lib/languageOptions'
-import { ColorSwatchBar } from './ColorSwatchBar'
 
 interface Props {
   languages: Language[]
-  defaultColor: string
   onClose: () => void
-  onSubmit: (name: string, code: string, color: string) => Promise<void>
+  onSubmit: (name: string, code: string) => Promise<void>
 }
 
-export function AddLanguageModal({ languages, defaultColor, onClose, onSubmit }: Props) {
+export function AddLanguageModal({ languages, onClose, onSubmit }: Props) {
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<LanguageOption | null>(null)
-  const [color, setColor] = useState(defaultColor)
   const [saving, setSaving] = useState(false)
   const [manual, setManual] = useState(false)
   const [manualName, setManualName] = useState('')
@@ -31,7 +29,7 @@ export function AddLanguageModal({ languages, defaultColor, onClose, onSubmit }:
   async function handleAdd() {
     if (!selected) return
     setSaving(true)
-    await onSubmit(selected.name, selected.code, color)
+    await onSubmit(selected.name, selected.code)
     setSaving(false)
     onClose()
   }
@@ -46,15 +44,12 @@ export function AddLanguageModal({ languages, defaultColor, onClose, onSubmit }:
       <div className="w-full sm:max-w-sm rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         {selected ? (
           <>
-            <h2 className="text-lg font-semibold mb-1 text-ink">Add {selected.name}</h2>
+            <h2 className="text-lg font-semibold mb-1 text-ink">
+              <span aria-hidden="true">{getLanguageFlag(selected.code)}</span> Add {selected.name}
+            </h2>
             <p className="text-xs text-muted mb-4">
               All existing phrases get translated into this language automatically — that happens in the background after you add it.
             </p>
-
-            <label className="block text-sm font-medium mb-2 text-ink">Accent color</label>
-            <div className="mb-4">
-              <ColorSwatchBar value={color} onChange={setColor} />
-            </div>
 
             <div className="flex justify-end gap-2">
               <button
@@ -67,8 +62,7 @@ export function AddLanguageModal({ languages, defaultColor, onClose, onSubmit }:
               <button
                 onClick={handleAdd}
                 disabled={saving}
-                className="rounded-full px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
-                style={{ backgroundColor: color }}
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
               >
                 {saving ? 'Adding...' : 'Add language'}
               </button>
@@ -143,7 +137,10 @@ export function AddLanguageModal({ languages, defaultColor, onClose, onSubmit }:
                     onClick={() => setSelected(lang)}
                     className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover disabled:opacity-40 disabled:hover:bg-transparent"
                   >
-                    <span>{lang.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                      {lang.name}
+                    </span>
                     {added && <span className="text-xs text-muted">Added</span>}
                   </button>
                 )

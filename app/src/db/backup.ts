@@ -1,5 +1,4 @@
 import { getDb, persist } from './client'
-import { DEFAULT_LANGUAGE_COLOR } from '../lib/colorPalette'
 
 export const BACKUP_VERSION = 1
 
@@ -19,7 +18,7 @@ interface BackupPhrase {
 export interface BackupSnapshot {
   version: number
   exportedAt: string
-  languages: { name: string; code: string; color: string }[]
+  languages: { name: string; code: string }[]
   phrases: BackupPhrase[]
 }
 
@@ -27,8 +26,8 @@ export interface BackupSnapshot {
 export async function exportSnapshot(): Promise<BackupSnapshot> {
   const db = await getDb()
 
-  const languagesRes = await db.query('SELECT id, name, code, color FROM languages ORDER BY sort_order, id;')
-  const languages = (languagesRes.values ?? []) as { id: number; name: string; code: string; color: string }[]
+  const languagesRes = await db.query('SELECT id, name, code FROM languages ORDER BY sort_order, id;')
+  const languages = (languagesRes.values ?? []) as { id: number; name: string; code: string }[]
   const languageCodeById = new Map(languages.map((l) => [l.id, l.code]))
 
   const conceptsRes = await db.query(
@@ -66,7 +65,7 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
   return {
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
-    languages: languages.map((l) => ({ name: l.name, code: l.code, color: l.color })),
+    languages: languages.map((l) => ({ name: l.name, code: l.code })),
     phrases,
   }
 }
@@ -79,12 +78,7 @@ export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
 
   const languageIdByCode = new Map<string, number>()
   for (const [i, lang] of snapshot.languages.entries()) {
-    const res = await db.run('INSERT INTO languages (name, code, color, sort_order) VALUES (?, ?, ?, ?);', [
-      lang.name,
-      lang.code,
-      lang.color ?? DEFAULT_LANGUAGE_COLOR,
-      i,
-    ])
+    const res = await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [lang.name, lang.code, i])
     languageIdByCode.set(lang.code, res.changes?.lastId ?? 0)
   }
 
