@@ -74,7 +74,7 @@ function Shell() {
     >
       <header className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2 rounded-full border-2 px-3 py-1 shadow-sm" style={{ borderColor: 'var(--accent)' }}>
-          <Logo size={32} className="text-ink shrink-0" />
+          <Logo size={32} className="text-fabpink shrink-0" />
           <h1 className="text-xl font-black tracking-tight text-ink">
             Travel <span style={{ color: 'var(--accent)' }}>Chatter</span>
           </h1>
