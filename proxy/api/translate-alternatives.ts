@@ -1,6 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { translateAlternativesWithGemini } from '../lib/gemini.js'
-import { rateLimit } from '../lib/redis.js'
+import { applyCors } from '../lib/cors.js'
+import { getClientIp } from '../lib/clientIp.js'
+import { classifyGeminiError, guardRequest } from '../lib/guard.js'
+import { validateAlternativesBody } from '../lib/limits.js'
 
 interface RequestBody {
   english: string
@@ -9,9 +12,7 @@ interface RequestBody {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Device-Id')
+  applyCors(req, res)
   if (req.method === 'OPTIONS') return res.status(204).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
@@ -20,13 +21,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing X-Device-Id header' })
   }
 
-  const { success } = await rateLimit.limit(deviceId)
-  if (!success) return res.status(429).json({ error: 'Rate limit exceeded, try again later' })
+  const guardFailure = await guardRequest({ deviceId, ip: getClientIp(req) })
+  if (guardFailure) return res.status(guardFailure.status).json({ error: guardFailure.error })
 
   const body = req.body as RequestBody
-  if (!body?.english?.trim() || !body.targetLangCode) {
-    return res.status(400).json({ error: 'Missing english or targetLangCode' })
-  }
+  const validationError = validateAlternativesBody(body)
+  if (validationError) return res.status(400).json({ error: validationError })
 
   try {
     const alternatives = await translateAlternativesWithGemini(body.english, {
@@ -36,6 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ alternatives })
   } catch (err) {
     console.error('Alternatives translation failed:', err)
-    return res.status(502).json({ error: 'Translation service unavailable, try again shortly' })
+    const failure = classifyGeminiError(err)
+    return res.status(failure.status).json({ error: failure.error })
   }
 }
