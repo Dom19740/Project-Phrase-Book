@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
 import type { Category, Language } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { PopoutSelect } from './PopoutSelect'
@@ -19,7 +18,6 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
   const [newCategory, setNewCategory] = useState('')
   const [saving, setSaving] = useState(false)
   const [selectedLanguageIds, setSelectedLanguageIds] = useState<Set<number>>(() => new Set(languages.map((l) => l.id)))
-  const [languagesOpen, setLanguagesOpen] = useState(false)
 
   const canSubmit =
     english.trim().length > 0 && (categoryChoice !== NEW_CATEGORY || newCategory.trim().length > 0) && selectedLanguageIds.size > 0
@@ -32,13 +30,6 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
       return next
     })
   }
-
-  const allSelected = selectedLanguageIds.size === languages.length
-  const languagesLabel = allSelected
-    ? 'All languages'
-    : selectedLanguageIds.size === 0
-      ? 'Select at least one language'
-      : `${selectedLanguageIds.size} of ${languages.length} languages`
 
   async function handleSubmit() {
     if (!canSubmit) return
@@ -86,50 +77,50 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
           />
         )}
 
-        <label className="block text-sm font-medium mb-1 text-ink">Translate into</label>
-        <div className="relative mb-1">
-          <button
-            type="button"
-            onClick={() => setLanguagesOpen((v) => !v)}
-            className="flex w-full items-center gap-1.5 rounded-xl border border-hairline bg-surface px-3 py-2 text-sm text-ink"
-          >
-            <span className="flex-1 text-left truncate">{languagesLabel}</span>
-            <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-muted" />
-          </button>
-
-          {languagesOpen && (
-            <>
-              <button className="fixed inset-0 z-40 cursor-default" onClick={() => setLanguagesOpen(false)} aria-label="Close language selector" />
-              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface p-3 shadow-xl">
-                <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 mb-1 border-b border-hairline pb-2">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={(e) => setSelectedLanguageIds(e.target.checked ? new Set(languages.map((l) => l.id)) : new Set())}
-                    className="size-4 accent-current"
-                  />
-                  All languages
-                </label>
-                <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
-                  {languages.map((lang) => (
-                    <label key={lang.id} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover">
-                      <input
-                        type="checkbox"
-                        checked={selectedLanguageIds.has(lang.id)}
-                        onChange={() => toggleLanguage(lang.id)}
-                        className="size-4 accent-fabpink"
-                      />
-                      <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
-                      {lang.name}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-sm font-medium text-ink">Translate into</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedLanguageIds(new Set(languages.map((l) => l.id)))}
+              disabled={languages.length === 0}
+              className="text-xs text-fabpink disabled:opacity-40"
+            >
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedLanguageIds(new Set())}
+              disabled={languages.length === 0}
+              className="text-xs text-fabpink disabled:opacity-40"
+            >
+              None
+            </button>
+          </div>
         </div>
+
+        <div className="flex flex-col gap-0.5 max-h-56 overflow-y-auto mb-1 rounded-xl border border-hairline p-1.5">
+          {languages.length === 0 && <p className="text-sm text-muted text-center py-4">No languages yet.</p>}
+          {languages.map((lang) => (
+            <label
+              key={lang.id}
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-surfacehover cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={selectedLanguageIds.has(lang.id)}
+                onChange={() => toggleLanguage(lang.id)}
+                className="size-4 shrink-0 rounded accent-fabpink cursor-pointer"
+              />
+              <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+              {lang.name}
+            </label>
+          ))}
+        </div>
+
         <p className="text-xs text-muted mb-4">
-          Only the languages you pick get this phrase at all — leave one deselected and this phrase won't appear there.
+          {selectedLanguageIds.size} of {languages.length} languages selected. Only the ones you pick get this phrase at all — a deselected
+          language won't show it.
         </p>
 
         <div className="flex justify-end gap-2">

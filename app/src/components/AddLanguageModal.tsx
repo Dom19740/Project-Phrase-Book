@@ -120,7 +120,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                       disabled={!sourcePhrases || sourcePhrases.length === 0}
                       className="text-xs text-fabpink disabled:opacity-40"
                     >
-                      Select all
+                      All
                     </button>
                     <button
                       type="button"
@@ -128,7 +128,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                       disabled={!sourcePhrases || sourcePhrases.length === 0}
                       className="text-xs text-fabpink disabled:opacity-40"
                     >
-                      Select none
+                      None
                     </button>
                   </div>
                 </div>
