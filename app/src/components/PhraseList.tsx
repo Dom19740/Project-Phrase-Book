@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ArrowDownAZ, ArrowUpZA, Check, ChevronDown, ChevronRight, Languages, ListChecks, X } from 'lucide-react'
+import { ArrowDown, ArrowDownAZ, ArrowUp, ArrowUpZA, Check, ChevronDown, ChevronRight, Clock, Languages, ListChecks, X } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
@@ -34,7 +34,7 @@ interface Group {
   items: PhraseListItem[]
 }
 
-type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc'
+type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc' | 'date-desc' | 'date-asc'
 
 const SORT_ICON_BOX = 'inline-flex w-4 h-4 shrink-0 items-center justify-center'
 
@@ -43,6 +43,8 @@ function SortIcon({ mode }: { mode: SortMode }) {
     <span className={`${SORT_ICON_BOX} shrink-0`}>
       {mode.startsWith('english') ? (
         <span className="text-xs font-semibold leading-none">EN</span>
+      ) : mode.startsWith('date') ? (
+        <Clock size={14} strokeWidth={2} />
       ) : (
         <Languages size={14} strokeWidth={2} />
       )}
@@ -51,9 +53,20 @@ function SortIcon({ mode }: { mode: SortMode }) {
 }
 
 function SortDirectionIcon({ mode }: { mode: SortMode }) {
+  const asc = mode.endsWith('asc')
   return (
     <span className={SORT_ICON_BOX}>
-      {mode.endsWith('asc') ? <ArrowDownAZ size={14} strokeWidth={2} /> : <ArrowUpZA size={14} strokeWidth={2} />}
+      {mode.startsWith('date') ? (
+        asc ? (
+          <ArrowUp size={14} strokeWidth={2} />
+        ) : (
+          <ArrowDown size={14} strokeWidth={2} />
+        )
+      ) : asc ? (
+        <ArrowDownAZ size={14} strokeWidth={2} />
+      ) : (
+        <ArrowUpZA size={14} strokeWidth={2} />
+      )}
     </span>
   )
 }
@@ -63,6 +76,8 @@ const SORT_OPTION_LABELS: { value: SortMode; label: string }[] = [
   { value: 'english-desc', label: 'English Z>A' },
   { value: 'translation-asc', label: 'Translation A>Z' },
   { value: 'translation-desc', label: 'Translation Z>A' },
+  { value: 'date-desc', label: 'Newest added' },
+  { value: 'date-asc', label: 'Oldest added' },
 ]
 
 const SORT_OPTIONS: { value: SortMode; label: string; shortLabel: ReactNode }[] = SORT_OPTION_LABELS.map((opt) => ({
@@ -85,7 +100,7 @@ const ALPHA_BUCKETS: { label: string; letters: string }[] = [
 ]
 
 function sortKey(item: PhraseListItem, mode: SortMode): string {
-  return mode.startsWith('english') ? item.english : item.text
+  return mode.startsWith('translation') ? item.text : item.english
 }
 
 function bucketFor(value: string): string {
@@ -97,6 +112,9 @@ function sortItems(items: PhraseListItem[], mode: SortMode): PhraseListItem[] {
   const dir = mode.endsWith('asc') ? 1 : -1
   return [...items].sort((a, b) => {
     if (a.favorite !== b.favorite) return a.favorite ? -1 : 1
+    // Phrase concept ids are assigned in insertion order, so they double as a "date added" sort
+    // without needing a dedicated timestamp column.
+    if (mode.startsWith('date')) return dir * (a.phraseConceptId - b.phraseConceptId)
     return dir * sortKey(a, mode).localeCompare(sortKey(b, mode))
   })
 }

@@ -186,9 +186,9 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Every tracked language still gets a row here (blank for any not in `translations`) —
-      // languageIds only controls which ones get an automatic translation.
-      await addPhraseConcept({ english, categoryName: finalCategory, translations })
+      // Only the chosen languages get a row at all (blank for any that didn't get an automatic
+      // translation) — a language not selected here simply won't have this phrase.
+      await addPhraseConcept({ english, categoryName: finalCategory, translations, languageIds })
       await refreshCategories()
       await refreshPhrases()
     },

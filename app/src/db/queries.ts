@@ -136,14 +136,17 @@ export async function getPhraseList(languageId: number): Promise<PhraseListItem[
 interface NewPhraseInput {
   english: string
   categoryName?: string | null
-  /** Text for languages that already have a known translation (e.g. seed data, CSV import). Any tracked language not listed here still gets a blank row. */
+  /** Text for languages that already have a known translation (e.g. seed data, CSV import). */
   translations?: { languageId: number; text: string }[]
+  /**
+   * Which languages this phrase should exist in at all. A language not listed here gets no row —
+   * the phrase simply doesn't appear there, rather than showing up blank/untranslated. Defaults to
+   * every tracked language when omitted (e.g. seed data, where `translations` already covers them).
+   */
+  languageIds?: number[]
 }
 
-/**
- * Creates a phrase concept and a translation row for every tracked language in one transaction —
- * a phrase that exists in one language must exist (even if blank/untranslated) in all of them.
- */
+/** Creates a phrase concept and a translation row for each language it should exist in, in one transaction. */
 export async function addPhraseConcept(input: NewPhraseInput): Promise<number> {
   const db = await getDb()
   const categoryId = input.categoryName ? await findOrCreateCategory(input.categoryName) : null
@@ -158,7 +161,8 @@ export async function addPhraseConcept(input: NewPhraseInput): Promise<number> {
   ])
   const conceptId = conceptRes.changes?.lastId ?? 0
 
-  const languages = await getLanguages()
+  const allLanguages = await getLanguages()
+  const languages = input.languageIds ? allLanguages.filter((l) => input.languageIds!.includes(l.id)) : allLanguages
   const textByLanguage = new Map((input.translations ?? []).map((t) => [t.languageId, t.text]))
   const sets = languages.map((lang) => ({
     statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, ?);',

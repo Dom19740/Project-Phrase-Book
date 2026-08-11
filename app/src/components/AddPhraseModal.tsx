@@ -21,7 +21,8 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
   const [selectedLanguageIds, setSelectedLanguageIds] = useState<Set<number>>(() => new Set(languages.map((l) => l.id)))
   const [languagesOpen, setLanguagesOpen] = useState(false)
 
-  const canSubmit = english.trim().length > 0 && (categoryChoice !== NEW_CATEGORY || newCategory.trim().length > 0)
+  const canSubmit =
+    english.trim().length > 0 && (categoryChoice !== NEW_CATEGORY || newCategory.trim().length > 0) && selectedLanguageIds.size > 0
 
   function toggleLanguage(id: number) {
     setSelectedLanguageIds((prev) => {
@@ -36,7 +37,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
   const languagesLabel = allSelected
     ? 'All languages'
     : selectedLanguageIds.size === 0
-      ? 'None (add blank only)'
+      ? 'Select at least one language'
       : `${selectedLanguageIds.size} of ${languages.length} languages`
 
   async function handleSubmit() {
@@ -128,7 +129,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
           )}
         </div>
         <p className="text-xs text-muted mb-4">
-          Every tracked language still gets a row (blank until translated) — this only picks which ones get an automatic translation now.
+          Only the languages you pick get this phrase at all — leave one deselected and this phrase won't appear there.
         </p>
 
         <div className="flex justify-end gap-2">
