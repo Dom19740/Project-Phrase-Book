@@ -5,6 +5,30 @@ export interface TranslateResponse {
   suggestedCategory: string | null
 }
 
+const REQUEST_TIMEOUT_MS = 15000
+
+/** POSTs JSON with a hard client-side timeout so a hung connection can't spin forever. */
+async function postJson(url: string, body: unknown): Promise<Response> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  try {
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Device-Id': getDeviceId(),
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    })
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') throw new Error('Translation request timed out')
+    throw err
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 /** Calls the translate proxy (never Gemini directly — the API key must not ship inside the app). */
 export async function translatePhrase(
   english: string,
@@ -16,14 +40,7 @@ export async function translatePhrase(
   const baseUrl = import.meta.env.VITE_TRANSLATE_API_URL
   if (!baseUrl) throw new Error('VITE_TRANSLATE_API_URL is not configured')
 
-  const res = await fetch(`${baseUrl}/api/translate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Device-Id': getDeviceId(),
-    },
-    body: JSON.stringify({ english, targetLangs: targetLangCodes, categoryHint, existingCategories, targetLangNames }),
-  })
+  const res = await postJson(`${baseUrl}/api/translate`, { english, targetLangs: targetLangCodes, categoryHint, existingCategories, targetLangNames })
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}) as { error?: string })
@@ -38,14 +55,7 @@ export async function translatePhrasesBulk(englishPhrases: string[], targetLangC
   const baseUrl = import.meta.env.VITE_TRANSLATE_API_URL
   if (!baseUrl) throw new Error('VITE_TRANSLATE_API_URL is not configured')
 
-  const res = await fetch(`${baseUrl}/api/translate-bulk`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Device-Id': getDeviceId(),
-    },
-    body: JSON.stringify({ englishPhrases, targetLangCode, targetLangName }),
-  })
+  const res = await postJson(`${baseUrl}/api/translate-bulk`, { englishPhrases, targetLangCode, targetLangName })
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}) as { error?: string })
@@ -61,14 +71,7 @@ export async function translateAlternatives(english: string, targetLangCode: str
   const baseUrl = import.meta.env.VITE_TRANSLATE_API_URL
   if (!baseUrl) throw new Error('VITE_TRANSLATE_API_URL is not configured')
 
-  const res = await fetch(`${baseUrl}/api/translate-alternatives`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Device-Id': getDeviceId(),
-    },
-    body: JSON.stringify({ english, targetLangCode, targetLangName }),
-  })
+  const res = await postJson(`${baseUrl}/api/translate-alternatives`, { english, targetLangCode, targetLangName })
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}) as { error?: string })

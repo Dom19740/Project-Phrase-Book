@@ -25,7 +25,7 @@ import {
 } from '../db/queries'
 import { backfillSeedCategories, seedIfEmpty } from '../db/seed'
 import type { Category, Language, PhraseListItem } from '../db/types'
-import { exportSnapshot, importSnapshot, type BackupSnapshot } from '../db/backup'
+import { exportSnapshot, importSnapshot, isValidBackupSnapshot, type BackupSnapshot } from '../db/backup'
 import { onMutation } from '../db/client'
 import { scheduleAutoBackup } from '../lib/autoBackup'
 import { readBackupFromPickedLocation, saveBackupToPickedLocation } from '../lib/backupFile'
@@ -304,7 +304,9 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   const pickBackupFile = useCallback(async (): Promise<{ name: string; snapshot: BackupSnapshot }> => {
     const { name, data } = await readBackupFromPickedLocation()
-    return { name, snapshot: JSON.parse(data) }
+    const snapshot = JSON.parse(data)
+    if (!isValidBackupSnapshot(snapshot)) throw new Error('That file is not a recognized backup.')
+    return { name, snapshot }
   }, [])
 
   const applyBackupSnapshot = useCallback(

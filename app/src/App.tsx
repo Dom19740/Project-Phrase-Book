@@ -3,6 +3,7 @@ import { Loader2, Moon, Plus, Settings, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { EditPhraseModal } from './components/EditPhraseModal'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { LanguageTabs } from './components/LanguageTabs'
 import { Logo } from './components/Logo'
 import { PhraseList } from './components/PhraseList'
@@ -219,7 +220,9 @@ function App() {
   return (
     <PhraseBookProvider>
       <div className="h-screen w-screen overflow-hidden">
-        <Shell />
+        <ErrorBoundary>
+          <Shell />
+        </ErrorBoundary>
       </div>
     </PhraseBookProvider>
   )
