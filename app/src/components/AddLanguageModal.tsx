@@ -1,16 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search, X } from 'lucide-react'
-import type { Language } from '../db/types'
+import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { LANGUAGE_OPTIONS, type LanguageOption } from '../lib/languageOptions'
+import { PopoutSelect } from './PopoutSelect'
 
 interface Props {
   languages: Language[]
+  activeLanguageId: number | null
+  getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   onClose: () => void
-  onSubmit: (name: string, code: string) => Promise<void>
+  onSubmit: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<void>
 }
 
-export function AddLanguageModal({ languages, onClose, onSubmit }: Props) {
+export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhrases, onClose, onSubmit }: Props) {
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<LanguageOption | null>(null)
   const [saving, setSaving] = useState(false)
@@ -18,7 +21,13 @@ export function AddLanguageModal({ languages, onClose, onSubmit }: Props) {
   const [manualName, setManualName] = useState('')
   const [manualCode, setManualCode] = useState('')
 
+  const [sourceLanguageId, setSourceLanguageId] = useState<number | null>(activeLanguageId ?? languages[0]?.id ?? null)
+  const [sourcePhrases, setSourcePhrases] = useState<PhraseListItem[] | null>(null)
+  const [loadingPhrases, setLoadingPhrases] = useState(false)
+  const [includedIds, setIncludedIds] = useState<Set<number>>(new Set())
+
   const existingCodes = useMemo(() => new Set(languages.map((l) => l.code.toLowerCase())), [languages])
+  const hasExistingPhrases = languages.length > 0
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -26,10 +35,36 @@ export function AddLanguageModal({ languages, onClose, onSubmit }: Props) {
     return LANGUAGE_OPTIONS.filter((l) => l.name.toLowerCase().includes(q) || l.code.toLowerCase().includes(q))
   }, [search])
 
+  useEffect(() => {
+    if (!selected || sourceLanguageId == null) return
+    let cancelled = false
+    setLoadingPhrases(true)
+    getLanguagePhrases(sourceLanguageId).then((phrases) => {
+      if (cancelled) return
+      setSourcePhrases(phrases)
+      // Default to the phrases that actually have text in the chosen source phrasebook —
+      // that's what "copy phrases from X" means. Still fully editable below.
+      setIncludedIds(new Set(phrases.filter((p) => p.text.trim().length > 0).map((p) => p.phraseConceptId)))
+      setLoadingPhrases(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [selected, sourceLanguageId, getLanguagePhrases])
+
+  function toggleIncluded(conceptId: number) {
+    setIncludedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(conceptId)) next.delete(conceptId)
+      else next.add(conceptId)
+      return next
+    })
+  }
+
   async function handleAdd() {
     if (!selected) return
     setSaving(true)
-    await onSubmit(selected.name, selected.code)
+    await onSubmit(selected.name, selected.code, hasExistingPhrases ? Array.from(includedIds) : null)
     setSaving(false)
     onClose()
   }
@@ -41,15 +76,91 @@ export function AddLanguageModal({ languages, onClose, onSubmit }: Props) {
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
       onClick={onClose}
     >
-      <div className="w-full sm:max-w-sm rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`w-full ${hasExistingPhrases && selected ? 'sm:max-w-md' : 'sm:max-w-sm'} rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {selected ? (
           <>
             <h2 className="text-lg font-semibold mb-1 text-ink">
               <span aria-hidden="true">{getLanguageFlag(selected.code)}</span> Add {selected.name}
             </h2>
-            <p className="text-xs text-muted mb-4">
-              All existing phrases get translated into this language automatically — that happens in the background after you add it.
-            </p>
+
+            {hasExistingPhrases ? (
+              <>
+                <p className="text-xs text-muted mb-3">
+                  Selected phrases get translated into {selected.name} automatically in the background after you add it. Pick which phrase book
+                  to copy from, then uncheck any phrases you don't want carried over.
+                </p>
+
+                <label className="block text-sm font-medium mb-1 text-ink">Copy phrases from</label>
+                <PopoutSelect
+                  className="mb-3 w-full"
+                  align="left"
+                  value={sourceLanguageId ?? languages[0]?.id ?? 0}
+                  onChange={(id) => setSourceLanguageId(id)}
+                  options={languages.map((lang) => ({
+                    value: lang.id,
+                    label: lang.name,
+                    shortLabel: (
+                      <span className="flex items-center gap-1.5">
+                        <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                        {lang.name}
+                      </span>
+                    ),
+                  }))}
+                />
+
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-ink">Phrases to include</span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIncludedIds(new Set((sourcePhrases ?? []).map((p) => p.phraseConceptId)))}
+                      disabled={!sourcePhrases || sourcePhrases.length === 0}
+                      className="text-xs text-fabpink disabled:opacity-40"
+                    >
+                      Select all
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIncludedIds(new Set())}
+                      disabled={!sourcePhrases || sourcePhrases.length === 0}
+                      className="text-xs text-fabpink disabled:opacity-40"
+                    >
+                      Select none
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-0.5 max-h-56 overflow-y-auto mb-4 rounded-xl border border-hairline p-1.5">
+                  {loadingPhrases && <p className="text-sm text-muted text-center py-4">Loading phrases...</p>}
+                  {!loadingPhrases && sourcePhrases?.length === 0 && <p className="text-sm text-muted text-center py-4">No phrases yet.</p>}
+                  {!loadingPhrases &&
+                    sourcePhrases?.map((p) => (
+                      <label
+                        key={p.phraseConceptId}
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-surfacehover cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={includedIds.has(p.phraseConceptId)}
+                          onChange={() => toggleIncluded(p.phraseConceptId)}
+                          className="size-4 shrink-0 rounded accent-fabpink cursor-pointer"
+                        />
+                        <span className="min-w-0 flex-1 truncate">
+                          <span className="text-ink">{p.english}</span>
+                          {p.text ? <span className="text-muted"> — {p.text}</span> : <span className="italic text-neutral-600"> — untranslated</span>}
+                        </span>
+                      </label>
+                    ))}
+                </div>
+
+                <p className="text-xs text-muted mb-4">{includedIds.size} of {sourcePhrases?.length ?? 0} phrases selected.</p>
+              </>
+            ) : (
+              <p className="text-xs text-muted mb-4">This will be your first language — no existing phrases to copy yet.</p>
+            )}
 
             <div className="flex justify-end gap-2">
               <button
@@ -61,7 +172,7 @@ export function AddLanguageModal({ languages, onClose, onSubmit }: Props) {
               </button>
               <button
                 onClick={handleAdd}
-                disabled={saving}
+                disabled={saving || loadingPhrases}
                 className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
               >
                 {saving ? 'Adding...' : 'Add language'}

@@ -43,6 +43,7 @@ function Shell() {
     deleteCategory,
     createLanguage,
     removeLanguage,
+    getLanguagePhrases,
     backUpToFile,
     pickBackupFile,
     applyBackupSnapshot,
@@ -109,6 +110,7 @@ function Shell() {
         onSelect={setActiveLanguageId}
         onAddLanguage={createLanguage}
         onRemoveLanguage={removeLanguage}
+        getLanguagePhrases={getLanguagePhrases}
         search={search}
         onSearchChange={setSearch}
       />
@@ -121,6 +123,7 @@ function Shell() {
             phrases={phrases}
             languageCode={activeLanguageCode}
             languageName={activeLanguageName}
+            translating={backgroundTranslation?.languageId === activeLanguageId}
             categories={categories}
             search={search}
             onToggleLearned={(id, learned) => toggleLearned(id, learned)}

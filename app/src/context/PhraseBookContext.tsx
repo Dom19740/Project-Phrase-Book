@@ -59,8 +59,9 @@ interface PhraseBookContextValue {
   createCategory: (name: string) => Promise<void>
   renameCategory: (categoryId: number, newName: string) => Promise<void>
   deleteCategory: (categoryId: number) => Promise<void>
-  createLanguage: (name: string, code: string) => Promise<void>
+  createLanguage: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
+  getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   backUpToFile: () => Promise<void>
   pickBackupFile: () => Promise<{ name: string; snapshot: BackupSnapshot }>
   applyBackupSnapshot: (snapshot: BackupSnapshot) => Promise<void>
@@ -311,9 +312,11 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     return phrasesToCsv(list)
   }, [])
 
+  const getLanguagePhrases = useCallback((languageId: number) => getPhraseList(languageId), [])
+
   const createLanguage = useCallback(
-    async (name: string, code: string) => {
-      const lang = await addLanguage(name, code)
+    async (name: string, code: string, includeConceptIds?: number[] | null) => {
+      const lang = await addLanguage(name, code, includeConceptIds)
       await refreshLanguages()
       setActiveLanguageId(lang.id)
 
@@ -321,7 +324,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       // bound to the previous activeLanguageId until React re-renders after setActiveLanguageId above.
       setPhrases(await getPhraseList(lang.id))
 
-      const concepts = await getAllPhraseConcepts()
+      // A caller can restrict which phrases get carried into this language at all (e.g. the ones the
+      // user picked to "copy" from an existing language's phrasebook) — addLanguage() above already
+      // only created rows for those, so auto-translation is restricted to the same set.
+      let concepts = await getAllPhraseConcepts()
+      if (includeConceptIds) {
+        const include = new Set(includeConceptIds)
+        concepts = concepts.filter((c) => include.has(c.id))
+      }
       if (concepts.length === 0) return
 
       // Translating everything can take a while (many phrases, a slow/mobile connection) — run it
@@ -412,6 +422,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       createLanguage,
       removeLanguage,
+      getLanguagePhrases,
       backUpToFile,
       pickBackupFile,
       applyBackupSnapshot,
@@ -447,6 +458,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       createLanguage,
       removeLanguage,
+      getLanguagePhrases,
     ],
   )
 

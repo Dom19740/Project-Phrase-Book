@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Check, Star, Volume2 } from 'lucide-react'
+import { Check, Loader2, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
 import type { PhraseListItem } from '../db/types'
 import { PhraseQuickMenu } from './PhraseQuickMenu'
@@ -7,6 +7,8 @@ import { PhraseQuickMenu } from './PhraseQuickMenu'
 interface Props {
   phrase: PhraseListItem
   languageCode: string
+  /** True while this phrase's translation is still being generated in the background (new-language auto-translate). */
+  translating?: boolean
   onToggleLearned: (id: number, learned: boolean) => void
   onToggleFavorite: (id: number, favorite: boolean) => void
   onEdit: (phrase: PhraseListItem) => void
@@ -20,6 +22,7 @@ const LONG_PRESS_MS = 500
 export function PhraseRow({
   phrase,
   languageCode,
+  translating = false,
   onToggleLearned,
   onToggleFavorite,
   onEdit,
@@ -95,6 +98,11 @@ export function PhraseRow({
           <span className="text-muted">{phrase.english} </span>
           {phrase.text ? (
             <span className="font-semibold text-ink">{phrase.text}</span>
+          ) : translating ? (
+            <span className="inline-flex items-center gap-1 italic text-muted">
+              <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
+              Translating&hellip;
+            </span>
           ) : (
             <span className="italic text-neutral-600">needs translation</span>
           )}

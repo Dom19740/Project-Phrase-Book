@@ -12,20 +12,27 @@ export async function getLanguages(): Promise<Language[]> {
   }))
 }
 
-export async function addLanguage(name: string, code: string): Promise<Language> {
+/**
+ * @param includeConceptIds Restricts which existing phrases get carried into the new language (e.g. the
+ * user's picks from the "copy phrases from" step). Omit/null to include every existing phrase, as before.
+ */
+export async function addLanguage(name: string, code: string, includeConceptIds?: number[] | null): Promise<Language> {
   const db = await getDb()
   const maxOrder = await db.query('SELECT COALESCE(MAX(sort_order), -1) AS m FROM languages;')
   const sortOrder = (maxOrder.values?.[0]?.m ?? -1) + 1
   const res = await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [name, code, sortOrder])
   const languageId = res.changes?.lastId ?? 0
 
-  // Every phrase concept must exist in every tracked language, so a newly added
-  // language needs a (blank, untranslated) row for each phrase that already exists.
+  // A phrase not picked for this language is skipped entirely, not just left blank — it won't show
+  // up in this language's list at all until the user adds it manually or via a future phrase.
   const concepts = await db.query('SELECT id FROM phrase_concepts;')
-  const sets = (concepts.values ?? []).map((c) => ({
-    statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, 0);',
-    values: [c.id, languageId, ''],
-  }))
+  const included = includeConceptIds ? new Set(includeConceptIds) : null
+  const sets = (concepts.values ?? [])
+    .filter((c) => !included || included.has(c.id))
+    .map((c) => ({
+      statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, 0);',
+      values: [c.id, languageId, ''],
+    }))
   if (sets.length > 0) await db.executeSet(sets)
 
   await persist()

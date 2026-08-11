@@ -12,6 +12,7 @@ interface Props {
   phrases: PhraseListItem[]
   languageCode: string
   languageName: string
+  translating?: boolean
   categories: Category[]
   search: string
   onToggleLearned: (id: number, learned: boolean) => void
@@ -121,6 +122,7 @@ export function PhraseList({
   phrases,
   languageCode,
   languageName,
+  translating = false,
   categories,
   search,
   onToggleLearned,
@@ -233,6 +235,7 @@ export function PhraseList({
         key={item.translationId}
         phrase={item}
         languageCode={languageCode}
+        translating={translating && !item.text}
         onToggleLearned={onToggleLearned}
         onToggleFavorite={onToggleFavorite}
         onEdit={onEdit}
