@@ -182,7 +182,7 @@ function Shell() {
           categories={categories}
           languages={languages}
           onClose={() => setShowAddPhrase(false)}
-          onSubmit={(english, categoryName, languageIds) => addPhrase(english, categoryName, languageIds)}
+          onSubmit={(english, categoryName, languageIds, manualTranslations) => addPhrase(english, categoryName, languageIds, manualTranslations)}
         />
       )}
 

@@ -47,7 +47,12 @@ interface PhraseBookContextValue {
   toggleLearned: (translationId: number, learned: boolean) => Promise<void>
   toggleFavorite: (translationId: number, favorite: boolean) => Promise<void>
   reorder: (orderedTranslationIds: number[]) => Promise<void>
-  addPhrase: (english: string, categoryName: string | null, languageIds: number[]) => Promise<void>
+  addPhrase: (
+    english: string,
+    categoryName: string | null,
+    languageIds: number[],
+    manualTranslations?: { languageId: number; text: string }[],
+  ) => Promise<void>
   editPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
   deleteOneLanguage: (translationId: number) => Promise<void>
   deleteAllLanguages: (phraseConceptId: number) => Promise<void>
@@ -151,11 +156,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   )
 
   const addPhrase = useCallback(
-    async (english: string, categoryName: string | null, languageIds: number[]) => {
-      let translations: { languageId: number; text: string }[] = []
+    async (english: string, categoryName: string | null, languageIds: number[], manualTranslations?: { languageId: number; text: string }[]) => {
+      const translations: { languageId: number; text: string }[] = [...(manualTranslations ?? [])]
       let finalCategory = categoryName
 
-      const targetLanguages = languages.filter((l) => languageIds.includes(l.id))
+      // Languages the user already previewed/edited a translation for (via "Suggest") don't need
+      // another round-trip — only the rest get auto-translated.
+      const manualLanguageIds = new Set((manualTranslations ?? []).map((t) => t.languageId))
+      const targetLanguages = languages.filter((l) => languageIds.includes(l.id) && !manualLanguageIds.has(l.id))
 
       if (targetLanguages.length > 0) {
         const callTranslate = () =>
@@ -175,9 +183,11 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
             console.error('Auto-translate failed, retrying once:', err)
             return callTranslate()
           })
-          translations = targetLanguages
-            .filter((l) => result.translations[l.code])
-            .map((l) => ({ languageId: l.id, text: result.translations[l.code] }))
+          translations.push(
+            ...targetLanguages
+              .filter((l) => result.translations[l.code])
+              .map((l) => ({ languageId: l.id, text: result.translations[l.code] })),
+          )
           if (!categoryName) finalCategory = result.suggestedCategory
         } catch (err) {
           // Proxy unreachable/not configured yet — still create the phrase (blank
