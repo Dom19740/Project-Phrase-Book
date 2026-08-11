@@ -1,10 +1,14 @@
+import type { VercelResponse } from '@vercel/node'
 import { bulkDeviceRateLimit, deviceRateLimit, ipRateLimit } from './redis.js'
 import { BudgetCheckFailedError, BudgetExceededError } from './dailyBudget.js'
+import { GeminiRateLimitError } from './gemini.js'
 import { isTranslationDisabled } from './killSwitch.js'
 
 export interface GuardFailure {
   status: number
   error: string
+  /** Only set for GeminiRateLimitError — how long Gemini itself says its quota needs to reset. */
+  retryAfterMs?: number
 }
 
 /**
@@ -49,5 +53,18 @@ export function classifyGeminiError(err: unknown): GuardFailure {
   if (err instanceof BudgetExceededError || err instanceof BudgetCheckFailedError) {
     return { status: 503, error: err.message }
   }
+  if (err instanceof GeminiRateLimitError) {
+    return { status: 429, error: 'Gemini rate limit reached, retry shortly', retryAfterMs: err.retryAfterMs }
+  }
   return { status: 502, error: 'Translation service unavailable, try again shortly' }
+}
+
+/**
+ * Sends a GuardFailure as the HTTP response — used for both guardRequest's and
+ * classifyGeminiError's results, so every failure path sets `Retry-After` consistently
+ * whenever a delay hint is available, in seconds per the HTTP spec (RFC 9110 §10.2.3).
+ */
+export function sendGuardFailure(res: VercelResponse, failure: GuardFailure): void {
+  if (failure.retryAfterMs != null) res.setHeader('Retry-After', String(Math.ceil(failure.retryAfterMs / 1000)))
+  res.status(failure.status).json({ error: failure.error, retryAfterMs: failure.retryAfterMs })
 }

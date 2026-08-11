@@ -4,7 +4,7 @@ import { cacheKey } from '../lib/redis.js'
 import { redisOps } from '../lib/redisOps.js'
 import { applyCors } from '../lib/cors.js'
 import { getClientIp } from '../lib/clientIp.js'
-import { classifyGeminiError, guardRequest } from '../lib/guard.js'
+import { classifyGeminiError, guardRequest, sendGuardFailure } from '../lib/guard.js'
 import { validateTranslateBody } from '../lib/limits.js'
 
 // Extend as new languages are added to the app — Gemini translates better with a
@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const guardFailure = await guardRequest({ deviceId, ip: getClientIp(req) })
-  if (guardFailure) return res.status(guardFailure.status).json({ error: guardFailure.error })
+  if (guardFailure) return sendGuardFailure(res, guardFailure)
 
   const body = req.body as TranslateRequestBody
   const validationError = validateTranslateBody(body)
@@ -69,8 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       suggestedCategory = result.suggestedCategory
     } catch (err) {
       console.error('Gemini translation failed:', err)
-      const failure = classifyGeminiError(err)
-      return res.status(failure.status).json({ error: failure.error })
+      return sendGuardFailure(res, classifyGeminiError(err))
     }
   }
 

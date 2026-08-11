@@ -4,7 +4,7 @@ import { cacheKey } from '../lib/redis.js'
 import { redisOps } from '../lib/redisOps.js'
 import { applyCors } from '../lib/cors.js'
 import { getClientIp } from '../lib/clientIp.js'
-import { classifyGeminiError, guardRequest } from '../lib/guard.js'
+import { classifyGeminiError, guardRequest, sendGuardFailure } from '../lib/guard.js'
 import { validateBulkBody } from '../lib/limits.js'
 
 const LANGUAGE_NAMES: Record<string, string> = {
@@ -29,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const guardFailure = await guardRequest({ deviceId, ip: getClientIp(req), bulk: true })
-  if (guardFailure) return res.status(guardFailure.status).json({ error: guardFailure.error })
+  if (guardFailure) return sendGuardFailure(res, guardFailure)
 
   const body = req.body as BulkRequestBody
   const validationError = validateBulkBody(body)
@@ -60,8 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     } catch (err) {
       console.error('Bulk translation failed:', err)
-      const failure = classifyGeminiError(err)
-      return res.status(failure.status).json({ error: failure.error })
+      return sendGuardFailure(res, classifyGeminiError(err))
     }
   }
 

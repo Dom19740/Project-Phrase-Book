@@ -24,10 +24,47 @@ class GeminiHttpError extends Error {
   }
 }
 
+/**
+ * Gemini's own per-minute quota (distinct from anything this app enforces). Carries the delay
+ * Gemini itself reports before its quota resets (from the RetryInfo detail on a 429 response,
+ * e.g. "retryDelay": "19s"), so callers can wait an informed amount of time instead of guessing
+ * or hammering an exhausted quota again immediately.
+ */
+export class GeminiRateLimitError extends Error {
+  retryAfterMs: number
+  constructor(message: string, retryAfterMs: number) {
+    super(message)
+    this.name = 'GeminiRateLimitError'
+    this.retryAfterMs = retryAfterMs
+  }
+}
+
+// Used only if Gemini returns a 429 without a parseable RetryInfo delay — better to give
+// callers a sane default wait than no hint at all.
+const DEFAULT_RATE_LIMIT_RETRY_MS = 20000
+
+function parseRetryDelayMs(errorBodyText: string): number {
+  try {
+    const parsed = JSON.parse(errorBodyText) as {
+      error?: { details?: { ['@type']?: string; retryDelay?: string }[] }
+    }
+    const retryInfo = parsed.error?.details?.find((d) => d['@type']?.includes('RetryInfo'))
+    const match = retryInfo?.retryDelay?.match(/^([\d.]+)s$/)
+    if (match) return Math.ceil(Number.parseFloat(match[1]) * 1000)
+  } catch {
+    // Malformed/unexpected error body shape — fall through to the default below.
+  }
+  return DEFAULT_RATE_LIMIT_RETRY_MS
+}
+
 function isRetryable(err: unknown): boolean {
   if (err instanceof GeminiHttpError) return err.status >= 500
   // Network failures and our own timeout both surface as a plain Error here — retryable.
   // A malformed/unparseable Gemini response is not (retrying won't fix a schema mismatch).
+  // Gemini's own rate limit (429, see GeminiRateLimitError) is also not retried inline here —
+  // its reset delay (seconds) is far longer than this function's fixed backoff is meant for,
+  // and retrying inline would hold the serverless function open pointlessly. Callers get the
+  // delay via the thrown error and decide whether to wait and retry themselves.
   return err instanceof Error && err.message === 'Gemini request timed out'
 }
 
@@ -44,6 +81,7 @@ async function fetchGeminiOnce(requestBody: unknown, apiKey: string): Promise<st
 
     if (!res.ok) {
       const text = await res.text()
+      if (res.status === 429) throw new GeminiRateLimitError(`Gemini rate limit reached: ${text}`, parseRetryDelayMs(text))
       throw new GeminiHttpError(`Gemini request failed (${res.status}): ${text}`, res.status)
     }
 

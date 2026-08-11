@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { translateAlternativesWithGemini } from '../lib/gemini.js'
 import { applyCors } from '../lib/cors.js'
 import { getClientIp } from '../lib/clientIp.js'
-import { classifyGeminiError, guardRequest } from '../lib/guard.js'
+import { classifyGeminiError, guardRequest, sendGuardFailure } from '../lib/guard.js'
 import { validateAlternativesBody } from '../lib/limits.js'
 
 interface RequestBody {
@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const guardFailure = await guardRequest({ deviceId, ip: getClientIp(req) })
-  if (guardFailure) return res.status(guardFailure.status).json({ error: guardFailure.error })
+  if (guardFailure) return sendGuardFailure(res, guardFailure)
 
   const body = req.body as RequestBody
   const validationError = validateAlternativesBody(body)
@@ -36,7 +36,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ alternatives })
   } catch (err) {
     console.error('Alternatives translation failed:', err)
-    const failure = classifyGeminiError(err)
-    return res.status(failure.status).json({ error: failure.error })
+    return sendGuardFailure(res, classifyGeminiError(err))
   }
 }
