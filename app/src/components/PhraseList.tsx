@@ -207,22 +207,41 @@ export function PhraseList({
     [primaryItems, groupByCategoryOn, sortMode],
   )
 
-  // Alphabet jump index: first translation id encountered per bucket, in current render order.
-  const bucketTargets = useMemo(() => {
-    const targets = new Map<string, number>()
+  // Alphabet jump index: an ordered list of stops per bucket, one per "pinned section" that could
+  // hold a letter — the favorites pinned atop a group, then that group's alphabetical rest, repeated
+  // per group when grouped by category. Repeated presses of the same button step through the list
+  // (wrapping back to the top), instead of a single first-occurrence target — otherwise a pinned
+  // favorite would permanently claim its letter range and every press would land back on it.
+  const bucketTargetLists = useMemo(() => {
+    const dir = sortMode.endsWith('asc') ? 1 : -1
+    const lists = new Map<string, number[]>()
     for (const group of groups) {
-      for (const item of group.items) {
-        const bucket = bucketFor(sortKey(item, sortMode))
-        if (!targets.has(bucket)) targets.set(bucket, item.translationId)
+      const favorites = group.items.filter((i) => i.favorite)
+      const rest = group.items.filter((i) => !i.favorite)
+      for (const subset of [favorites, rest]) {
+        const alphaOrdered = [...subset].sort((a, b) => dir * sortKey(a, sortMode).localeCompare(sortKey(b, sortMode)))
+        const seenBuckets = new Set<string>()
+        for (const item of alphaOrdered) {
+          const bucket = bucketFor(sortKey(item, sortMode))
+          if (seenBuckets.has(bucket)) continue
+          seenBuckets.add(bucket)
+          const arr = lists.get(bucket) ?? []
+          arr.push(item.translationId)
+          lists.set(bucket, arr)
+        }
       }
     }
-    return targets
+    return lists
   }, [groups, sortMode])
 
+  const [bucketCycleIndex, setBucketCycleIndex] = useState<Record<string, number>>({})
+
   function jumpTo(bucketLabel: string) {
-    const translationId = bucketTargets.get(bucketLabel)
-    if (translationId == null) return
-    document.getElementById(`phrase-row-${translationId}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    const targets = bucketTargetLists.get(bucketLabel)
+    if (!targets || targets.length === 0) return
+    const nextIndex = ((bucketCycleIndex[bucketLabel] ?? -1) + 1) % targets.length
+    setBucketCycleIndex((prev) => ({ ...prev, [bucketLabel]: nextIndex }))
+    document.getElementById(`phrase-row-${targets[nextIndex]}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
   }
 
   function toggleCategoryVisible(categoryName: string, visible: boolean) {
@@ -303,7 +322,7 @@ export function PhraseList({
           <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" />
 
           {ALPHA_BUCKETS.map((b) => {
-            const hasMatch = bucketTargets.has(b.label)
+            const hasMatch = bucketTargetLists.has(b.label)
             return (
               <button
                 key={b.label}
