@@ -28,6 +28,7 @@ export function PhraseRow({
   onToggleSelect,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
   const pressTimer = useRef<number | null>(null)
   const longPressFired = useRef(false)
 
@@ -72,12 +73,17 @@ export function PhraseRow({
     >
       <button
         type="button"
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation()
-          speak(phrase.text, languageCode)
+          setSpeaking(true)
+          try {
+            await speak(phrase.text, languageCode)
+          } finally {
+            setSpeaking(false)
+          }
         }}
         disabled={!phrase.text}
-        className="shrink-0 rounded-full p-1.5 text-muted hover:bg-surfacehover disabled:opacity-25 transition-colors"
+        className={`shrink-0 rounded-full p-1.5 hover:bg-surfacehover disabled:opacity-25 transition-colors ${speaking ? 'text-fabpink' : 'text-muted'}`}
         aria-label="Speak phrase"
         title="Speak"
       >
