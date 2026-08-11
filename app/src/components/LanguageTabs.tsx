@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
-import type { Language } from '../db/types'
+import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { AddLanguageModal } from './AddLanguageModal'
 
@@ -8,13 +8,23 @@ interface Props {
   languages: Language[]
   activeLanguageId: number | null
   onSelect: (id: number) => void
-  onAddLanguage: (name: string, code: string) => Promise<void>
+  onAddLanguage: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<void>
   onRemoveLanguage: (id: number) => void
+  getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   search: string
   onSearchChange: (value: string) => void
 }
 
-export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLanguage, onRemoveLanguage, search, onSearchChange }: Props) {
+export function LanguageTabs({
+  languages,
+  activeLanguageId,
+  onSelect,
+  onAddLanguage,
+  onRemoveLanguage,
+  getLanguagePhrases,
+  search,
+  onSearchChange,
+}: Props) {
   const [open, setOpen] = useState(false)
   const [showAddLanguage, setShowAddLanguage] = useState(false)
   const [confirmingRemoveId, setConfirmingRemoveId] = useState<number | null>(null)
@@ -119,7 +129,15 @@ export function LanguageTabs({ languages, activeLanguageId, onSelect, onAddLangu
         )}
       </div>
 
-      {showAddLanguage && <AddLanguageModal languages={languages} onClose={() => setShowAddLanguage(false)} onSubmit={onAddLanguage} />}
+      {showAddLanguage && (
+        <AddLanguageModal
+          languages={languages}
+          activeLanguageId={activeLanguageId}
+          getLanguagePhrases={getLanguagePhrases}
+          onClose={() => setShowAddLanguage(false)}
+          onSubmit={onAddLanguage}
+        />
+      )}
     </div>
   )
 }

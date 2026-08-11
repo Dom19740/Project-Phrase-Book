@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Check, Star, Volume2 } from 'lucide-react'
+import { Check, Loader2, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
 import type { PhraseListItem } from '../db/types'
 import { PhraseQuickMenu } from './PhraseQuickMenu'
@@ -7,6 +7,8 @@ import { PhraseQuickMenu } from './PhraseQuickMenu'
 interface Props {
   phrase: PhraseListItem
   languageCode: string
+  /** True while this phrase's translation is still being generated in the background (new-language auto-translate). */
+  translating?: boolean
   onToggleLearned: (id: number, learned: boolean) => void
   onToggleFavorite: (id: number, favorite: boolean) => void
   onEdit: (phrase: PhraseListItem) => void
@@ -20,6 +22,7 @@ const LONG_PRESS_MS = 500
 export function PhraseRow({
   phrase,
   languageCode,
+  translating = false,
   onToggleLearned,
   onToggleFavorite,
   onEdit,
@@ -28,6 +31,7 @@ export function PhraseRow({
   onToggleSelect,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
   const pressTimer = useRef<number | null>(null)
   const longPressFired = useRef(false)
 
@@ -72,12 +76,17 @@ export function PhraseRow({
     >
       <button
         type="button"
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation()
-          speak(phrase.text, languageCode)
+          setSpeaking(true)
+          try {
+            await speak(phrase.text, languageCode)
+          } finally {
+            setSpeaking(false)
+          }
         }}
         disabled={!phrase.text}
-        className="shrink-0 rounded-full p-1.5 text-muted hover:bg-surfacehover disabled:opacity-25 transition-colors"
+        className={`shrink-0 rounded-full p-1.5 hover:bg-surfacehover disabled:opacity-25 transition-colors ${speaking ? 'text-fabpink' : 'text-muted'}`}
         aria-label="Speak phrase"
         title="Speak"
       >
@@ -89,6 +98,11 @@ export function PhraseRow({
           <span className="text-muted">{phrase.english} </span>
           {phrase.text ? (
             <span className="font-semibold text-ink">{phrase.text}</span>
+          ) : translating ? (
+            <span className="inline-flex items-center gap-1 italic text-muted">
+              <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
+              Translating&hellip;
+            </span>
           ) : (
             <span className="italic text-neutral-600">needs translation</span>
           )}

@@ -25,11 +25,12 @@ import {
 } from '../db/queries'
 import { backfillSeedCategories, seedIfEmpty } from '../db/seed'
 import type { Category, Language, PhraseListItem } from '../db/types'
-import { exportSnapshot, importSnapshot, type BackupSnapshot } from '../db/backup'
+import { exportSnapshot, importSnapshot, isValidBackupSnapshot, type BackupSnapshot } from '../db/backup'
 import { onMutation } from '../db/client'
 import { scheduleAutoBackup } from '../lib/autoBackup'
 import { readBackupFromPickedLocation, saveBackupToPickedLocation } from '../lib/backupFile'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
+import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
 import { usePersistedState } from '../lib/usePersistedState'
 import { phrasesToCsv } from '../lib/csvExport'
 
@@ -41,11 +42,17 @@ interface PhraseBookContextValue {
   setActiveLanguageId: (id: number) => void
   phrases: PhraseListItem[]
   backgroundTranslation: { languageId: number; languageName: string } | null
+  translationIncomplete: { languageName: string; count: number } | null
   refreshPhrases: () => Promise<void>
   toggleLearned: (translationId: number, learned: boolean) => Promise<void>
   toggleFavorite: (translationId: number, favorite: boolean) => Promise<void>
   reorder: (orderedTranslationIds: number[]) => Promise<void>
-  addPhrase: (english: string, categoryName: string | null, languageIds: number[]) => Promise<void>
+  addPhrase: (
+    english: string,
+    categoryName: string | null,
+    languageIds: number[],
+    manualTranslations?: { languageId: number; text: string }[],
+  ) => Promise<void>
   editPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
   deleteOneLanguage: (translationId: number) => Promise<void>
   deleteAllLanguages: (phraseConceptId: number) => Promise<void>
@@ -57,8 +64,9 @@ interface PhraseBookContextValue {
   createCategory: (name: string) => Promise<void>
   renameCategory: (categoryId: number, newName: string) => Promise<void>
   deleteCategory: (categoryId: number) => Promise<void>
-  createLanguage: (name: string, code: string) => Promise<void>
+  createLanguage: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
+  getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   backUpToFile: () => Promise<void>
   pickBackupFile: () => Promise<{ name: string; snapshot: BackupSnapshot }>
   applyBackupSnapshot: (snapshot: BackupSnapshot) => Promise<void>
@@ -77,6 +85,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const [activeLanguageId, setActiveLanguageId] = usePersistedState<number | null>('phrasebook-active-language-id', null)
   const [phrases, setPhrases] = useState<PhraseListItem[]>([])
   const [backgroundTranslation, setBackgroundTranslation] = useState<{ languageId: number; languageName: string } | null>(null)
+  const [translationIncomplete, setTranslationIncomplete] = useState<{ languageName: string; count: number } | null>(null)
 
   // Background translation runs detached from React's render cycle, so it needs the *current*
   // active language at the time each chunk finishes, not the value closed over when it started.
@@ -147,35 +156,49 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   )
 
   const addPhrase = useCallback(
-    async (english: string, categoryName: string | null, languageIds: number[]) => {
-      let translations: { languageId: number; text: string }[] = []
+    async (english: string, categoryName: string | null, languageIds: number[], manualTranslations?: { languageId: number; text: string }[]) => {
+      const translations: { languageId: number; text: string }[] = [...(manualTranslations ?? [])]
       let finalCategory = categoryName
 
-      const targetLanguages = languages.filter((l) => languageIds.includes(l.id))
+      // Languages the user already previewed/edited a translation for (via "Suggest") don't need
+      // another round-trip — only the rest get auto-translated.
+      const manualLanguageIds = new Set((manualTranslations ?? []).map((t) => t.languageId))
+      const targetLanguages = languages.filter((l) => languageIds.includes(l.id) && !manualLanguageIds.has(l.id))
 
       if (targetLanguages.length > 0) {
-        try {
-          const result = await translatePhrase(
+        const callTranslate = () =>
+          translatePhrase(
             english,
             targetLanguages.map((l) => l.code),
             categoryName,
             categories.map((c) => c.name),
             Object.fromEntries(targetLanguages.map((l) => [l.code, l.name])),
           )
-          translations = targetLanguages
-            .filter((l) => result.translations[l.code])
-            .map((l) => ({ languageId: l.id, text: result.translations[l.code] }))
+
+        try {
+          // One retry before giving up — a single transient failure (a slow response, a
+          // one-off network blip) shouldn't leave the phrase untranslated when trying again
+          // immediately would likely have worked, same reasoning as the Add Language retry.
+          const result = await callTranslate().catch((err) => {
+            console.error('Auto-translate failed, retrying once:', err)
+            return callTranslate()
+          })
+          translations.push(
+            ...targetLanguages
+              .filter((l) => result.translations[l.code])
+              .map((l) => ({ languageId: l.id, text: result.translations[l.code] })),
+          )
           if (!categoryName) finalCategory = result.suggestedCategory
         } catch (err) {
           // Proxy unreachable/not configured yet — still create the phrase (blank
           // translations to fill in manually) rather than blocking the user.
-          console.error('Auto-translate failed, adding phrase untranslated:', err)
+          console.error('Auto-translate failed twice, adding phrase untranslated:', err)
         }
       }
 
-      // Every tracked language still gets a row here (blank for any not in `translations`) —
-      // languageIds only controls which ones get an automatic translation.
-      await addPhraseConcept({ english, categoryName: finalCategory, translations })
+      // Only the chosen languages get a row at all (blank for any that didn't get an automatic
+      // translation) — a language not selected here simply won't have this phrase.
+      await addPhraseConcept({ english, categoryName: finalCategory, translations, languageIds })
       await refreshCategories()
       await refreshPhrases()
     },
@@ -281,7 +304,9 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   const pickBackupFile = useCallback(async (): Promise<{ name: string; snapshot: BackupSnapshot }> => {
     const { name, data } = await readBackupFromPickedLocation()
-    return { name, snapshot: JSON.parse(data) }
+    const snapshot = JSON.parse(data)
+    if (!isValidBackupSnapshot(snapshot)) throw new Error('That file is not a recognized backup.')
+    return { name, snapshot }
   }, [])
 
   const applyBackupSnapshot = useCallback(
@@ -304,9 +329,11 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     return phrasesToCsv(list)
   }, [])
 
+  const getLanguagePhrases = useCallback((languageId: number) => getPhraseList(languageId), [])
+
   const createLanguage = useCallback(
-    async (name: string, code: string) => {
-      const lang = await addLanguage(name, code)
+    async (name: string, code: string, includeConceptIds?: number[] | null) => {
+      const lang = await addLanguage(name, code, includeConceptIds)
       await refreshLanguages()
       setActiveLanguageId(lang.id)
 
@@ -314,7 +341,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       // bound to the previous activeLanguageId until React re-renders after setActiveLanguageId above.
       setPhrases(await getPhraseList(lang.id))
 
-      const concepts = await getAllPhraseConcepts()
+      // A caller can restrict which phrases get carried into this language at all (e.g. the ones the
+      // user picked to "copy" from an existing language's phrasebook) — addLanguage() above already
+      // only created rows for those, so auto-translation is restricted to the same set.
+      let concepts = await getAllPhraseConcepts()
+      if (includeConceptIds) {
+        const include = new Set(includeConceptIds)
+        concepts = concepts.filter((c) => include.has(c.id))
+      }
       if (concepts.length === 0) return
 
       // Translating everything can take a while (many phrases, a slow/mobile connection) — run it
@@ -322,29 +356,47 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       // right away. Chunked (rather than one giant request) so a single slow/failed batch doesn't
       // leave every phrase blank, and so each request is less likely to time out.
       setBackgroundTranslation({ languageId: lang.id, languageName: lang.name })
+      setTranslationIncomplete(null)
       ;(async () => {
-        for (let i = 0; i < concepts.length; i += TRANSLATE_CHUNK_SIZE) {
-          const batch = concepts.slice(i, i + TRANSLATE_CHUNK_SIZE)
+        // Translates one chunk and reports whether every phrase in it actually got a translation
+        // back. A chunk that fails outright (network error, proxy 5xx/429/503) or comes back with
+        // some entries missing (e.g. Gemini didn't return a value for one of them) both count as
+        // "not fully done", so translateInChunksWithRetry gives it a second chance rather than
+        // leaving those phrases silently blank forever.
+        async function translateChunk(chunk: { id: number; english: string }[]): Promise<boolean> {
           try {
             const translations = await translatePhrasesBulk(
-              batch.map((c) => c.english),
+              chunk.map((c) => c.english),
               lang.code,
               lang.name,
             )
-            const entries = batch
+            const entries = chunk
               .filter((c) => translations[c.english])
               .map((c) => ({ phraseConceptId: c.id, languageId: lang.id, text: translations[c.english] }))
             if (entries.length > 0) {
               await bulkSetTranslationText(entries)
               if (activeLanguageIdRef.current === lang.id) setPhrases(await getPhraseList(lang.id))
             }
+            return entries.length === chunk.length
           } catch (err) {
-            // Proxy unreachable/rate-limited/timed out — this batch's phrases stay blank
-            // ("needs translation") for manual entry; the remaining batches still run.
-            console.error('Bulk auto-translate failed for a batch of the new language:', err)
+            console.error('Bulk auto-translate failed for a chunk of the new language:', err)
+            return false
           }
         }
+
+        const failed = await translateInChunksWithRetry(concepts, TRANSLATE_CHUNK_SIZE, translateChunk)
+
         setBackgroundTranslation((current) => (current?.languageId === lang.id ? null : current))
+
+        // Only reached if phrases are still untranslated after a full retry pass — tell the user
+        // instead of letting the "Translating…" indicator just vanish as if everything finished.
+        if (failed.length > 0) {
+          console.error(`Add language: ${failed.length} phrase(s) could not be auto-translated after retrying.`)
+          setTranslationIncomplete({ languageName: lang.name, count: failed.length })
+          setTimeout(() => {
+            setTranslationIncomplete((current) => (current?.languageName === lang.name ? null : current))
+          }, 8000)
+        }
       })()
     },
     [refreshLanguages],
@@ -368,6 +420,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       setActiveLanguageId,
       phrases,
       backgroundTranslation,
+      translationIncomplete,
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
@@ -386,6 +439,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       createLanguage,
       removeLanguage,
+      getLanguagePhrases,
       backUpToFile,
       pickBackupFile,
       applyBackupSnapshot,
@@ -398,6 +452,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       activeLanguageId,
       phrases,
       backgroundTranslation,
+      translationIncomplete,
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
@@ -420,6 +475,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       createLanguage,
       removeLanguage,
+      getLanguagePhrases,
     ],
   )
 

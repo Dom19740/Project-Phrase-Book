@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ArrowDownAZ, ArrowUpZA, Check, ChevronDown, ChevronRight, Languages, ListChecks, X } from 'lucide-react'
+import { ArrowDown, ArrowDownAZ, ArrowUp, ArrowUpZA, Check, ChevronDown, ChevronRight, Clock, Languages, ListChecks, X } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
@@ -12,6 +12,7 @@ interface Props {
   phrases: PhraseListItem[]
   languageCode: string
   languageName: string
+  translating?: boolean
   categories: Category[]
   search: string
   onToggleLearned: (id: number, learned: boolean) => void
@@ -33,7 +34,7 @@ interface Group {
   items: PhraseListItem[]
 }
 
-type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc'
+type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc' | 'date-desc' | 'date-asc'
 
 const SORT_ICON_BOX = 'inline-flex w-4 h-4 shrink-0 items-center justify-center'
 
@@ -42,6 +43,8 @@ function SortIcon({ mode }: { mode: SortMode }) {
     <span className={`${SORT_ICON_BOX} shrink-0`}>
       {mode.startsWith('english') ? (
         <span className="text-xs font-semibold leading-none">EN</span>
+      ) : mode.startsWith('date') ? (
+        <Clock size={14} strokeWidth={2} />
       ) : (
         <Languages size={14} strokeWidth={2} />
       )}
@@ -50,9 +53,20 @@ function SortIcon({ mode }: { mode: SortMode }) {
 }
 
 function SortDirectionIcon({ mode }: { mode: SortMode }) {
+  const asc = mode.endsWith('asc')
   return (
     <span className={SORT_ICON_BOX}>
-      {mode.endsWith('asc') ? <ArrowDownAZ size={14} strokeWidth={2} /> : <ArrowUpZA size={14} strokeWidth={2} />}
+      {mode.startsWith('date') ? (
+        asc ? (
+          <ArrowUp size={14} strokeWidth={2} />
+        ) : (
+          <ArrowDown size={14} strokeWidth={2} />
+        )
+      ) : asc ? (
+        <ArrowDownAZ size={14} strokeWidth={2} />
+      ) : (
+        <ArrowUpZA size={14} strokeWidth={2} />
+      )}
     </span>
   )
 }
@@ -62,6 +76,8 @@ const SORT_OPTION_LABELS: { value: SortMode; label: string }[] = [
   { value: 'english-desc', label: 'English Z>A' },
   { value: 'translation-asc', label: 'Translation A>Z' },
   { value: 'translation-desc', label: 'Translation Z>A' },
+  { value: 'date-desc', label: 'Newest added' },
+  { value: 'date-asc', label: 'Oldest added' },
 ]
 
 const SORT_OPTIONS: { value: SortMode; label: string; shortLabel: ReactNode }[] = SORT_OPTION_LABELS.map((opt) => ({
@@ -84,7 +100,7 @@ const ALPHA_BUCKETS: { label: string; letters: string }[] = [
 ]
 
 function sortKey(item: PhraseListItem, mode: SortMode): string {
-  return mode.startsWith('english') ? item.english : item.text
+  return mode.startsWith('translation') ? item.text : item.english
 }
 
 function bucketFor(value: string): string {
@@ -96,6 +112,9 @@ function sortItems(items: PhraseListItem[], mode: SortMode): PhraseListItem[] {
   const dir = mode.endsWith('asc') ? 1 : -1
   return [...items].sort((a, b) => {
     if (a.favorite !== b.favorite) return a.favorite ? -1 : 1
+    // Phrase concept ids are assigned in insertion order, so they double as a "date added" sort
+    // without needing a dedicated timestamp column.
+    if (mode.startsWith('date')) return dir * (a.phraseConceptId - b.phraseConceptId)
     return dir * sortKey(a, mode).localeCompare(sortKey(b, mode))
   })
 }
@@ -121,6 +140,7 @@ export function PhraseList({
   phrases,
   languageCode,
   languageName,
+  translating = false,
   categories,
   search,
   onToggleLearned,
@@ -187,22 +207,41 @@ export function PhraseList({
     [primaryItems, groupByCategoryOn, sortMode],
   )
 
-  // Alphabet jump index: first translation id encountered per bucket, in current render order.
-  const bucketTargets = useMemo(() => {
-    const targets = new Map<string, number>()
+  // Alphabet jump index: an ordered list of stops per bucket, one per "pinned section" that could
+  // hold a letter — the favorites pinned atop a group, then that group's alphabetical rest, repeated
+  // per group when grouped by category. Repeated presses of the same button step through the list
+  // (wrapping back to the top), instead of a single first-occurrence target — otherwise a pinned
+  // favorite would permanently claim its letter range and every press would land back on it.
+  const bucketTargetLists = useMemo(() => {
+    const dir = sortMode.endsWith('asc') ? 1 : -1
+    const lists = new Map<string, number[]>()
     for (const group of groups) {
-      for (const item of group.items) {
-        const bucket = bucketFor(sortKey(item, sortMode))
-        if (!targets.has(bucket)) targets.set(bucket, item.translationId)
+      const favorites = group.items.filter((i) => i.favorite)
+      const rest = group.items.filter((i) => !i.favorite)
+      for (const subset of [favorites, rest]) {
+        const alphaOrdered = [...subset].sort((a, b) => dir * sortKey(a, sortMode).localeCompare(sortKey(b, sortMode)))
+        const seenBuckets = new Set<string>()
+        for (const item of alphaOrdered) {
+          const bucket = bucketFor(sortKey(item, sortMode))
+          if (seenBuckets.has(bucket)) continue
+          seenBuckets.add(bucket)
+          const arr = lists.get(bucket) ?? []
+          arr.push(item.translationId)
+          lists.set(bucket, arr)
+        }
       }
     }
-    return targets
+    return lists
   }, [groups, sortMode])
 
+  const [bucketCycleIndex, setBucketCycleIndex] = useState<Record<string, number>>({})
+
   function jumpTo(bucketLabel: string) {
-    const translationId = bucketTargets.get(bucketLabel)
-    if (translationId == null) return
-    document.getElementById(`phrase-row-${translationId}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    const targets = bucketTargetLists.get(bucketLabel)
+    if (!targets || targets.length === 0) return
+    const nextIndex = ((bucketCycleIndex[bucketLabel] ?? -1) + 1) % targets.length
+    setBucketCycleIndex((prev) => ({ ...prev, [bucketLabel]: nextIndex }))
+    document.getElementById(`phrase-row-${targets[nextIndex]}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
   }
 
   function toggleCategoryVisible(categoryName: string, visible: boolean) {
@@ -233,6 +272,7 @@ export function PhraseList({
         key={item.translationId}
         phrase={item}
         languageCode={languageCode}
+        translating={translating && !item.text}
         onToggleLearned={onToggleLearned}
         onToggleFavorite={onToggleFavorite}
         onEdit={onEdit}
@@ -282,7 +322,7 @@ export function PhraseList({
           <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" />
 
           {ALPHA_BUCKETS.map((b) => {
-            const hasMatch = bucketTargets.has(b.label)
+            const hasMatch = bucketTargetLists.has(b.label)
             return (
               <button
                 key={b.label}

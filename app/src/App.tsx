@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Moon, Plus, Settings, Sun } from 'lucide-react'
+import { Loader2, Moon, Plus, Settings, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { EditPhraseModal } from './components/EditPhraseModal'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { LanguageTabs } from './components/LanguageTabs'
 import { Logo } from './components/Logo'
 import { PhraseList } from './components/PhraseList'
@@ -26,6 +27,7 @@ function Shell() {
     setActiveLanguageId,
     phrases,
     backgroundTranslation,
+    translationIncomplete,
     toggleLearned,
     toggleFavorite,
     addPhrase,
@@ -42,6 +44,7 @@ function Shell() {
     deleteCategory,
     createLanguage,
     removeLanguage,
+    getLanguagePhrases,
     backUpToFile,
     pickBackupFile,
     applyBackupSnapshot,
@@ -108,6 +111,7 @@ function Shell() {
         onSelect={setActiveLanguageId}
         onAddLanguage={createLanguage}
         onRemoveLanguage={removeLanguage}
+        getLanguagePhrases={getLanguagePhrases}
         search={search}
         onSearchChange={setSearch}
       />
@@ -120,6 +124,7 @@ function Shell() {
             phrases={phrases}
             languageCode={activeLanguageCode}
             languageName={activeLanguageName}
+            translating={backgroundTranslation?.languageId === activeLanguageId}
             categories={categories}
             search={search}
             onToggleLearned={(id, learned) => toggleLearned(id, learned)}
@@ -148,6 +153,19 @@ function Shell() {
         </div>
       )}
 
+      {!backgroundTranslation && translationIncomplete && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink shadow-xl"
+          style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
+        >
+          <TriangleAlert size={15} strokeWidth={2.5} className="shrink-0 text-fabpink" />
+          <span className="truncate">
+            {translationIncomplete.count} phrase{translationIncomplete.count === 1 ? '' : 's'} in {translationIncomplete.languageName} need
+            translation &mdash; add manually when ready.
+          </span>
+        </div>
+      )}
+
       {!selectionModeActive && (
         <button
           onClick={() => setShowAddPhrase(true)}
@@ -165,7 +183,7 @@ function Shell() {
           categories={categories}
           languages={languages}
           onClose={() => setShowAddPhrase(false)}
-          onSubmit={(english, categoryName, languageIds) => addPhrase(english, categoryName, languageIds)}
+          onSubmit={(english, categoryName, languageIds, manualTranslations) => addPhrase(english, categoryName, languageIds, manualTranslations)}
         />
       )}
 
@@ -202,7 +220,9 @@ function App() {
   return (
     <PhraseBookProvider>
       <div className="h-screen w-screen overflow-hidden">
-        <Shell />
+        <ErrorBoundary>
+          <Shell />
+        </ErrorBoundary>
       </div>
     </PhraseBookProvider>
   )

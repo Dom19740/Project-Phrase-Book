@@ -22,6 +22,36 @@ export interface BackupSnapshot {
   phrases: BackupPhrase[]
 }
 
+function isBackupTranslation(value: unknown): value is BackupTranslation {
+  if (typeof value !== 'object' || value === null) return false
+  const t = value as Record<string, unknown>
+  return typeof t.languageCode === 'string' && typeof t.text === 'string' && typeof t.learned === 'boolean' && typeof t.favorite === 'boolean'
+}
+
+function isBackupPhrase(value: unknown): value is BackupPhrase {
+  if (typeof value !== 'object' || value === null) return false
+  const p = value as Record<string, unknown>
+  return (
+    typeof p.english === 'string' &&
+    (p.category === null || typeof p.category === 'string') &&
+    Array.isArray(p.translations) &&
+    p.translations.every(isBackupTranslation)
+  )
+}
+
+/** Guards a parsed backup file's shape before it's trusted for a destructive restore. */
+export function isValidBackupSnapshot(data: unknown): data is BackupSnapshot {
+  if (typeof data !== 'object' || data === null) return false
+  const s = data as Record<string, unknown>
+  return (
+    typeof s.version === 'number' &&
+    Array.isArray(s.languages) &&
+    s.languages.every((l) => typeof l === 'object' && l !== null && typeof (l as Record<string, unknown>).name === 'string' && typeof (l as Record<string, unknown>).code === 'string') &&
+    Array.isArray(s.phrases) &&
+    s.phrases.every(isBackupPhrase)
+  )
+}
+
 /** Serializes the whole database into a portable, human-readable JSON snapshot. */
 export async function exportSnapshot(): Promise<BackupSnapshot> {
   const db = await getDb()
@@ -85,6 +115,8 @@ async function lastInsertId(db: Awaited<ReturnType<typeof getDb>>): Promise<numb
  * already ran instead of leaving the DB in a half-restored state that then collides with retries.
  */
 export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
+  if (!isValidBackupSnapshot(snapshot)) throw new Error('Backup file is not in a recognized format.')
+
   const db = await getDb()
 
   await db.beginTransaction()
