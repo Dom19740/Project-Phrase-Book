@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { RefreshCw, Trash2 } from 'lucide-react'
+import { Check, Copy, RefreshCw, Trash2 } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { translateAlternatives } from '../lib/translateApi'
 import { PopoutSelect } from './PopoutSelect'
@@ -37,8 +37,20 @@ export function EditPhraseModal({
   const [alternatives, setAlternatives] = useState<string[] | null>(null)
   const [loadingAlternatives, setLoadingAlternatives] = useState(false)
   const [alternativesError, setAlternativesError] = useState<string | null>(null)
+  const [copiedField, setCopiedField] = useState<'english' | 'text' | null>(null)
 
   const canSubmit = english.trim().length > 0 && (categoryChoice !== NEW_CATEGORY || newCategory.trim().length > 0)
+
+  async function handleCopy(field: 'english' | 'text', value: string) {
+    if (!value) return
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField((f) => (f === field ? null : f)), 1500)
+    } catch (err) {
+      console.error('Copy failed', err)
+    }
+  }
 
   async function handleRetranslate() {
     if (!english.trim()) return
@@ -109,12 +121,24 @@ export function EditPhraseModal({
             <h2 className="text-lg font-semibold mb-4 text-ink">Edit phrase</h2>
 
             <label className="block text-sm font-medium mb-1 text-ink">English</label>
-            <input
-              autoFocus
-              value={english}
-              onChange={(e) => setEnglish(e.target.value)}
-              className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
-            />
+            <div className="relative mb-3">
+              <input
+                autoFocus
+                value={english}
+                onChange={(e) => setEnglish(e.target.value)}
+                className="w-full rounded-xl border border-hairline bg-transparent text-ink pl-3 pr-10 py-2"
+              />
+              <button
+                type="button"
+                onClick={() => handleCopy('english', english)}
+                disabled={!english}
+                aria-label="Copy English phrase"
+                title="Copy"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted hover:bg-surfacehover disabled:opacity-25 transition-colors"
+              >
+                {copiedField === 'english' ? <Check size={16} strokeWidth={2.5} className="text-fabpink" /> : <Copy size={16} strokeWidth={2} />}
+              </button>
+            </div>
 
             <div className="flex items-center justify-between mb-1">
               <label className="block text-sm font-medium text-ink">Translation</label>
@@ -129,12 +153,24 @@ export function EditPhraseModal({
                 {loadingAlternatives ? 'Translating...' : 'Retranslate'}
               </button>
             </div>
-            <input
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
-              placeholder="Leave blank if not translated yet"
-            />
+            <div className="relative mb-3">
+              <input
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                className="w-full rounded-xl border border-hairline bg-transparent text-ink pl-3 pr-10 py-2"
+                placeholder="Leave blank if not translated yet"
+              />
+              <button
+                type="button"
+                onClick={() => handleCopy('text', text)}
+                disabled={!text}
+                aria-label="Copy translation"
+                title="Copy"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted hover:bg-surfacehover disabled:opacity-25 transition-colors"
+              >
+                {copiedField === 'text' ? <Check size={16} strokeWidth={2.5} className="text-fabpink" /> : <Copy size={16} strokeWidth={2} />}
+              </button>
+            </div>
 
             {alternativesError && <p className="text-xs text-red-400 -mt-2 mb-3">{alternativesError}</p>}
 
