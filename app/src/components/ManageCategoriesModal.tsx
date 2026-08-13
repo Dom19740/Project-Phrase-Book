@@ -46,12 +46,12 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
       <div
         className="w-full sm:max-w-md max-h-[75vh] overflow-y-auto rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold mb-4 text-ink">Manage categories</h2>
+        <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Manage categories</h2>
 
         <div className="flex flex-col gap-2 mb-4">
           {categories.map((c) => (
@@ -65,11 +65,11 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                       disabled={busy}
                       aria-label="Delete"
                       title="Delete"
-                      className="rounded-full p-1.5 bg-red-600 text-white disabled:opacity-40"
+                      className="rounded-full p-1.5 bg-red-600 text-white active:scale-90 transition-transform disabled:opacity-40"
                     >
                       <Trash2 size={13} strokeWidth={2} />
                     </button>
-                    <button onClick={() => setConfirmingDeleteId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
+                    <button onClick={() => setConfirmingDeleteId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted hover:text-ink transition-colors">
                       Cancel
                     </button>
                   </div>
@@ -81,12 +81,12 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                    className="flex-1 min-w-0 rounded border border-hairline bg-transparent text-ink px-2 py-1 text-sm"
+                    className="flex-1 min-w-0 rounded-lg border border-hairline bg-transparent text-ink px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
                   />
-                  <button onClick={saveEdit} disabled={busy} className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-white disabled:opacity-40">
+                  <button onClick={saveEdit} disabled={busy} className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-white active:scale-95 transition-transform disabled:opacity-40">
                     Save
                   </button>
-                  <button onClick={() => setEditingId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
+                  <button onClick={() => setEditingId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted hover:text-ink transition-colors">
                     Cancel
                   </button>
                 </div>
@@ -94,14 +94,14 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-ink">{c.name}</span>
                   <div className="flex gap-1 shrink-0">
-                    <button onClick={() => startEdit(c)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted hover:text-ink">
+                    <button onClick={() => startEdit(c)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted hover:text-ink transition-colors">
                       Rename
                     </button>
                     <button
                       onClick={() => setConfirmingDeleteId(c.id)}
                       aria-label="Delete"
                       title="Delete"
-                      className="rounded-full p-1.5 text-red-400 hover:bg-red-950/40"
+                      className="rounded-full p-1.5 text-red-400 hover:bg-red-950/40 active:scale-90 transition-all"
                     >
                       <Trash2 size={13} strokeWidth={2} />
                     </button>
@@ -119,20 +119,20 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-            className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm"
+            className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
             placeholder="e.g. Emergencies"
           />
           <button
             onClick={handleCreate}
             disabled={busy || !newName.trim()}
-            className="rounded-full px-4 py-2 text-sm font-medium bg-fabpink text-white shadow-sm disabled:opacity-40"
+            className="rounded-full px-4 py-2 text-sm font-medium bg-fabpink text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
           >
             Add
           </button>
         </div>
 
         <div className="flex justify-end">
-          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
+          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
             Done
           </button>
         </div>

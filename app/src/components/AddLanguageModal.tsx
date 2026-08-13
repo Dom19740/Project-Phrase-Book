@@ -89,7 +89,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
       onClick={onClose}
     >
       <div
@@ -98,7 +98,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
       >
         {selected ? (
           <>
-            <h2 className="text-lg font-semibold mb-1 text-ink">
+            <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">
               <span aria-hidden="true">{getLanguageFlag(selected.code)}</span> Add {selected.name}
             </h2>
 
@@ -132,7 +132,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                   type="button"
                   onClick={() => setIncludedIds(new Set((sourcePhrases ?? []).map((p) => p.phraseConceptId)))}
                   disabled={!sourcePhrases || sourcePhrases.length === 0}
-                  className="text-xs text-fabpink disabled:opacity-40"
+                  className="text-xs font-semibold text-fabpink hover:underline disabled:opacity-40 disabled:hover:no-underline"
                 >
                   All
                 </button>
@@ -140,7 +140,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                   type="button"
                   onClick={() => setIncludedIds(new Set())}
                   disabled={!sourcePhrases || sourcePhrases.length === 0}
-                  className="text-xs text-fabpink disabled:opacity-40"
+                  className="text-xs font-semibold text-fabpink hover:underline disabled:opacity-40 disabled:hover:no-underline"
                 >
                   None
                 </button>
@@ -154,7 +154,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                 sourcePhrases?.map((p) => (
                   <label
                     key={p.phraseConceptId}
-                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-surfacehover cursor-pointer"
+                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-surfacehover transition-colors cursor-pointer"
                   >
                     <input
                       type="checkbox"
@@ -176,14 +176,14 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               <button
                 onClick={() => setSelected(null)}
                 disabled={saving}
-                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink disabled:opacity-40"
+                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
               >
                 Back
               </button>
               <button
                 onClick={handleAdd}
                 disabled={saving || loadingPhrases}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 {saving ? 'Adding...' : 'Add language'}
               </button>
@@ -191,33 +191,33 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
           </>
         ) : manual ? (
           <>
-            <h2 className="text-lg font-semibold mb-4 text-ink">Add language manually</h2>
+            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add language manually</h2>
 
             <label className="block text-sm font-medium mb-1 text-ink">Name</label>
             <input
               autoFocus
               value={manualName}
               onChange={(e) => setManualName(e.target.value)}
-              className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
+              className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
               placeholder="e.g. Klingon"
             />
             <label className="block text-sm font-medium mb-1 text-ink">Language code</label>
             <input
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
-              className="w-full mb-1 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
+              className="w-full mb-1 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
               placeholder="e.g. de or pt-PT"
             />
             <p className="text-xs text-muted mb-4">An ISO 639-1 code or BCP-47 locale, e.g. "de" or "pt-PT".</p>
 
             <div className="flex justify-between gap-2">
-              <button onClick={() => setManual(false)} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink">
+              <button onClick={() => setManual(false)} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
                 Back
               </button>
               <button
                 onClick={() => chooseLanguage({ name: manualName.trim(), code: manualCode.trim() })}
                 disabled={!canSubmitManual || saving}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 {saving ? 'Adding...' : 'Next'}
               </button>
@@ -225,7 +225,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
           </>
         ) : (
           <>
-            <h2 className="text-lg font-semibold mb-4 text-ink">Add language</h2>
+            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add language</h2>
 
             <div className="relative mb-3">
               <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
@@ -234,12 +234,12 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search languages"
-                className="w-full rounded-full border border-hairline bg-transparent text-ink pl-8 pr-8 py-2 text-sm"
+                className="w-full rounded-full border border-hairline bg-transparent text-ink pl-8 pr-8 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted hover:text-ink"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted hover:text-ink transition-colors"
                   aria-label="Clear search"
                 >
                   <X size={14} strokeWidth={2} />
@@ -256,7 +256,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                     key={lang.code}
                     disabled={added || saving}
                     onClick={() => chooseLanguage(lang)}
-                    className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover disabled:opacity-40 disabled:hover:bg-transparent"
+                    className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
                   >
                     <span className="flex items-center gap-2">
                       <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
@@ -269,10 +269,10 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <button onClick={() => setManual(true)} className="text-xs text-muted hover:text-ink underline">
+              <button onClick={() => setManual(true)} className="text-xs text-muted hover:text-ink underline transition-colors">
                 Can't find it? Add manually
               </button>
-              <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink">
+              <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
                 Cancel
               </button>
             </div>

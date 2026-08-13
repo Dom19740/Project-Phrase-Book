@@ -87,17 +87,17 @@ function Shell() {
       className="flex h-full flex-col bg-appbg text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
-      <header className="flex items-center justify-between px-4 py-2">
+      <header className="flex items-center justify-between px-4 py-1.5">
         <div className="flex items-center gap-2">
-          <Logo size={32} className="text-fabpink shrink-0" />
-          <h1 className="text-xl font-black tracking-tight text-ink">
+          <Logo size={40} className="text-fabpink shrink-0" />
+          <h1 className="text-2xl font-black tracking-tight leading-none text-ink">
             Travel <span className="text-fabpink">Chatter</span>
           </h1>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-            className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink transition-colors"
+            className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink active:scale-90 transition-all"
             aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
             title={theme === 'dark' ? 'Light theme' : 'Dark theme'}
           >
@@ -105,7 +105,7 @@ function Shell() {
           </button>
           <button
             onClick={() => setShowBackup(true)}
-            className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink transition-colors"
+            className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink active:scale-90 transition-all"
             aria-label="Backup settings"
             title="Backup"
           >
@@ -158,7 +158,7 @@ function Shell() {
 
       {backgroundTranslation && backgroundTranslation.languageId !== activeLanguageId && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink shadow-xl"
+          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
@@ -168,7 +168,7 @@ function Shell() {
 
       {!backgroundTranslation && translationIncomplete && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink shadow-xl"
+          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <TriangleAlert size={15} strokeWidth={2.5} className="shrink-0 text-fabpink" />
@@ -183,7 +183,7 @@ function Shell() {
         <button
           onClick={() => setShowAddPhrase(true)}
           disabled={languages.length === 0}
-          className="fixed right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-white shadow-xl shadow-black/40 transition-transform hover:scale-105 active:scale-95 disabled:opacity-40"
+          className="fixed right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-white shadow-lg shadow-black/30 transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
           style={{ bottom: 'calc(1.5rem + var(--safe-area-inset-bottom, 0px))' }}
           aria-label="Add phrase"
         >

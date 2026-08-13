@@ -29,7 +29,7 @@ export function CategoryFilterPopout({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-fabpink px-3 py-1.5 text-xs font-medium text-ink"
+        className="flex items-center gap-1.5 rounded-full border border-fabpink px-3 py-1.5 text-xs font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
       >
         <ListFilter size={14} strokeWidth={2} className="text-fabpink" />
         Categories
@@ -37,14 +37,16 @@ export function CategoryFilterPopout({
           <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-hidden="true" />
         )}
         {hiddenCount > 0 && (
-          <span className="rounded-full bg-fabpink text-white text-[10px] leading-none px-1.5 py-0.5">{hiddenCount} hidden</span>
+          <span className="rounded-full bg-fabpink/15 border border-fabpink/40 text-fabpink text-[10px] font-bold uppercase tracking-wider leading-none px-1.5 py-0.5">
+            {hiddenCount} hidden
+          </span>
         )}
       </button>
 
       {open && (
         <>
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close category filter" />
-          <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-2xl border border-hairline bg-surface p-3 shadow-xl">
+          <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-3 shadow-xl">
             <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1">
               <input
                 type="checkbox"
@@ -66,7 +68,7 @@ export function CategoryFilterPopout({
 
             <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto">
               {allCategoryNames.map((name) => (
-                <label key={name} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover">
+                <label key={name} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover transition-colors">
                   <input
                     type="checkbox"
                     checked={!hiddenCategories.has(name)}
@@ -82,7 +84,7 @@ export function CategoryFilterPopout({
                 setOpen(false)
                 onManageCategories()
               }}
-              className="mt-2 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline pt-2 text-xs text-muted hover:text-ink"
+              className="mt-2 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline pt-2 text-xs text-muted hover:text-ink transition-colors"
             >
               <Settings2 size={13} strokeWidth={2} />
               Manage categories

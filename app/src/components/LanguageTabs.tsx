@@ -41,7 +41,7 @@ export function LanguageTabs({
       <div className="relative flex-1">
         <button
           onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 py-2 text-sm font-semibold shadow-sm"
+          className="w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 py-2 text-sm font-semibold shadow-lg shadow-fabpink/10 active:scale-[0.98] transition-all"
         >
           <span className="shrink-0 text-base leading-none">{activeLanguage ? getLanguageFlag(activeLanguage.code) : '🌐'}</span>
           <span className="flex-1 text-left truncate text-ink">{activeLanguage?.name ?? 'Select a language'}</span>
@@ -51,10 +51,10 @@ export function LanguageTabs({
         {open && (
           <>
             <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close language menu" />
-            <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface p-2 shadow-xl">
+            <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-2 shadow-xl">
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                 {languages.map((lang) => (
-                  <div key={lang.id} className="flex items-center gap-1 rounded-lg hover:bg-surfacehover">
+                  <div key={lang.id} className="flex items-center gap-1 rounded-lg hover:bg-surfacehover transition-colors">
                     {confirmingRemoveId === lang.id ? (
                       <div className="flex flex-1 items-center justify-end gap-1 px-2 py-1.5">
                         <button
@@ -62,7 +62,7 @@ export function LanguageTabs({
                             onRemoveLanguage(lang.id)
                             setConfirmingRemoveId(null)
                           }}
-                          className="rounded-full px-2.5 py-1 text-xs font-medium bg-red-600 text-white"
+                          className="rounded-full px-2.5 py-1 text-xs font-medium bg-red-600 text-white active:scale-95 transition-transform"
                         >
                           Remove
                         </button>
@@ -87,7 +87,7 @@ export function LanguageTabs({
                         {languages.length > 1 && (
                           <button
                             onClick={() => setConfirmingRemoveId(lang.id)}
-                            className="shrink-0 rounded-lg p-2 text-muted hover:text-red-400"
+                            className="shrink-0 rounded-lg p-2 text-muted hover:text-red-400 transition-colors"
                             aria-label={`Remove ${lang.name}`}
                           >
                             <Trash2 size={14} strokeWidth={2} />
@@ -103,7 +103,7 @@ export function LanguageTabs({
                   setOpen(false)
                   setShowAddLanguage(true)
                 }}
-                className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline px-2 pt-2 pb-1 text-sm text-fabpink"
+                className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline px-2 pt-2 pb-1 text-sm font-semibold text-fabpink hover:bg-surfacehover transition-colors"
               >
                 <Plus size={15} strokeWidth={2.5} />
                 Add language
@@ -120,13 +120,13 @@ export function LanguageTabs({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search"
-          className="w-full rounded-full border border-fabpink bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted outline-none focus:ring-2 focus:ring-fabpink focus:ring-offset-0"
+          className="w-full rounded-full border border-fabpink bg-surface pl-8 pr-8 py-2 text-sm placeholder:text-muted outline-none focus:ring-2 focus:ring-fabpink focus:ring-offset-0 transition-shadow"
         />
         {search && (
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted hover:text-ink"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted hover:text-ink transition-colors"
             aria-label="Clear search"
           >
             <X size={14} strokeWidth={2} />

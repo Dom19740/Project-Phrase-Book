@@ -300,7 +300,7 @@ export function PhraseList({
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-ink"
+            className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
             title="Cycle: Unlearned → Learned → All"
           >
             <Check size={13} strokeWidth={2} className="text-fabpink" />
@@ -309,8 +309,8 @@ export function PhraseList({
 
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium transition-colors ${
-              selectionMode ? 'bg-fabpink text-white' : 'border border-fabpink text-ink'
+            className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium active:scale-95 transition-all ${
+              selectionMode ? 'bg-fabpink text-white shadow-lg shadow-fabpink/20' : 'border border-fabpink text-ink hover:bg-surfacehover'
             }`}
           >
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
@@ -328,7 +328,7 @@ export function PhraseList({
                 key={b.label}
                 onClick={() => jumpTo(b.label)}
                 disabled={!hasMatch}
-                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-fabpink enabled:hover:text-fabpink disabled:opacity-30 transition-colors"
+                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-fabpink enabled:hover:text-fabpink enabled:active:scale-90 disabled:opacity-30 transition-all"
               >
                 {b.label}
               </button>
@@ -379,7 +379,7 @@ export function PhraseList({
             <div>
               <button
                 onClick={() => setPrimaryExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-fabpink"
+                className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
               >
                 <span>
                   {primaryLabel} ({primaryItems.length})
@@ -399,7 +399,7 @@ export function PhraseList({
                         {groupByCategoryOn && (
                           <button
                             onClick={() => setCollapsed((c) => ({ ...c, [group.categoryName]: !isCollapsed }))}
-                            className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-fabpink"
+                            className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
                           >
                             <span>{group.categoryName}</span>
                             {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
@@ -418,7 +418,7 @@ export function PhraseList({
             <div className="border-t border-hairline pt-3">
               <button
                 onClick={() => setSecondaryExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold uppercase tracking-wide text-fabpink"
+                className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
               >
                 <span>
                   {secondaryLabel} ({secondaryItems.length})

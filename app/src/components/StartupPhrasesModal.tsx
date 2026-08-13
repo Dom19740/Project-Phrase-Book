@@ -26,9 +26,9 @@ export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onSkip}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onSkip}>
       <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-semibold mb-3 text-ink">Add starter phrases?</h2>
+        <h2 className="text-lg font-bold tracking-tight mb-3 text-ink">Add starter phrases?</h2>
 
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-medium text-ink">Phrases to include</span>
@@ -36,11 +36,11 @@ export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
             <button
               type="button"
               onClick={() => setIncludedKeys(new Set(startupPhrases.map((p) => p.english)))}
-              className="text-xs text-fabpink"
+              className="text-xs font-semibold text-fabpink hover:underline"
             >
               All
             </button>
-            <button type="button" onClick={() => setIncludedKeys(new Set())} className="text-xs text-fabpink">
+            <button type="button" onClick={() => setIncludedKeys(new Set())} className="text-xs font-semibold text-fabpink hover:underline">
               None
             </button>
           </div>
@@ -50,7 +50,7 @@ export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
           {startupPhrases.map((p) => (
             <label
               key={p.english}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-surfacehover cursor-pointer"
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-surfacehover transition-colors cursor-pointer"
             >
               <input
                 type="checkbox"
@@ -66,13 +66,13 @@ export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
         <p className="text-xs text-muted mb-4">{includedKeys.size} of {startupPhrases.length} phrases selected.</p>
 
         <div className="flex justify-end gap-2">
-          <button onClick={onSkip} disabled={saving} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink disabled:opacity-40">
+          <button onClick={onSkip} disabled={saving} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40">
             Skip
           </button>
           <button
             onClick={handleAdd}
             disabled={saving || includedKeys.size === 0}
-            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
           >
             {saving ? 'Adding...' : `Add ${includedKeys.size} phrase${includedKeys.size === 1 ? '' : 's'}`}
           </button>

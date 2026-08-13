@@ -91,18 +91,18 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
       <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         {step === 'details' ? (
           <>
-            <h2 className="text-lg font-semibold mb-4 text-ink">Add phrase</h2>
+            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add phrase</h2>
 
             <label className="block text-sm font-medium mb-1 text-ink">English</label>
             <input
               autoFocus
               value={english}
               onChange={(e) => setEnglish(e.target.value)}
-              className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
+              className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
               placeholder="e.g. Where is the bathroom?"
             />
 
@@ -124,7 +124,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
                 autoFocus
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
+                className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
                 placeholder="New category name"
               />
             )}
@@ -134,7 +134,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
               <button
                 type="button"
                 onClick={() => setLanguagesOpen((v) => !v)}
-                className="flex w-full items-center gap-1.5 rounded-xl border border-hairline bg-surface px-3 py-2 text-sm text-ink"
+                className="flex w-full items-center gap-1.5 rounded-xl border border-hairline bg-surface px-3 py-2 text-sm text-ink hover:border-fabpink/40 transition-colors"
               >
                 <span className="flex-1 text-left truncate">{languagesLabel}</span>
                 <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-muted" />
@@ -143,7 +143,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
               {languagesOpen && (
                 <>
                   <button className="fixed inset-0 z-40 cursor-default" onClick={() => setLanguagesOpen(false)} aria-label="Close language selector" />
-                  <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface p-3 shadow-xl">
+                  <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-3 shadow-xl">
                     <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 mb-1 border-b border-hairline pb-2">
                       <input
                         type="checkbox"
@@ -155,7 +155,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
                     </label>
                     <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
                       {languages.map((lang) => (
-                        <label key={lang.id} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover cursor-pointer">
+                        <label key={lang.id} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover transition-colors cursor-pointer">
                           <input
                             type="checkbox"
                             checked={selectedLanguageIds.has(lang.id)}
@@ -176,13 +176,13 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
             </p>
 
             <div className="flex justify-end gap-2">
-              <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
+              <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
                 Cancel
               </button>
               <button
                 onClick={() => setStep('translations')}
                 disabled={!canProceed}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Next
               </button>
@@ -190,7 +190,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
           </>
         ) : (
           <>
-            <h2 className="text-lg font-semibold mb-1 text-ink">Add phrase</h2>
+            <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Add phrase</h2>
             <p className="text-sm text-muted mb-4 truncate">{english}</p>
 
             <p className="text-xs text-muted mb-2">Pick a suggestion or edit the text yourself. Leave a language blank to auto-translate it later.</p>
@@ -219,7 +219,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
                     <input
                       value={translationText[lang.id] ?? ''}
                       onChange={(e) => setTranslationText((prev) => ({ ...prev, [lang.id]: e.target.value }))}
-                      className="w-full rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm"
+                      className="w-full rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
                       placeholder="Leave blank to auto-translate"
                     />
                     {alternativesError[lang.id] && <p className="text-xs text-red-400 mt-1">{alternativesError[lang.id]}</p>}
@@ -247,14 +247,14 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
               <button
                 onClick={() => setStep('details')}
                 disabled={saving}
-                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink disabled:opacity-40"
+                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
               >
                 Back
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={saving}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 {saving ? 'Saving...' : 'Add phrase'}
               </button>

@@ -64,13 +64,13 @@ export function BulkActionBar({
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="New category name"
-              className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-2 py-1.5 text-sm"
+              className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
             />
           )}
           <button
             onClick={applyCategory}
             disabled={busy || (categoryChoice === NEW_CATEGORY && !newCategory.trim())}
-            className="shrink-0 rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+            className="shrink-0 rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 disabled:active:scale-100 transition-all disabled:opacity-40"
           >
             Apply
           </button>
@@ -91,7 +91,7 @@ export function BulkActionBar({
                 setPanel(null)
               }}
               disabled={busy}
-              className="flex-1 rounded-full border border-red-800 px-3 py-1.5 text-sm font-medium text-red-400 disabled:opacity-40"
+              className="flex-1 rounded-full border border-red-800 px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-950/30 active:scale-95 transition-all disabled:opacity-40"
             >
               {languageName} only
             </button>
@@ -103,7 +103,7 @@ export function BulkActionBar({
                 setPanel(null)
               }}
               disabled={busy}
-              className="flex-1 rounded-full bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+              className="flex-1 rounded-full bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-40"
             >
               All languages
             </button>
@@ -122,7 +122,7 @@ export function BulkActionBar({
           <button
             onClick={() => onMarkLearned(true)}
             disabled={selectedCount === 0}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Check size={13} strokeWidth={2} />
             Learned
@@ -130,7 +130,7 @@ export function BulkActionBar({
           <button
             onClick={() => onMarkFavorite(true)}
             disabled={selectedCount === 0}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Star size={13} strokeWidth={2} />
             Favourite
@@ -138,7 +138,7 @@ export function BulkActionBar({
           <button
             onClick={() => setPanel(panel === 'category' ? null : 'category')}
             disabled={selectedCount === 0}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Tag size={13} strokeWidth={2} />
             Category
@@ -148,7 +148,7 @@ export function BulkActionBar({
             disabled={selectedCount === 0}
             aria-label="Delete"
             title="Delete"
-            className="flex items-center rounded-full border border-red-800 p-1.5 text-red-400 hover:bg-red-950/40 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+            className="flex items-center rounded-full border border-red-800 p-1.5 text-red-400 hover:bg-red-950/40 active:scale-90 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Trash2 size={13} strokeWidth={2} />
           </button>

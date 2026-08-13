@@ -79,9 +79,9 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
   const lastBackupAt = getLastBackupAt()
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
       <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-semibold mb-1 text-ink">Backup</h2>
+        <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Backup</h2>
         <p className="text-xs text-muted mb-4">
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}
         </p>
@@ -92,13 +92,13 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
               Replace <strong>everything</strong> currently in the app with <strong>{pendingRestore.name}</strong>? This can't be undone.
             </p>
             <div className="flex gap-2">
-              <button onClick={() => setPendingRestore(null)} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted">
+              <button onClick={() => setPendingRestore(null)} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
                 Cancel
               </button>
               <button
                 onClick={confirmRestore}
                 disabled={busy}
-                className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Replace everything
               </button>
@@ -109,14 +109,14 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
             <button
               onClick={handleBackUpNow}
               disabled={busy}
-              className="rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+              className="rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all disabled:opacity-40"
             >
               Back up now
             </button>
             <button
               onClick={handleRestoreClick}
               disabled={busy}
-              className="rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium disabled:opacity-40"
+              className="rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium hover:bg-surfacehover active:scale-[0.98] transition-all disabled:opacity-40"
             >
               Restore backup
             </button>
@@ -135,7 +135,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
                   <button
                     onClick={handleExportCsv}
                     disabled={busy}
-                    className="shrink-0 rounded-full border border-hairline text-ink px-3 py-2 text-sm font-medium disabled:opacity-40"
+                    className="shrink-0 rounded-full border border-hairline text-ink px-3 py-2 text-sm font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
                   >
                     Export
                   </button>
@@ -149,7 +149,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
 
         {!pendingRestore && (
           <div className="flex justify-end mt-4">
-            <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted">
+            <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
               Close
             </button>
           </div>

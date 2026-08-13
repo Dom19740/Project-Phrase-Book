@@ -84,11 +84,11 @@ export function EditPhraseModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
       <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         {confirmingDelete ? (
           <>
-            <h2 className="text-lg font-semibold mb-2 text-ink">Delete phrase</h2>
+            <h2 className="text-lg font-bold tracking-tight mb-2 text-ink">Delete phrase</h2>
             <p className="text-sm text-muted mb-4">
               "{phrase.english}" — delete just the {languageName} translation, or remove this phrase from every language?
             </p>
@@ -96,21 +96,21 @@ export function EditPhraseModal({
               <button
                 onClick={() => handleDelete('language')}
                 disabled={deleting}
-                className="rounded-full border border-red-800 px-4 py-2 text-sm font-medium text-red-400 disabled:opacity-40"
+                className="rounded-full border border-red-800 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-950/30 active:scale-95 transition-all disabled:opacity-40"
               >
                 Delete from {languageName} only
               </button>
               <button
                 onClick={() => handleDelete('all')}
                 disabled={deleting}
-                className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Delete from all languages
               </button>
               <button
                 onClick={() => setConfirmingDelete(false)}
                 disabled={deleting}
-                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink disabled:opacity-40"
+                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
               >
                 Cancel
               </button>
@@ -118,7 +118,7 @@ export function EditPhraseModal({
           </>
         ) : (
           <>
-            <h2 className="text-lg font-semibold mb-4 text-ink">Edit phrase</h2>
+            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Edit phrase</h2>
 
             <label className="block text-sm font-medium mb-1 text-ink">English</label>
             <div className="relative mb-3">
@@ -126,7 +126,7 @@ export function EditPhraseModal({
                 autoFocus
                 value={english}
                 onChange={(e) => setEnglish(e.target.value)}
-                className="w-full rounded-xl border border-hairline bg-transparent text-ink pl-3 pr-10 py-2"
+                className="w-full rounded-xl border border-hairline bg-transparent text-ink pl-3 pr-10 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
               />
               <button
                 type="button"
@@ -134,7 +134,7 @@ export function EditPhraseModal({
                 disabled={!english}
                 aria-label="Copy English phrase"
                 title="Copy"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted hover:bg-surfacehover disabled:opacity-25 transition-colors"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted hover:bg-surfacehover active:scale-90 disabled:opacity-25 transition-all"
               >
                 {copiedField === 'english' ? <Check size={16} strokeWidth={2.5} className="text-fabpink" /> : <Copy size={16} strokeWidth={2} />}
               </button>
@@ -157,7 +157,7 @@ export function EditPhraseModal({
               <input
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                className="w-full rounded-xl border border-hairline bg-transparent text-ink pl-3 pr-10 py-2"
+                className="w-full rounded-xl border border-hairline bg-transparent text-ink pl-3 pr-10 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
                 placeholder="Leave blank if not translated yet"
               />
               <button
@@ -166,7 +166,7 @@ export function EditPhraseModal({
                 disabled={!text}
                 aria-label="Copy translation"
                 title="Copy"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted hover:bg-surfacehover disabled:opacity-25 transition-colors"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted hover:bg-surfacehover active:scale-90 disabled:opacity-25 transition-all"
               >
                 {copiedField === 'text' ? <Check size={16} strokeWidth={2.5} className="text-fabpink" /> : <Copy size={16} strokeWidth={2} />}
               </button>
@@ -209,7 +209,7 @@ export function EditPhraseModal({
                 autoFocus
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                className="w-full mb-4 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2"
+                className="w-full mb-4 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
                 placeholder="New category name"
               />
             )}
@@ -219,18 +219,18 @@ export function EditPhraseModal({
                 onClick={() => setConfirmingDelete(true)}
                 aria-label="Delete phrase"
                 title="Delete phrase"
-                className="rounded-full border border-red-800 p-2 text-red-400"
+                className="rounded-full border border-red-800 p-2 text-red-400 hover:bg-red-950/30 active:scale-90 transition-all"
               >
                 <Trash2 size={16} strokeWidth={2} />
               </button>
               <div className="flex gap-2">
-                <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink">
+                <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || saving}
-                  className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-40"
+                  className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>

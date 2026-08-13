@@ -24,11 +24,11 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex h-full flex-col items-center justify-center gap-4 bg-appbg px-6 text-center text-ink">
-          <p className="text-lg font-semibold">Something went wrong.</p>
+          <p className="text-lg font-bold tracking-tight">Something went wrong.</p>
           <p className="text-sm text-muted">Your saved phrasebook is unaffected. Try reloading the app.</p>
           <button
             onClick={() => window.location.reload()}
-            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-sm"
+            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
           >
             Reload
           </button>

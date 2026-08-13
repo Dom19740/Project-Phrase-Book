@@ -36,7 +36,7 @@ export function PopoutSelect<T extends string | number>({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-1.5 rounded-full border border-hairline bg-surface px-3.5 py-2 text-sm text-ink"
+        className="flex w-full items-center gap-1.5 rounded-full border border-hairline bg-surface px-3.5 py-2 text-sm text-ink hover:border-fabpink/40 active:scale-[0.98] transition-all"
       >
         <span className="flex-1 flex items-center gap-1 text-left truncate">{activeTrigger}</span>
         <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-ink" />
@@ -48,7 +48,7 @@ export function PopoutSelect<T extends string | number>({
           <div
             className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
               dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
-            } z-50 w-48 max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl`}
+            } z-50 w-48 max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-1.5 shadow-xl`}
           >
             {options.map((opt) => (
               <button
@@ -59,7 +59,7 @@ export function PopoutSelect<T extends string | number>({
                   onChange(opt.value)
                   setOpen(false)
                 }}
-                className={`flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left ${
+                className={`flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left hover:bg-surfacehover transition-colors ${
                   opt.value === value ? 'text-fabpink font-medium' : 'text-ink'
                 }`}
               >
