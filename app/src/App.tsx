@@ -87,7 +87,7 @@ function Shell() {
       className="flex h-full flex-col bg-appbg text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
-      <header className="flex items-center justify-between px-4 py-1.5">
+      <header className="flex items-center justify-between px-4 py-.5">
         <div className="flex items-center gap-2">
           <Logo size={40} className="text-fabpink shrink-0" />
           <h1 className="text-2xl font-black tracking-tight leading-none text-ink">

@@ -273,6 +273,7 @@ export function PhraseList({
         phrase={item}
         languageCode={languageCode}
         translating={translating && !item.text}
+        translationFirst={sortMode.startsWith('translation')}
         onToggleLearned={onToggleLearned}
         onToggleFavorite={onToggleFavorite}
         onEdit={onEdit}

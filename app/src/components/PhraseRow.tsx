@@ -9,6 +9,8 @@ interface Props {
   languageCode: string
   /** True while this phrase's translation is still being generated in the background (new-language auto-translate). */
   translating?: boolean
+  /** Show the translation before the English text — used when the list is sorted alphabetically by translation. */
+  translationFirst?: boolean
   onToggleLearned: (id: number, learned: boolean) => void
   onToggleFavorite: (id: number, favorite: boolean) => void
   onEdit: (phrase: PhraseListItem) => void
@@ -23,6 +25,7 @@ export function PhraseRow({
   phrase,
   languageCode,
   translating = false,
+  translationFirst = false,
   onToggleLearned,
   onToggleFavorite,
   onEdit,
@@ -66,7 +69,7 @@ export function PhraseRow({
   return (
     <div
       id={`phrase-row-${phrase.translationId}`}
-      className="group relative flex items-center gap-1.5 rounded-2xl bg-surface border border-hairline px-2 py-0.5 shadow-sm transition-all hover:border-fabpink/40 active:scale-[0.99] cursor-pointer select-none"
+      className="group relative flex items-center gap-1.5 rounded-2xl bg-surface border border-hairline px-2 py-0.1 shadow-sm transition-all hover:border-fabpink/40 active:scale-[0.99] cursor-pointer select-none"
       onPointerDown={handlePointerDown}
       onPointerUp={clearPressTimer}
       onPointerLeave={clearPressTimer}
@@ -95,16 +98,34 @@ export function PhraseRow({
 
       <div className="min-w-0 flex-1 px-0.5 py-0.5">
         <p className="sm:truncate text-sm leading-5">
-          <span className="text-muted">{phrase.english} </span>
-          {phrase.text ? (
-            <span className="font-semibold text-ink">{phrase.text}</span>
-          ) : translating ? (
-            <span className="inline-flex items-center gap-1 italic text-muted">
-              <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
-              Translating&hellip;
-            </span>
+          {translationFirst ? (
+            <>
+              {phrase.text ? (
+                <span className="font-semibold text-ink">{phrase.text} </span>
+              ) : translating ? (
+                <span className="inline-flex items-center gap-1 italic text-muted">
+                  <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
+                  Translating&hellip;{' '}
+                </span>
+              ) : (
+                <span className="italic text-neutral-600">needs translation </span>
+              )}
+              <span className="text-muted">{phrase.english}</span>
+            </>
           ) : (
-            <span className="italic text-neutral-600">needs translation</span>
+            <>
+              <span className="text-muted">{phrase.english} </span>
+              {phrase.text ? (
+                <span className="font-semibold text-ink">{phrase.text}</span>
+              ) : translating ? (
+                <span className="inline-flex items-center gap-1 italic text-muted">
+                  <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
+                  Translating&hellip;
+                </span>
+              ) : (
+                <span className="italic text-neutral-600">needs translation</span>
+              )}
+            </>
           )}
         </p>
       </div>
