@@ -7,6 +7,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { LanguageTabs } from './components/LanguageTabs'
 import { Logo } from './components/Logo'
 import { PhraseList } from './components/PhraseList'
+import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
 import { usePersistedState } from './lib/usePersistedState'
 import type { PhraseListItem } from './db/types'
@@ -43,6 +44,7 @@ function Shell() {
     renameCategory,
     deleteCategory,
     createLanguage,
+    addStartupPhrases,
     removeLanguage,
     getLanguagePhrases,
     backUpToFile,
@@ -56,6 +58,13 @@ function Shell() {
   const [selectionModeActive, setSelectionModeActive] = useState(false)
   const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', getSystemTheme())
   const [search, setSearch] = useState('')
+  const [startupPhrasesLanguageId, setStartupPhrasesLanguageId] = useState<number | null>(null)
+
+  async function handleAddLanguage(name: string, code: string, includeConceptIds?: number[] | null) {
+    const wasFirstLanguage = languages.length === 0
+    const lang = await createLanguage(name, code, includeConceptIds)
+    if (wasFirstLanguage) setStartupPhrasesLanguageId(lang.id)
+  }
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -109,7 +118,7 @@ function Shell() {
         languages={languages}
         activeLanguageId={activeLanguageId}
         onSelect={setActiveLanguageId}
-        onAddLanguage={createLanguage}
+        onAddLanguage={handleAddLanguage}
         onRemoveLanguage={removeLanguage}
         getLanguagePhrases={getLanguagePhrases}
         search={search}
@@ -119,12 +128,16 @@ function Shell() {
       <main className="flex-1 overflow-hidden">
         {languages.length === 0 ? (
           <p className="text-center text-muted text-sm py-12">Add a language to get started.</p>
+        ) : backgroundTranslation?.languageId === activeLanguageId ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
+            <Loader2 size={28} strokeWidth={2.5} className="animate-spin text-fabpink" />
+            <p className="text-sm">Translating {backgroundTranslation.languageName}&hellip;</p>
+          </div>
         ) : (
           <PhraseList
             phrases={phrases}
             languageCode={activeLanguageCode}
             languageName={activeLanguageName}
-            translating={backgroundTranslation?.languageId === activeLanguageId}
             categories={categories}
             search={search}
             onToggleLearned={(id, learned) => toggleLearned(id, learned)}
@@ -143,7 +156,7 @@ function Shell() {
         )}
       </main>
 
-      {backgroundTranslation && (
+      {backgroundTranslation && backgroundTranslation.languageId !== activeLanguageId && (
         <div
           className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink shadow-xl"
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
@@ -199,6 +212,16 @@ function Shell() {
           }
           onDeleteOneLanguage={deleteOneLanguage}
           onDeleteAllLanguages={deleteAllLanguages}
+        />
+      )}
+
+      {startupPhrasesLanguageId != null && (
+        <StartupPhrasesModal
+          onSkip={() => setStartupPhrasesLanguageId(null)}
+          onSubmit={async (englishKeys) => {
+            await addStartupPhrases(startupPhrasesLanguageId, englishKeys)
+            setStartupPhrasesLanguageId(null)
+          }}
         />
       )}
 

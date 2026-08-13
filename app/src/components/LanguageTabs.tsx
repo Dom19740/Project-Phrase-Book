@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
 import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
@@ -28,6 +28,11 @@ export function LanguageTabs({
   const [open, setOpen] = useState(false)
   const [showAddLanguage, setShowAddLanguage] = useState(false)
   const [confirmingRemoveId, setConfirmingRemoveId] = useState<number | null>(null)
+
+  // Prompt to add a language whenever there are none — first launch, or after removing the last one.
+  useEffect(() => {
+    if (languages.length === 0) setShowAddLanguage(true)
+  }, [languages.length])
 
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
 
