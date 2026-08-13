@@ -6,6 +6,7 @@ import { EditPhraseModal } from './components/EditPhraseModal'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LanguageTabs } from './components/LanguageTabs'
 import { Logo } from './components/Logo'
+import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
@@ -59,6 +60,13 @@ function Shell() {
   const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', getSystemTheme())
   const [search, setSearch] = useState('')
   const [startupPhrasesLanguageId, setStartupPhrasesLanguageId] = useState<number | null>(null)
+  const [onboardingSeen, setOnboardingSeen] = usePersistedState('phrasebook-onboarding-seen', false)
+  const [showOnboarding, setShowOnboarding] = useState(() => !onboardingSeen)
+
+  function finishOnboarding() {
+    setOnboardingSeen(true)
+    setShowOnboarding(false)
+  }
 
   async function handleAddLanguage(name: string, code: string, includeConceptIds?: number[] | null) {
     const wasFirstLanguage = languages.length === 0
@@ -229,12 +237,15 @@ function Shell() {
         <BackupModal
           languages={languages}
           onClose={() => setShowBackup(false)}
+          onShowGuide={() => setShowOnboarding(true)}
           onBackUpNow={backUpToFile}
           onPickBackup={pickBackupFile}
           onApplyBackup={applyBackupSnapshot}
           onExportCsv={exportLanguageCsv}
         />
       )}
+
+      {showOnboarding && <OnboardingFlow onFinish={finishOnboarding} />}
     </div>
   )
 }

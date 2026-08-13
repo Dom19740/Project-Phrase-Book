@@ -38,3 +38,18 @@ body {
   background-color: var(--color-appbg);
   font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 }
+
+@keyframes onboarding-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--slide-from, 24px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-onboarding-slide {
+  animation: onboarding-slide-in 0.3s ease-in-out;
+}
