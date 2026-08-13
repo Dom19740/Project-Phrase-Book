@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { BookOpen } from 'lucide-react'
 import { getLastBackupAt } from '../lib/autoBackup'
 import { exportFile } from '../lib/exportFile'
 import type { BackupSnapshot } from '../db/backup'
@@ -9,14 +8,13 @@ import { PopoutSelect } from './PopoutSelect'
 interface Props {
   languages: Language[]
   onClose: () => void
-  onShowGuide: () => void
   onBackUpNow: () => Promise<void>
   onPickBackup: () => Promise<{ name: string; snapshot: BackupSnapshot }>
   onApplyBackup: (snapshot: BackupSnapshot) => Promise<void>
   onExportCsv: (languageId: number) => Promise<string>
 }
 
-export function BackupModal({ languages, onClose, onShowGuide, onBackUpNow, onPickBackup, onApplyBackup, onExportCsv }: Props) {
+export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onApplyBackup, onExportCsv }: Props) {
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [pendingRestore, setPendingRestore] = useState<{ name: string; snapshot: BackupSnapshot } | null>(null)
@@ -108,16 +106,6 @@ export function BackupModal({ languages, onClose, onShowGuide, onBackUpNow, onPi
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            <button
-              onClick={() => {
-                onShowGuide()
-                onClose()
-              }}
-              className="flex items-center gap-2 rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium hover:bg-surfacehover active:scale-[0.98] transition-all mb-1"
-            >
-              <BookOpen size={15} strokeWidth={2} className="text-fabpink" />
-              How to use
-            </button>
             <button
               onClick={handleBackUpNow}
               disabled={busy}

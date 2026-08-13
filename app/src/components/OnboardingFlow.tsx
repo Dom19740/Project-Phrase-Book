@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { ArrowRight, Check, ChevronDown, Plus, Volume2 } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, ChevronDown, Hand, Pencil, Plus, Trash2, Volume2 } from 'lucide-react'
 import { Logo } from './Logo'
 
 interface Props {
@@ -33,8 +33,8 @@ const HOWTO_PAGES: HowToPage[] = [
     ),
   },
   {
-    title: 'Add exactly the phrases you want',
-    body: 'Tap the pink + button to add a phrase in your own words. Tap a phrase to hear it, mark it learned, or make it a favourite.',
+    title: 'Add the phrases you want',
+    body: 'Tap the + button to add a phrase in your own words. Tap a phrase to hear it, mark it learned, or make it a favourite.',
     illustration: (
       <div className="flex w-full flex-col items-center gap-5">
         <div className="flex w-full max-w-xs items-center gap-3 rounded-2xl border-2 border-hairline bg-surface px-4 py-3.5 shadow-md">
@@ -49,6 +49,42 @@ const HOWTO_PAGES: HowToPage[] = [
         </div>
         <div className="flex size-16 items-center justify-center rounded-full bg-fabpink text-white shadow-lg shadow-black/30">
           <Plus size={30} strokeWidth={2.5} />
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: 'Edit or delete a phrase',
+    body: 'Long-press a phrase to open it up — fix a typo, change its category, or delete it for good.',
+    illustration: (
+      <div className="flex w-full flex-col items-center gap-3">
+        <div className="relative flex w-full max-w-xs items-center gap-3 rounded-2xl border-2 border-dashed border-fabpink bg-surface px-4 py-3.5 shadow-md">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surfacehover text-fabpink">
+            <Volume2 size={20} strokeWidth={2} />
+          </span>
+          <span className="flex-1 text-lg leading-tight">
+            <span className="text-muted">Hello </span>
+            <span className="font-bold text-ink">Bonjour</span>
+          </span>
+          <Check size={22} strokeWidth={2.5} className="text-fabpink" />
+          <span className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full bg-fabpink text-white shadow-lg shadow-fabpink/30">
+            <Hand size={16} strokeWidth={2.5} />
+          </span>
+        </div>
+        <ArrowDown size={20} strokeWidth={2.5} className="text-muted" />
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col items-center gap-1.5">
+            <span className="flex size-12 items-center justify-center rounded-full border-2 border-hairline bg-surface text-ink shadow-sm">
+              <Pencil size={20} strokeWidth={2} />
+            </span>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">Edit</span>
+          </div>
+          <div className="flex flex-col items-center gap-1.5">
+            <span className="flex size-12 items-center justify-center rounded-full border-2 border-red-800 bg-surface text-red-400 shadow-sm">
+              <Trash2 size={20} strokeWidth={2} />
+            </span>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">Delete</span>
+          </div>
         </div>
       </div>
     ),

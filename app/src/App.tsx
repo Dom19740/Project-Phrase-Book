@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Moon, Plus, Settings, Sun, TriangleAlert } from 'lucide-react'
+import { BookOpen, Loader2, Menu, Moon, Plus, Save, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { EditPhraseModal } from './components/EditPhraseModal'
@@ -55,6 +55,7 @@ function Shell() {
   } = usePhraseBook()
   const [showAddPhrase, setShowAddPhrase] = useState(false)
   const [showBackup, setShowBackup] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
   const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', getSystemTheme())
@@ -102,23 +103,57 @@ function Shell() {
             Travel <span className="text-fabpink">Chatter</span>
           </h1>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="relative">
           <button
-            onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+            onClick={() => setMenuOpen((v) => !v)}
             className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink active:scale-90 transition-all"
-            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-            title={theme === 'dark' ? 'Light theme' : 'Dark theme'}
+            aria-label="Menu"
+            title="Menu"
           >
-            {theme === 'dark' ? <Sun size={20} strokeWidth={2} /> : <Moon size={20} strokeWidth={2} />}
+            <Menu size={20} strokeWidth={2} />
           </button>
-          <button
-            onClick={() => setShowBackup(true)}
-            className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink active:scale-90 transition-all"
-            aria-label="Backup settings"
-            title="Backup"
-          >
-            <Settings size={20} strokeWidth={2} />
-          </button>
+
+          {menuOpen && (
+            <>
+              <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenuOpen(false)} aria-label="Close menu" />
+              <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-1.5 shadow-xl">
+                <button
+                  onClick={() => {
+                    setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
+                    setMenuOpen(false)
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                >
+                  {theme === 'dark' ? (
+                    <Sun size={16} strokeWidth={2} className="text-fabpink" />
+                  ) : (
+                    <Moon size={16} strokeWidth={2} className="text-fabpink" />
+                  )}
+                  {theme === 'dark' ? 'Light theme' : 'Dark theme'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowOnboarding(true)
+                    setMenuOpen(false)
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                >
+                  <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
+                  How to use
+                </button>
+                <button
+                  onClick={() => {
+                    setShowBackup(true)
+                    setMenuOpen(false)
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                >
+                  <Save size={16} strokeWidth={2} className="text-fabpink" />
+                  Backup
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </header>
 
@@ -237,7 +272,6 @@ function Shell() {
         <BackupModal
           languages={languages}
           onClose={() => setShowBackup(false)}
-          onShowGuide={() => setShowOnboarding(true)}
           onBackUpNow={backUpToFile}
           onPickBackup={pickBackupFile}
           onApplyBackup={applyBackupSnapshot}
