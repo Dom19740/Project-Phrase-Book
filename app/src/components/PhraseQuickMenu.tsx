@@ -13,6 +13,7 @@ export function PhraseQuickMenu({ learned, favorite, onToggleLearned, onToggleFa
     <>
       <button
         className="fixed inset-0 z-40 cursor-default"
+        onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation()
           onClose()

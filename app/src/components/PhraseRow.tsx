@@ -69,7 +69,9 @@ export function PhraseRow({
   return (
     <div
       id={`phrase-row-${phrase.translationId}`}
-      className="group relative flex items-center gap-1.5 rounded-2xl bg-surface border border-hairline px-2 py-0.1 shadow-sm transition-all hover:border-fabpink/40 active:scale-[0.99] cursor-pointer select-none"
+      className={`group relative flex items-center gap-1.5 rounded-2xl bg-surface border border-hairline px-2 py-0.1 shadow-sm transition-all hover:border-fabpink/40 cursor-pointer select-none ${
+        menuOpen ? '' : 'active:scale-[0.99]'
+      }`}
       onPointerDown={handlePointerDown}
       onPointerUp={clearPressTimer}
       onPointerLeave={clearPressTimer}
