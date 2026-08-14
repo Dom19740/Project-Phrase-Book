@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { ArrowDown, ArrowRight, Check, ChevronDown, Hand, Pencil, Plus, Trash2, Volume2 } from 'lucide-react'
 import { Logo } from './Logo'
 
@@ -119,6 +119,7 @@ const TOTAL_PAGES = HOWTO_PAGES.length + 1
 export function OnboardingFlow({ onFinish }: Props) {
   const [page, setPage] = useState(0)
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
 
   function goTo(next: number) {
     setDirection(next > page ? 'forward' : 'back')
@@ -127,8 +128,34 @@ export function OnboardingFlow({ onFinish }: Props) {
 
   const isLast = page === TOTAL_PAGES - 1
 
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    const start = touchStart.current
+    touchStart.current = null
+    if (!start) return
+
+    const touch = e.changedTouches[0]
+    const deltaX = touch.clientX - start.x
+    const deltaY = touch.clientY - start.y
+
+    if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return
+
+    if (deltaX < 0 && page < TOTAL_PAGES - 1) {
+      goTo(page + 1)
+    } else if (deltaX > 0 && page > 0) {
+      goTo(page - 1)
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col bg-appbg pt-[var(--safe-area-inset-top,0px)] pb-[var(--safe-area-inset-bottom,0px)]">
+    <div
+      className="fixed inset-0 z-[60] flex flex-col bg-appbg pt-[var(--safe-area-inset-top,0px)] pb-[var(--safe-area-inset-bottom,0px)]"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="flex h-10 shrink-0 justify-end px-4 pt-3">
         {!isLast && (
           <button
@@ -185,7 +212,7 @@ export function OnboardingFlow({ onFinish }: Props) {
           ))}
         </div>
 
-        <div className="flex w-full items-center gap-2">
+        <div className="flex w-full items-center justify-center gap-2">
           {page > 0 && (
             <button
               onClick={() => goTo(page - 1)}
@@ -196,7 +223,7 @@ export function OnboardingFlow({ onFinish }: Props) {
           )}
           <button
             onClick={() => (isLast ? onFinish() : goTo(page + 1))}
-            className="h-11 flex-1 rounded-full bg-fabpink text-sm font-bold text-white shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all"
+            className="h-11 shrink-0 rounded-full bg-fabpink px-10 text-sm font-bold text-white shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all"
           >
             {isLast ? "Let's go" : page === 0 ? 'Get started' : 'Next'}
           </button>
