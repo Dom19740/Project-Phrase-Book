@@ -83,6 +83,44 @@ test('multiple chunks failing the first pass are all retried independently, and 
   assert.equal(attemptsByChunk.get(40), 1)
 })
 
+test('regression: a chunk that keeps failing past the old single-retry limit still succeeds once maxAttempts allows more passes — this was the CSV import bug (most phrases left untranslated after one rate-limited retry)', async () => {
+  const items = Array.from({ length: 10 }, (_, i) => i)
+  let attempt = 0
+
+  const failed = await translateInChunksWithRetry(
+    items,
+    10,
+    async () => {
+      attempt++
+      return attempt > 4 // fails the first 4 attempts, succeeds on the 5th
+    },
+    0,
+    6,
+  )
+
+  assert.deepEqual(failed, [], 'every phrase should eventually be translated within the attempt budget')
+  assert.equal(attempt, 5)
+})
+
+test('gives up and reports failure only after exhausting maxAttempts', async () => {
+  const items = [1, 2, 3]
+  let attempt = 0
+
+  const failed = await translateInChunksWithRetry(
+    items,
+    3,
+    async () => {
+      attempt++
+      return false
+    },
+    0,
+    4,
+  )
+
+  assert.deepEqual(failed, items)
+  assert.equal(attempt, 4)
+})
+
 test('translateInChunksWithRetry does not itself swallow a throwing callback — error handling is the caller\'s job, same as the real translateChunk wrapper in PhraseBookContext', async () => {
   const items = [1, 2, 3, 4]
   await assert.rejects(

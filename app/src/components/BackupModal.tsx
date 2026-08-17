@@ -1,8 +1,14 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { getLastBackupAt } from '../lib/autoBackup'
 import { exportFile } from '../lib/exportFile'
+import { detectLanguage } from '../lib/detectLanguage'
+import { getLanguageFlag } from '../lib/languageFlags'
+import type { LanguageOption } from '../lib/languageOptions'
+import type { CsvPhraseRow } from '../lib/csvImport'
 import type { BackupSnapshot } from '../db/backup'
 import type { Language } from '../db/types'
+import { LanguageSearchList } from './LanguageSearchList'
 import { PopoutSelect } from './PopoutSelect'
 
 interface Props {
@@ -12,16 +18,42 @@ interface Props {
   onPickBackup: () => Promise<{ name: string; snapshot: BackupSnapshot }>
   onApplyBackup: (snapshot: BackupSnapshot) => Promise<void>
   onExportCsv: (languageId: number) => Promise<string>
+  onPickCsv: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
+  onImportCsv: (rows: CsvPhraseRow[], language: Language) => Promise<{ created: number; updated: number }>
+  onCreateLanguage: (name: string, code: string) => Promise<Language>
 }
 
-export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onApplyBackup, onExportCsv }: Props) {
+type ImportTarget = { kind: 'existing'; language: Language } | { kind: 'new'; option: LanguageOption }
+
+export function BackupModal({
+  languages,
+  onClose,
+  onBackUpNow,
+  onPickBackup,
+  onApplyBackup,
+  onExportCsv,
+  onPickCsv,
+  onImportCsv,
+  onCreateLanguage,
+}: Props) {
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [pendingRestore, setPendingRestore] = useState<{ name: string; snapshot: BackupSnapshot } | null>(null)
   const [csvLanguageId, setCsvLanguageId] = useState<number | ''>(languages[0]?.id ?? '')
+
+  const [pendingImport, setPendingImport] = useState<{ name: string; rows: CsvPhraseRow[] } | null>(null)
+  const [importTarget, setImportTarget] = useState<ImportTarget | null>(null)
+  const [detectedCode, setDetectedCode] = useState<string | null>(null)
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false)
+  const [manualEntry, setManualEntry] = useState(false)
+  const [manualName, setManualName] = useState('')
+  const [manualCode, setManualCode] = useState('')
+
   // React's `busy` state only re-renders (and disables the button) on the next frame, which a fast
   // double-tap can beat — this ref blocks re-entry synchronously so two restores never run at once.
   const restoringRef = useRef(false)
+
+  const existingCodes = useMemo(() => new Set(languages.map((l) => l.code.toLowerCase())), [languages])
 
   async function handleBackUpNow() {
     setBusy(true)
@@ -45,6 +77,63 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
       await exportFile(csv, `${(language?.name ?? 'phrases').toLowerCase()}-phrases.csv`, 'text/csv')
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Export failed.')
+    }
+    setBusy(false)
+  }
+
+  function resetImportState() {
+    setPendingImport(null)
+    setImportTarget(null)
+    setDetectedCode(null)
+    setShowLanguagePicker(false)
+    setManualEntry(false)
+    setManualName('')
+    setManualCode('')
+  }
+
+  async function handleChooseCsv() {
+    setBusy(true)
+    setStatus(null)
+    try {
+      const picked = await onPickCsv()
+      // Best-effort local guess from the translation text's script (no detection API is wired
+      // up) — pre-fills the target so an obvious case like a Vietnamese CSV needs no typing, but
+      // it's just a starting point: every language is still one click away below.
+      const guess = detectLanguage(picked.rows.map((r) => r.text))
+      const matched = guess ? languages.find((l) => l.code.toLowerCase() === guess.code.toLowerCase()) : undefined
+
+      setPendingImport(picked)
+      setDetectedCode(guess?.code ?? null)
+      setShowLanguagePicker(false)
+      setManualEntry(false)
+      if (matched) setImportTarget({ kind: 'existing', language: matched })
+      else if (guess) setImportTarget({ kind: 'new', option: guess })
+      else setImportTarget(languages[0] ? { kind: 'existing', language: languages[0] } : null)
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not read that file.')
+    }
+    setBusy(false)
+  }
+
+  function confirmManual() {
+    if (!manualName.trim() || !manualCode.trim()) return
+    setImportTarget({ kind: 'new', option: { name: manualName.trim(), code: manualCode.trim() } })
+    setManualEntry(false)
+    setShowLanguagePicker(false)
+  }
+
+  async function confirmImportCsv() {
+    if (!pendingImport || !importTarget) return
+    setBusy(true)
+    setStatus(null)
+    try {
+      const language = importTarget.kind === 'existing' ? importTarget.language : await onCreateLanguage(importTarget.option.name, importTarget.option.code)
+      const result = await onImportCsv(pendingImport.rows, language)
+      const total = result.created + result.updated
+      setStatus(`Imported ${result.created} new and updated ${result.updated} existing phrase${total === 1 ? '' : 's'} into ${language.name}.`)
+      resetImportState()
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Import failed.')
     }
     setBusy(false)
   }
@@ -77,6 +166,7 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
   }
 
   const lastBackupAt = getLastBackupAt()
+  const blankCount = pendingImport ? pendingImport.rows.filter((r) => !r.text.trim()).length : 0
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
@@ -101,6 +191,123 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
                 className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Replace everything
+              </button>
+            </div>
+          </div>
+        ) : pendingImport ? (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-ink">
+              Import <strong>{pendingImport.rows.length}</strong> phrase{pendingImport.rows.length === 1 ? '' : 's'} from <strong>{pendingImport.name}</strong>
+            </p>
+
+            {blankCount > 0 && (
+              <p className="text-xs text-muted">
+                {blankCount} of {pendingImport.rows.length} phrase{blankCount === 1 ? '' : 's'} {blankCount === 1 ? "doesn't" : "don't"} have a translation yet —{' '}
+                {blankCount === 1 ? 'it' : 'they'} will be auto-translated after import.
+              </p>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-ink">Import into</label>
+
+              {showLanguagePicker ? (
+                manualEntry ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <input
+                        autoFocus
+                        value={manualName}
+                        onChange={(e) => setManualName(e.target.value)}
+                        placeholder="Name, e.g. Vietnamese"
+                        className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+                      />
+                      <input
+                        value={manualCode}
+                        onChange={(e) => setManualCode(e.target.value)}
+                        placeholder="Code, e.g. vi"
+                        className="w-24 shrink-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <button onClick={() => setManualEntry(false)} className="text-xs text-muted hover:text-ink underline transition-colors">
+                        Back to list
+                      </button>
+                      <button
+                        onClick={confirmManual}
+                        disabled={!manualName.trim() || !manualCode.trim()}
+                        className="rounded-full bg-fabpink px-4 py-1.5 text-xs font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                      >
+                        Use this language
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <LanguageSearchList
+                      disabledCodes={existingCodes}
+                      highlightCode={detectedCode}
+                      onChoose={(option) => {
+                        setImportTarget({ kind: 'new', option })
+                        setShowLanguagePicker(false)
+                      }}
+                    />
+                    <div className="flex items-center justify-between gap-2 mt-2">
+                      <button onClick={() => setManualEntry(true)} className="text-xs text-muted hover:text-ink underline transition-colors">
+                        Can't find it? Add manually
+                      </button>
+                      <button onClick={() => setShowLanguagePicker(false)} className="text-xs text-muted hover:text-ink underline transition-colors">
+                        Back
+                      </button>
+                    </div>
+                  </>
+                )
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.id}
+                      onClick={() => setImportTarget({ kind: 'existing', language: lang })}
+                      className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left transition-colors ${
+                        importTarget?.kind === 'existing' && importTarget.language.id === lang.id
+                          ? 'bg-fabpink/10 text-fabpink font-medium'
+                          : 'text-ink hover:bg-surfacehover'
+                      }`}
+                    >
+                      <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                      {lang.name}
+                    </button>
+                  ))}
+
+                  {importTarget?.kind === 'new' && (
+                    <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm bg-fabpink/10 text-fabpink font-medium">
+                      <span aria-hidden="true">{getLanguageFlag(importTarget.option.code)}</span>
+                      <span className="flex-1">
+                        {importTarget.option.name} (new{detectedCode === importTarget.option.code ? ', detected' : ''})
+                      </span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setShowLanguagePicker(true)}
+                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left text-fabpink font-medium hover:bg-surfacehover transition-colors"
+                  >
+                    <Plus size={14} strokeWidth={2.5} />
+                    {importTarget?.kind === 'new' ? 'Change new language' : 'Add a new language'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button onClick={resetImportState} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
+                Cancel
+              </button>
+              <button
+                onClick={confirmImportCsv}
+                disabled={busy || !importTarget}
+                className="flex-1 rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+              >
+                Import
               </button>
             </div>
           </div>
@@ -142,12 +349,24 @@ export function BackupModal({ languages, onClose, onBackUpNow, onPickBackup, onA
                 </div>
               </div>
             )}
+
+            <div className="mt-2 border-t border-hairline pt-3">
+              <label className="block text-sm font-medium mb-1 text-ink">Import phrases</label>
+              <button
+                onClick={handleChooseCsv}
+                disabled={busy}
+                className="w-full rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium hover:bg-surfacehover active:scale-[0.98] transition-all disabled:opacity-40"
+              >
+                Choose file
+              </button>
+              <p className="mt-1 text-xs text-muted">A CSV (English, Translation, Category) or a plain list of phrases, one per line.</p>
+            </div>
           </div>
         )}
 
         {status && <p className="mt-3 text-sm text-muted">{status}</p>}
 
-        {!pendingRestore && (
+        {!pendingRestore && !pendingImport && (
           <div className="flex justify-end mt-4">
             <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
               Close

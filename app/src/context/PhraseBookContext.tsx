@@ -17,6 +17,7 @@ import {
   getCategories,
   getLanguages,
   getPhraseList,
+  importCsvPhrases,
   renameCategory as renameCategoryQuery,
   reorderTranslations,
   setFavorite,
@@ -28,11 +29,12 @@ import type { Category, Language, PhraseListItem } from '../db/types'
 import { exportSnapshot, importSnapshot, isValidBackupSnapshot, type BackupSnapshot } from '../db/backup'
 import { onMutation } from '../db/client'
 import { scheduleAutoBackup } from '../lib/autoBackup'
-import { readBackupFromPickedLocation, saveBackupToPickedLocation } from '../lib/backupFile'
+import { readBackupFromPickedLocation, readCsvFromPickedLocation, saveBackupToPickedLocation } from '../lib/backupFile'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
 import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
 import { usePersistedState } from '../lib/usePersistedState'
 import { phrasesToCsv } from '../lib/csvExport'
+import { parseCsvPhrases, type CsvPhraseRow } from '../lib/csvImport'
 import { startupPhrases } from '../data/startupPhrases'
 
 interface PhraseBookContextValue {
@@ -73,6 +75,8 @@ interface PhraseBookContextValue {
   pickBackupFile: () => Promise<{ name: string; snapshot: BackupSnapshot }>
   applyBackupSnapshot: (snapshot: BackupSnapshot) => Promise<void>
   exportLanguageCsv: (languageId: number) => Promise<string>
+  pickCsvFile: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
+  importLanguageCsv: (rows: CsvPhraseRow[], language: Language) => Promise<{ created: number; updated: number }>
 }
 
 /** Phrases translated per request when auto-translating a newly added language in the background. */
@@ -80,6 +84,15 @@ const TRANSLATE_CHUNK_SIZE = 20
 
 /** Wait before retrying a failed chunk — a failure is often a rate limit, and retrying instantly just hits it again. */
 const TRANSLATE_RETRY_DELAY_MS = 5000
+
+/**
+ * How many passes to make before giving up on a chunk. A single retry (the old default) isn't
+ * enough for a big import — a large batch of phrases routinely trips the proxy's per-device bulk
+ * rate limit, which doesn't clear in one 5s wait, so most of the list was ending up permanently
+ * untranslated after just one retry. translateInChunksWithRetry backs off exponentially (capped)
+ * between passes, so this rides out a rate limit lasting a few minutes instead of a few seconds.
+ */
+const TRANSLATE_MAX_ATTEMPTS = 10
 
 const PhraseBookContext = createContext<PhraseBookContextValue | null>(null)
 
@@ -333,6 +346,73 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     return phrasesToCsv(list)
   }, [])
 
+  const pickCsvFile = useCallback(async (): Promise<{ name: string; rows: CsvPhraseRow[] }> => {
+    const { name, data } = await readCsvFromPickedLocation()
+    const rows = parseCsvPhrases(data)
+    if (rows.length === 0) throw new Error('No phrases found in that file.')
+    return { name, rows }
+  }, [])
+
+  /**
+   * Fills in blank translations for a set of phrase concepts by auto-translating them in the
+   * background, chunked with retry — the same flow whether the concepts came from adding a new
+   * language, starter phrases, or a CSV import whose Translation column was empty or partial.
+   */
+  const runBackgroundTranslation = useCallback(
+    (languageId: number, languageCode: string, languageName: string, concepts: { id: number; english: string }[]) => {
+      if (concepts.length === 0) return
+      setBackgroundTranslation({ languageId, languageName })
+      setTranslationIncomplete(null)
+      ;(async () => {
+        async function translateChunk(chunk: { id: number; english: string }[]): Promise<boolean> {
+          try {
+            const translations = await translatePhrasesBulk(
+              chunk.map((c) => c.english),
+              languageCode,
+              languageName,
+            )
+            const entries = chunk
+              .filter((c) => translations[c.english])
+              .map((c) => ({ phraseConceptId: c.id, languageId, text: translations[c.english] }))
+            if (entries.length > 0) {
+              await bulkSetTranslationText(entries)
+              if (activeLanguageIdRef.current === languageId) setPhrases(await getPhraseList(languageId))
+            }
+            return entries.length === chunk.length
+          } catch (err) {
+            console.error('Bulk auto-translate failed for a chunk:', err)
+            return false
+          }
+        }
+
+        const failed = await translateInChunksWithRetry(concepts, TRANSLATE_CHUNK_SIZE, translateChunk, TRANSLATE_RETRY_DELAY_MS, TRANSLATE_MAX_ATTEMPTS)
+
+        setBackgroundTranslation((current) => (current?.languageId === languageId ? null : current))
+
+        if (failed.length > 0) {
+          console.error(`${failed.length} phrase(s) could not be auto-translated after retrying.`)
+          setTranslationIncomplete({ languageName, count: failed.length })
+          setTimeout(() => {
+            setTranslationIncomplete((current) => (current?.languageName === languageName ? null : current))
+          }, 8000)
+        }
+      })()
+    },
+    [],
+  )
+
+  const importLanguageCsv = useCallback(
+    async (rows: CsvPhraseRow[], language: Language) => {
+      const result = await importCsvPhrases(language.id, rows)
+      await refreshCategories()
+      setActiveLanguageId(language.id)
+      setPhrases(await getPhraseList(language.id))
+      runBackgroundTranslation(language.id, language.code, language.name, result.blank)
+      return { created: result.created, updated: result.updated }
+    },
+    [refreshCategories, setActiveLanguageId, runBackgroundTranslation],
+  )
+
   const getLanguagePhrases = useCallback((languageId: number) => getPhraseList(languageId), [])
 
   const createLanguage = useCallback(
@@ -353,59 +433,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
         const include = new Set(includeConceptIds)
         concepts = concepts.filter((c) => include.has(c.id))
       }
-      if (concepts.length === 0) return lang
-
       // Translating everything can take a while (many phrases, a slow/mobile connection) — run it
       // in the background instead of blocking the caller, so the "add language" modal can close
-      // right away. Chunked (rather than one giant request) so a single slow/failed batch doesn't
-      // leave every phrase blank, and so each request is less likely to time out.
-      setBackgroundTranslation({ languageId: lang.id, languageName: lang.name })
-      setTranslationIncomplete(null)
-      ;(async () => {
-        // Translates one chunk and reports whether every phrase in it actually got a translation
-        // back. A chunk that fails outright (network error, proxy 5xx/429/503) or comes back with
-        // some entries missing (e.g. Gemini didn't return a value for one of them) both count as
-        // "not fully done", so translateInChunksWithRetry gives it a second chance rather than
-        // leaving those phrases silently blank forever.
-        async function translateChunk(chunk: { id: number; english: string }[]): Promise<boolean> {
-          try {
-            const translations = await translatePhrasesBulk(
-              chunk.map((c) => c.english),
-              lang.code,
-              lang.name,
-            )
-            const entries = chunk
-              .filter((c) => translations[c.english])
-              .map((c) => ({ phraseConceptId: c.id, languageId: lang.id, text: translations[c.english] }))
-            if (entries.length > 0) {
-              await bulkSetTranslationText(entries)
-              if (activeLanguageIdRef.current === lang.id) setPhrases(await getPhraseList(lang.id))
-            }
-            return entries.length === chunk.length
-          } catch (err) {
-            console.error('Bulk auto-translate failed for a chunk of the new language:', err)
-            return false
-          }
-        }
-
-        const failed = await translateInChunksWithRetry(concepts, TRANSLATE_CHUNK_SIZE, translateChunk, TRANSLATE_RETRY_DELAY_MS)
-
-        setBackgroundTranslation((current) => (current?.languageId === lang.id ? null : current))
-
-        // Only reached if phrases are still untranslated after a full retry pass — tell the user
-        // instead of letting the "Translating…" indicator just vanish as if everything finished.
-        if (failed.length > 0) {
-          console.error(`Add language: ${failed.length} phrase(s) could not be auto-translated after retrying.`)
-          setTranslationIncomplete({ languageName: lang.name, count: failed.length })
-          setTimeout(() => {
-            setTranslationIncomplete((current) => (current?.languageName === lang.name ? null : current))
-          }, 8000)
-        }
-      })()
+      // right away.
+      runBackgroundTranslation(lang.id, lang.code, lang.name, concepts)
 
       return lang
     },
-    [refreshLanguages],
+    [refreshLanguages, runBackgroundTranslation],
   )
 
   const addStartupPhrases = useCallback(
@@ -432,47 +467,9 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       await refreshCategories()
       await refreshPhrases()
 
-      const languageCode = lang.code
-      const languageName = lang.name
-
-      setBackgroundTranslation({ languageId, languageName })
-      setTranslationIncomplete(null)
-      ;(async () => {
-        async function translateChunk(chunk: { id: number; english: string }[]): Promise<boolean> {
-          try {
-            const translations = await translatePhrasesBulk(
-              chunk.map((c) => c.english),
-              languageCode,
-              languageName,
-            )
-            const entries = chunk
-              .filter((c) => translations[c.english])
-              .map((c) => ({ phraseConceptId: c.id, languageId, text: translations[c.english] }))
-            if (entries.length > 0) {
-              await bulkSetTranslationText(entries)
-              if (activeLanguageIdRef.current === languageId) setPhrases(await getPhraseList(languageId))
-            }
-            return entries.length === chunk.length
-          } catch (err) {
-            console.error('Bulk auto-translate failed for a chunk of startup phrases:', err)
-            return false
-          }
-        }
-
-        const failed = await translateInChunksWithRetry(concepts, TRANSLATE_CHUNK_SIZE, translateChunk, TRANSLATE_RETRY_DELAY_MS)
-
-        setBackgroundTranslation((current) => (current?.languageId === languageId ? null : current))
-
-        if (failed.length > 0) {
-          console.error(`Startup phrases: ${failed.length} phrase(s) could not be auto-translated after retrying.`)
-          setTranslationIncomplete({ languageName, count: failed.length })
-          setTimeout(() => {
-            setTranslationIncomplete((current) => (current?.languageName === languageName ? null : current))
-          }, 8000)
-        }
-      })()
+      runBackgroundTranslation(languageId, lang.code, lang.name, concepts)
     },
-    [languages, refreshCategories, refreshPhrases],
+    [languages, refreshCategories, refreshPhrases, runBackgroundTranslation],
   )
 
   const removeLanguage = useCallback(
@@ -518,6 +515,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       pickBackupFile,
       applyBackupSnapshot,
       exportLanguageCsv,
+      pickCsvFile,
+      importLanguageCsv,
     }),
     [
       loading,
@@ -537,6 +536,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       pickBackupFile,
       applyBackupSnapshot,
       exportLanguageCsv,
+      pickCsvFile,
+      importLanguageCsv,
       deleteOneLanguage,
       deleteAllLanguages,
       bulkMarkLearned,

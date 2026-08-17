@@ -24,19 +24,11 @@ export async function saveBackupToPickedLocation(json: string): Promise<void> {
   URL.revokeObjectURL(url)
 }
 
-/** Prompts the user to pick a backup file (device storage, Google Drive, ...) and returns its name and contents. */
-export async function readBackupFromPickedLocation(): Promise<{ name: string; data: string }> {
-  if (Capacitor.getPlatform() !== 'web') {
-    // A strict "application/json" filter hides files that providers (e.g. Google Drive) tag with a
-    // different MIME type, which made the browser look different from the save dialog. "*/*" shows
-    // everything, same full storage/Drive browsing experience as saving.
-    return await SafFile.pickFile({ mimeType: '*/*' })
-  }
-
+function pickWebFile(accept: string): Promise<{ name: string; data: string }> {
   return new Promise<{ name: string; data: string }>((resolve, reject) => {
     const input = document.createElement('input')
     input.type = 'file'
-    input.accept = '.json,application/json'
+    input.accept = accept
     input.onchange = () => {
       const file = input.files?.[0]
       if (!file) {
@@ -50,4 +42,26 @@ export async function readBackupFromPickedLocation(): Promise<{ name: string; da
     }
     input.click()
   })
+}
+
+/** Prompts the user to pick a backup file (device storage, Google Drive, ...) and returns its name and contents. */
+export async function readBackupFromPickedLocation(): Promise<{ name: string; data: string }> {
+  if (Capacitor.getPlatform() !== 'web') {
+    // A strict "application/json" filter hides files that providers (e.g. Google Drive) tag with a
+    // different MIME type, which made the browser look different from the save dialog. "*/*" shows
+    // everything, same full storage/Drive browsing experience as saving.
+    return await SafFile.pickFile({ mimeType: '*/*' })
+  }
+  return pickWebFile('.json,application/json')
+}
+
+/**
+ * Prompts the user to pick a phrase list file (device storage, Google Drive, ...) and returns its
+ * name and contents — a CSV, or a plain .txt list of phrases typed one per line.
+ */
+export async function readCsvFromPickedLocation(): Promise<{ name: string; data: string }> {
+  if (Capacitor.getPlatform() !== 'web') {
+    return await SafFile.pickFile({ mimeType: '*/*' })
+  }
+  return pickWebFile('.csv,.txt,text/csv,text/plain')
 }

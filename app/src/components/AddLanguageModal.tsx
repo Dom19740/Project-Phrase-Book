@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, X } from 'lucide-react'
 import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
-import { LANGUAGE_OPTIONS, type LanguageOption } from '../lib/languageOptions'
+import type { LanguageOption } from '../lib/languageOptions'
+import { LanguageSearchList } from './LanguageSearchList'
 import { PopoutSelect } from './PopoutSelect'
 
 interface Props {
@@ -14,7 +14,6 @@ interface Props {
 }
 
 export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhrases, onClose, onSubmit }: Props) {
-  const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<LanguageOption | null>(null)
   const [saving, setSaving] = useState(false)
   const [manual, setManual] = useState(false)
@@ -28,12 +27,6 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
 
   const existingCodes = useMemo(() => new Set(languages.map((l) => l.code.toLowerCase())), [languages])
   const hasExistingPhrases = languages.length > 0
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    if (!q) return LANGUAGE_OPTIONS
-    return LANGUAGE_OPTIONS.filter((l) => l.name.toLowerCase().includes(q) || l.code.toLowerCase().includes(q))
-  }, [search])
 
   useEffect(() => {
     if (!selected || sourceLanguageId == null) return
@@ -227,45 +220,8 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
           <>
             <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add language</h2>
 
-            <div className="relative mb-3">
-              <Search size={14} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-              <input
-                autoFocus
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search languages"
-                className="w-full rounded-full border border-hairline bg-transparent text-ink pl-8 pr-8 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted hover:text-ink transition-colors"
-                  aria-label="Clear search"
-                >
-                  <X size={14} strokeWidth={2} />
-                </button>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-0.5 max-h-72 overflow-y-auto mb-3">
-              {filtered.length === 0 && <p className="text-sm text-muted text-center py-4">No matches.</p>}
-              {filtered.map((lang) => {
-                const added = existingCodes.has(lang.code.toLowerCase())
-                return (
-                  <button
-                    key={lang.code}
-                    disabled={added || saving}
-                    onClick={() => chooseLanguage(lang)}
-                    className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
-                      {lang.name}
-                    </span>
-                    {added && <span className="text-xs text-muted">Added</span>}
-                  </button>
-                )
-              })}
+            <div className="mb-3">
+              <LanguageSearchList disabledCodes={existingCodes} disabled={saving} onChoose={chooseLanguage} />
             </div>
 
             <div className="flex items-center justify-between gap-2">

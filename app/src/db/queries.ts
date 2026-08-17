@@ -174,6 +174,89 @@ export async function addPhraseConcept(input: NewPhraseInput): Promise<number> {
   return conceptId
 }
 
+export interface CsvImportRow {
+  english: string
+  text: string
+  category: string | null
+}
+
+/**
+ * Imports CSV rows into one language: a row whose English text matches an existing phrase concept
+ * (case-insensitive) fills in/overwrites that concept's translation for this language; an
+ * unmatched row creates a new phrase concept with a translation for this language only. A blank
+ * Translation cell never erases an existing translation — it only leaves the row queued in
+ * `blank` (concepts with no translation text at all) for the caller to auto-translate.
+ */
+export async function importCsvPhrases(
+  languageId: number,
+  rows: CsvImportRow[],
+): Promise<{ created: number; updated: number; blank: { id: number; english: string }[] }> {
+  const db = await getDb()
+  const existingConcepts = await db.query('SELECT id, english FROM phrase_concepts;')
+  const conceptIdByEnglish = new Map((existingConcepts.values ?? []).map((r) => [String(r.english).trim().toLowerCase(), r.id as number]))
+
+  const existingTranslations = await db.query('SELECT phrase_concept_id, text FROM translations WHERE language_id = ?;', [languageId])
+  const existingTextByConcept = new Map((existingTranslations.values ?? []).map((r) => [r.phrase_concept_id as number, String(r.text ?? '')]))
+
+  const maxOrder = await db.query('SELECT COALESCE(MAX(sort_order), -1) AS m FROM phrase_concepts;')
+  let nextSortOrder = (maxOrder.values?.[0]?.m ?? -1) + 1
+
+  const sets: { statement: string; values: unknown[] }[] = []
+  const blank: { id: number; english: string }[] = []
+  let created = 0
+  let updated = 0
+
+  for (const row of rows) {
+    const key = row.english.toLowerCase()
+    const categoryId = row.category ? await findOrCreateCategory(row.category) : null
+    let conceptId = conceptIdByEnglish.get(key)
+
+    if (conceptId == null) {
+      const conceptRes = await db.run('INSERT INTO phrase_concepts (english, category_id, sort_order) VALUES (?, ?, ?);', [
+        row.english,
+        categoryId,
+        nextSortOrder++,
+      ])
+      conceptId = conceptRes.changes?.lastId ?? 0
+      conceptIdByEnglish.set(key, conceptId)
+      sets.push({
+        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, 0);',
+        values: [conceptId, languageId, row.text],
+      })
+      // A second row later in the same import with the same English text (a duplicate line, or
+      // the same phrase under two categories) must see this translation as already present —
+      // otherwise it inserts a second translations row for the same concept+language pair.
+      existingTextByConcept.set(conceptId, row.text)
+      created++
+      if (!row.text) blank.push({ id: conceptId, english: row.english })
+      continue
+    }
+
+    const existingText = existingTextByConcept.get(conceptId)
+    if (existingText == null) {
+      sets.push({
+        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, 0);',
+        values: [conceptId, languageId, row.text],
+      })
+      existingTextByConcept.set(conceptId, row.text)
+      created++
+      if (!row.text) blank.push({ id: conceptId, english: row.english })
+    } else if (row.text) {
+      sets.push({
+        statement: 'UPDATE translations SET text = ? WHERE phrase_concept_id = ? AND language_id = ?;',
+        values: [row.text, conceptId, languageId],
+      })
+      updated++
+    } else if (!existingText) {
+      blank.push({ id: conceptId, english: row.english })
+    }
+  }
+
+  if (sets.length > 0) await db.executeSet(sets)
+  await persist()
+  return { created, updated, blank }
+}
+
 /** Updates the shared English root and one language's translation text/category in a single transaction. */
 export async function updatePhrase(
   phraseConceptId: number,

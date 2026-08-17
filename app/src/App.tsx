@@ -52,6 +52,8 @@ function Shell() {
     pickBackupFile,
     applyBackupSnapshot,
     exportLanguageCsv,
+    pickCsvFile,
+    importLanguageCsv,
   } = usePhraseBook()
   const [showAddPhrase, setShowAddPhrase] = useState(false)
   const [showBackup, setShowBackup] = useState(false)
@@ -276,6 +278,9 @@ function Shell() {
           onPickBackup={pickBackupFile}
           onApplyBackup={applyBackupSnapshot}
           onExportCsv={exportLanguageCsv}
+          onPickCsv={pickCsvFile}
+          onImportCsv={importLanguageCsv}
+          onCreateLanguage={createLanguage}
         />
       )}
 

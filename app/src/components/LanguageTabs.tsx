@@ -84,15 +84,13 @@ export function LanguageTabs({
                         >
                           {lang.name}
                         </button>
-                        {languages.length > 1 && (
-                          <button
-                            onClick={() => setConfirmingRemoveId(lang.id)}
-                            className="shrink-0 rounded-lg p-2 text-muted hover:text-red-400 transition-colors"
-                            aria-label={`Remove ${lang.name}`}
-                          >
-                            <Trash2 size={14} strokeWidth={2} />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => setConfirmingRemoveId(lang.id)}
+                          className="shrink-0 rounded-lg p-2 text-muted hover:text-red-400 transition-colors"
+                          aria-label={`Remove ${lang.name}`}
+                        >
+                          <Trash2 size={14} strokeWidth={2} />
+                        </button>
                       </>
                     )}
                   </div>
