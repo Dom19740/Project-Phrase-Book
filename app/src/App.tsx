@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { BookOpen, Loader2, Menu, Moon, Plus, Save, Sun, TriangleAlert } from 'lucide-react'
+import { BookOpen, Layers, Loader2, Menu, Moon, Plus, Save, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { EditPhraseModal } from './components/EditPhraseModal'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { FlashCardsModal } from './components/FlashCardsModal'
 import { LanguageTabs } from './components/LanguageTabs'
 import { Logo } from './components/Logo'
 import { OnboardingFlow } from './components/OnboardingFlow'
@@ -57,6 +58,7 @@ function Shell() {
   } = usePhraseBook()
   const [showAddPhrase, setShowAddPhrase] = useState(false)
   const [showBackup, setShowBackup] = useState(false)
+  const [showFlashCards, setShowFlashCards] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
@@ -142,6 +144,17 @@ function Shell() {
                 >
                   <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
                   How to use
+                </button>
+                <button
+                  onClick={() => {
+                    setShowFlashCards(true)
+                    setMenuOpen(false)
+                  }}
+                  disabled={languages.length === 0}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  <Layers size={16} strokeWidth={2} className="text-fabpink" />
+                  Flash Cards
                 </button>
                 <button
                   onClick={() => {
@@ -290,6 +303,17 @@ function Shell() {
       )}
 
       {showOnboarding && <OnboardingFlow onFinish={finishOnboarding} />}
+
+      {showFlashCards && (
+        <FlashCardsModal
+          languages={languages}
+          activeLanguageId={activeLanguageId}
+          getLanguagePhrases={getLanguagePhrases}
+          onToggleLearned={toggleLearned}
+          onToggleFavorite={toggleFavorite}
+          onClose={() => setShowFlashCards(false)}
+        />
+      )}
     </div>
   )
 }

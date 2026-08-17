@@ -122,7 +122,7 @@ function sortItems(items: PhraseListItem[], mode: SortMode): PhraseListItem[] {
 type LearnedFilter = 'unlearned' | 'learned' | 'all'
 
 const LEARNED_FILTER_CYCLE: LearnedFilter[] = ['unlearned', 'learned', 'all']
-const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Unlearned', learned: 'Learned', all: 'All' }
+const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Not Learnt', learned: 'Learned', all: 'All' }
 
 function groupByCategory(items: PhraseListItem[], mode: SortMode): Group[] {
   const map = new Map<string, PhraseListItem[]>()
@@ -196,10 +196,10 @@ export function PhraseList({
 
   const { primaryItems, primaryLabel, secondaryItems, secondaryLabel } = useMemo(() => {
     if (learnedFilter === 'learned')
-      return { primaryItems: learnedItems, primaryLabel: 'Learned', secondaryItems: unlearnedItems, secondaryLabel: 'Unlearned' }
+      return { primaryItems: learnedItems, primaryLabel: 'Learned', secondaryItems: unlearnedItems, secondaryLabel: 'Not Learnt' }
     if (learnedFilter === 'all')
       return { primaryItems: filtered, primaryLabel: 'All', secondaryItems: [] as PhraseListItem[], secondaryLabel: '' }
-    return { primaryItems: unlearnedItems, primaryLabel: 'Unlearned', secondaryItems: learnedItems, secondaryLabel: 'Learned' }
+    return { primaryItems: unlearnedItems, primaryLabel: 'Not Learnt', secondaryItems: learnedItems, secondaryLabel: 'Learned' }
   }, [learnedFilter, filtered, unlearnedItems, learnedItems])
 
   const secondarySorted = useMemo(() => sortItems(secondaryItems, sortMode), [secondaryItems, sortMode])
@@ -313,7 +313,7 @@ export function PhraseList({
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
             className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
-            title="Cycle: Unlearned → Learned → All"
+            title="Cycle: Not Learnt → Learned → All"
           >
             <Check size={13} strokeWidth={2} className="text-fabpink" />
             {LEARNED_FILTER_LABEL[learnedFilter]}
