@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ArrowDown, ArrowDownAZ, ArrowUp, ArrowUpZA, Check, ChevronDown, ChevronRight, Clock, Languages, ListChecks, X } from 'lucide-react'
+import { ArrowDown, ArrowDownAZ, ArrowUp, ArrowUpZA, Check, ChevronDown, ChevronRight, Clock, Languages, ListChecks, Star, X } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
@@ -162,6 +162,7 @@ export function PhraseList({
   const [learnedFilter, setLearnedFilter] = usePersistedState<LearnedFilter>('phrasebook-learned-filter', 'unlearned')
   const [primaryExpanded, setPrimaryExpanded] = useState(true)
   const [secondaryExpanded, setSecondaryExpanded] = useState(false)
+  const [favoritesExpanded, setFavoritesExpanded] = useState(true)
   const [favoritesOnly, setFavoritesOnly] = usePersistedState('phrasebook-favorites-only', false)
   const [hiddenCategoryList, setHiddenCategoryList] = usePersistedState<string[]>('phrasebook-hidden-categories', [])
   const hiddenCategories = useMemo(() => new Set(hiddenCategoryList), [hiddenCategoryList])
@@ -202,37 +203,47 @@ export function PhraseList({
   }, [learnedFilter, filtered, unlearnedItems, learnedItems])
 
   const secondarySorted = useMemo(() => sortItems(secondaryItems, sortMode), [secondaryItems, sortMode])
+
+  const favoriteItems = useMemo(() => primaryItems.filter((p) => p.favorite), [primaryItems])
+  const nonFavoritePrimaryItems = useMemo(() => primaryItems.filter((p) => !p.favorite), [primaryItems])
+
+  const favoriteGroups = useMemo<Group[]>(
+    () =>
+      groupByCategoryOn
+        ? groupByCategory(favoriteItems, sortMode)
+        : [{ categoryName: '', items: sortItems(favoriteItems, sortMode) }],
+    [favoriteItems, groupByCategoryOn, sortMode],
+  )
   const groups = useMemo<Group[]>(
-    () => (groupByCategoryOn ? groupByCategory(primaryItems, sortMode) : [{ categoryName: '', items: sortItems(primaryItems, sortMode) }]),
-    [primaryItems, groupByCategoryOn, sortMode],
+    () =>
+      groupByCategoryOn
+        ? groupByCategory(nonFavoritePrimaryItems, sortMode)
+        : [{ categoryName: '', items: sortItems(nonFavoritePrimaryItems, sortMode) }],
+    [nonFavoritePrimaryItems, groupByCategoryOn, sortMode],
   )
 
   // Alphabet jump index: an ordered list of stops per bucket, one per "pinned section" that could
-  // hold a letter — the favorites pinned atop a group, then that group's alphabetical rest, repeated
-  // per group when grouped by category. Repeated presses of the same button step through the list
-  // (wrapping back to the top), instead of a single first-occurrence target — otherwise a pinned
-  // favorite would permanently claim its letter range and every press would land back on it.
+  // hold a letter — the favourites section's groups, then the main section's groups. Repeated presses
+  // of the same button step through the list (wrapping back to the top), instead of a single
+  // first-occurrence target — otherwise a favourite would permanently claim its letter range and
+  // every press would land back on it.
   const bucketTargetLists = useMemo(() => {
     const dir = sortMode.endsWith('asc') ? 1 : -1
     const lists = new Map<string, number[]>()
-    for (const group of groups) {
-      const favorites = group.items.filter((i) => i.favorite)
-      const rest = group.items.filter((i) => !i.favorite)
-      for (const subset of [favorites, rest]) {
-        const alphaOrdered = [...subset].sort((a, b) => dir * sortKey(a, sortMode).localeCompare(sortKey(b, sortMode)))
-        const seenBuckets = new Set<string>()
-        for (const item of alphaOrdered) {
-          const bucket = bucketFor(sortKey(item, sortMode))
-          if (seenBuckets.has(bucket)) continue
-          seenBuckets.add(bucket)
-          const arr = lists.get(bucket) ?? []
-          arr.push(item.translationId)
-          lists.set(bucket, arr)
-        }
+    for (const group of [...favoriteGroups, ...groups]) {
+      const alphaOrdered = [...group.items].sort((a, b) => dir * sortKey(a, sortMode).localeCompare(sortKey(b, sortMode)))
+      const seenBuckets = new Set<string>()
+      for (const item of alphaOrdered) {
+        const bucket = bucketFor(sortKey(item, sortMode))
+        if (seenBuckets.has(bucket)) continue
+        seenBuckets.add(bucket)
+        const arr = lists.get(bucket) ?? []
+        arr.push(item.translationId)
+        lists.set(bucket, arr)
       }
     }
     return lists
-  }, [groups, sortMode])
+  }, [favoriteGroups, groups, sortMode])
 
   const [bucketCycleIndex, setBucketCycleIndex] = useState<Record<string, number>>({})
 
@@ -376,14 +387,54 @@ export function PhraseList({
         <div className="flex flex-col gap-4">
           {primaryItems.length === 0 && <p className="text-center text-muted text-sm py-8">No phrases here — add one to get started.</p>}
 
-          {primaryItems.length > 0 && (
+          {favoriteItems.length > 0 && (
+            <div>
+              <button
+                onClick={() => setFavoritesExpanded((v) => !v)}
+                className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" />
+                  Favourites ({favoriteItems.length})
+                </span>
+                {favoritesExpanded ? (
+                  <ChevronDown size={16} strokeWidth={2} className="text-fabpink" />
+                ) : (
+                  <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
+                )}
+              </button>
+              {favoritesExpanded && (
+                <div className="mt-1.5 flex flex-col gap-3">
+                  {favoriteGroups.map((group) => {
+                    const isCollapsed = groupByCategoryOn && (collapsed[`fav:${group.categoryName}`] ?? false)
+                    return (
+                      <div key={`fav-${group.categoryName || 'all'}`}>
+                        {groupByCategoryOn && (
+                          <button
+                            onClick={() => setCollapsed((c) => ({ ...c, [`fav:${group.categoryName}`]: !isCollapsed }))}
+                            className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
+                          >
+                            <span>{group.categoryName}</span>
+                            {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
+                          </button>
+                        )}
+                        {!isCollapsed && <div className="mt-1.5 flex flex-col gap-1.5">{group.items.map((item) => renderRow(item))}</div>}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {nonFavoritePrimaryItems.length > 0 && (
             <div>
               <button
                 onClick={() => setPrimaryExpanded((v) => !v)}
                 className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
               >
                 <span>
-                  {primaryLabel} ({primaryItems.length})
+                  {primaryLabel} ({nonFavoritePrimaryItems.length})
                 </span>
                 {primaryExpanded ? (
                   <ChevronDown size={16} strokeWidth={2} className="text-fabpink" />
