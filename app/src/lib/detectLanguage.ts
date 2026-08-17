@@ -47,3 +47,27 @@ export function detectLanguage(sampleTexts: string[]): LanguageOption | null {
   }
   return null
 }
+
+/**
+ * Best-effort language guess from a filename, e.g. "vietnamese-phrases.csv" — matches the exact
+ * naming this app's own CSV export uses (`${language.name}-phrases.csv`), so re-importing a file
+ * exported from another install of the app round-trips without asking. A fallback for scripts
+ * detectLanguage() can't safely guess (Cyrillic, Arabic-derived, Devanagari, Han, ...). Picks the
+ * longest matching language name to prefer a specific match over a coincidental short one.
+ */
+export function detectLanguageFromFilename(filename: string): LanguageOption | null {
+  const base = filename.toLowerCase().replace(/\.[^.]+$/, '')
+  let best: LanguageOption | null = null
+  let bestLength = 0
+
+  for (const option of LANGUAGE_OPTIONS) {
+    const bareName = option.name.split(' (')[0].toLowerCase()
+    if (bareName.length < 4) continue // too short to avoid coincidental matches (e.g. "Lao")
+    if (base.includes(bareName) && bareName.length > bestLength) {
+      best = option
+      bestLength = bareName.length
+    }
+  }
+
+  return best
+}

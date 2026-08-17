@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { getLastBackupAt } from '../lib/autoBackup'
 import { exportFile } from '../lib/exportFile'
-import { detectLanguage } from '../lib/detectLanguage'
+import { detectLanguage, detectLanguageFromFilename } from '../lib/detectLanguage'
 import { getLanguageFlag } from '../lib/languageFlags'
 import type { LanguageOption } from '../lib/languageOptions'
 import type { CsvPhraseRow } from '../lib/csvImport'
@@ -20,7 +20,7 @@ interface Props {
   onExportCsv: (languageId: number) => Promise<string>
   onPickCsv: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
   onImportCsv: (rows: CsvPhraseRow[], language: Language) => Promise<{ created: number; updated: number }>
-  onCreateLanguage: (name: string, code: string) => Promise<Language>
+  onCreateLanguage: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<Language>
 }
 
 type ImportTarget = { kind: 'existing'; language: Language } | { kind: 'new'; option: LanguageOption }
@@ -44,6 +44,10 @@ export function BackupModal({
   const [pendingImport, setPendingImport] = useState<{ name: string; rows: CsvPhraseRow[] } | null>(null)
   const [importTarget, setImportTarget] = useState<ImportTarget | null>(null)
   const [detectedCode, setDetectedCode] = useState<string | null>(null)
+  // Set when the file itself already carries translations and we're confident which language
+  // they're in (matched an existing language, or a strong script/filename guess) — skips straight
+  // to a one-line confirmation instead of making the user pick from the language list.
+  const [autoConfirm, setAutoConfirm] = useState(false)
   const [showLanguagePicker, setShowLanguagePicker] = useState(false)
   const [manualEntry, setManualEntry] = useState(false)
   const [manualName, setManualName] = useState('')
@@ -85,6 +89,7 @@ export function BackupModal({
     setPendingImport(null)
     setImportTarget(null)
     setDetectedCode(null)
+    setAutoConfirm(false)
     setShowLanguagePicker(false)
     setManualEntry(false)
     setManualName('')
@@ -96,19 +101,28 @@ export function BackupModal({
     setStatus(null)
     try {
       const picked = await onPickCsv()
-      // Best-effort local guess from the translation text's script (no detection API is wired
-      // up) — pre-fills the target so an obvious case like a Vietnamese CSV needs no typing, but
-      // it's just a starting point: every language is still one click away below.
-      const guess = detectLanguage(picked.rows.map((r) => r.text))
+      const hasTranslations = picked.rows.some((r) => r.text.trim() !== '')
+
+      // Best-effort local guess (no detection API is wired up): first from the translation
+      // text's script, then — since scripts like Cyrillic/Arabic/Devanagari/Han can't be safely
+      // guessed that way — from the filename, which matches this app's own CSV export naming
+      // ("${language}-phrases.csv") so a round-tripped export is recognized without any typing.
+      const guess = detectLanguage(picked.rows.map((r) => r.text)) ?? detectLanguageFromFilename(picked.name)
       const matched = guess ? languages.find((l) => l.code.toLowerCase() === guess.code.toLowerCase()) : undefined
 
       setPendingImport(picked)
       setDetectedCode(guess?.code ?? null)
       setShowLanguagePicker(false)
       setManualEntry(false)
+
       if (matched) setImportTarget({ kind: 'existing', language: matched })
       else if (guess) setImportTarget({ kind: 'new', option: guess })
       else setImportTarget(languages[0] ? { kind: 'existing', language: languages[0] } : null)
+
+      // Only skip the picker when the file actually has translations in it AND we know which
+      // language they're in — an English-only list always needs a target picked, and a
+      // translated file we can't identify still needs the user to say what it is.
+      setAutoConfirm(hasTranslations && (matched != null || guess != null))
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Could not read that file.')
     }
@@ -126,16 +140,26 @@ export function BackupModal({
     if (!pendingImport || !importTarget) return
     setBusy(true)
     setStatus(null)
+    let succeeded = false
     try {
-      const language = importTarget.kind === 'existing' ? importTarget.language : await onCreateLanguage(importTarget.option.name, importTarget.option.code)
-      const result = await onImportCsv(pendingImport.rows, language)
-      const total = result.created + result.updated
-      setStatus(`Imported ${result.created} new and updated ${result.updated} existing phrase${total === 1 ? '' : 's'} into ${language.name}.`)
+      // Empty array, not omitted — a CSV-imported language should start with only what the file
+      // itself supplies, not a blank row for every existing phrase from every other language
+      // (which is addLanguage()'s default, meant for the normal "Add Language" flow's "copy my
+      // existing phrasebook over" option — that default silently turned every CSV import of a new
+      // language into a background-translate job for the user's *entire* phrasebook, not just the
+      // rows being imported).
+      const language =
+        importTarget.kind === 'existing' ? importTarget.language : await onCreateLanguage(importTarget.option.name, importTarget.option.code, [])
+      await onImportCsv(pendingImport.rows, language)
       resetImportState()
+      succeeded = true
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Import failed.')
     }
     setBusy(false)
+    // Closing the whole modal (instead of just returning to the main Backup screen) is the
+    // clearest signal the import actually went through, now that there's no success message.
+    if (succeeded) onClose()
   }
 
   async function handleRestoreClick() {
@@ -191,6 +215,44 @@ export function BackupModal({
                 className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Replace everything
+              </button>
+            </div>
+          </div>
+        ) : pendingImport && autoConfirm && importTarget ? (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-ink">
+              Import <strong>{pendingImport.rows.length}</strong> phrase{pendingImport.rows.length === 1 ? '' : 's'} from <strong>{pendingImport.name}</strong> to{' '}
+              <strong>
+                <span aria-hidden="true">{getLanguageFlag(importTarget.kind === 'existing' ? importTarget.language.code : importTarget.option.code)}</span>{' '}
+                {importTarget.kind === 'existing' ? importTarget.language.name : importTarget.option.name}
+              </strong>
+              ?
+            </p>
+
+            {blankCount > 0 && (
+              <p className="text-xs text-muted">
+                {blankCount} of {pendingImport.rows.length} phrase{blankCount === 1 ? '' : 's'} {blankCount === 1 ? "doesn't" : "don't"} have a translation yet —{' '}
+                {blankCount === 1 ? 'it' : 'they'} will be auto-translated after import.
+              </p>
+            )}
+
+            <button
+              onClick={() => setAutoConfirm(false)}
+              className="self-start text-xs text-muted hover:text-ink underline transition-colors"
+            >
+              Not the right language?
+            </button>
+
+            <div className="flex gap-2">
+              <button onClick={resetImportState} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
+                Cancel
+              </button>
+              <button
+                onClick={confirmImportCsv}
+                disabled={busy}
+                className="flex-1 rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+              >
+                Import
               </button>
             </div>
           </div>

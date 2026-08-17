@@ -173,7 +173,12 @@ function Shell() {
       <main className="flex-1 overflow-hidden">
         {languages.length === 0 ? (
           <p className="text-center text-muted text-sm py-12">Add a language to get started.</p>
-        ) : backgroundTranslation?.languageId === activeLanguageId ? (
+        ) : backgroundTranslation?.languageId === activeLanguageId && phrases.length === 0 ? (
+          // Nothing to show yet for this language at all — block briefly rather than flash an
+          // empty list. Once there's at least one phrase row (even blank, filling in live as
+          // translations land), show it straight away instead of hiding it behind a spinner for
+          // however long translation takes — that can now run to several minutes of retries, and
+          // there's no reason to block on it when there's already something real to look at.
           <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
             <Loader2 size={28} strokeWidth={2.5} className="animate-spin text-fabpink" />
             <p className="text-sm">Translating {backgroundTranslation.languageName}&hellip;</p>
@@ -201,7 +206,7 @@ function Shell() {
         )}
       </main>
 
-      {backgroundTranslation && backgroundTranslation.languageId !== activeLanguageId && (
+      {backgroundTranslation && (backgroundTranslation.languageId !== activeLanguageId || phrases.length > 0) && (
         <div
           className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
