@@ -169,7 +169,7 @@ export function OnboardingFlow({ onFinish }: Props) {
 
       <div
         key={page}
-        className="animate-onboarding-slide flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-4"
+        className="animate-slide-in flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-4"
         style={{ '--slide-from': direction === 'forward' ? '24px' : '-24px' } as React.CSSProperties}
       >
         {page === 0 ? (

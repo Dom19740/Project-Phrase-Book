@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Check, ChevronLeft, ChevronRight, Layers, Star, Volume2, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowLeftRight, Check, ChevronLeft, ChevronRight, Layers, Star, Volume2, X } from 'lucide-react'
 import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { speak } from '../lib/tts'
@@ -32,7 +32,7 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
   const [step, setStep] = useState<'setup' | 'session' | 'complete'>('setup')
   const [languageId, setLanguageId] = useState<number | null>(activeLanguageId ?? languages[0]?.id ?? null)
   const [filter, setFilter] = useState<FlashFilter>('all')
-  const [categoryId, setCategoryId] = useState<number | 'all'>('all')
+  const [categoryIds, setCategoryIds] = useState<Set<number>>(new Set())
   const [direction, setDirection] = useState<GuessDirection>('english')
   const [languagePhrases, setLanguagePhrases] = useState<PhraseListItem[]>([])
   const [loadingPhrases, setLoadingPhrases] = useState(false)
@@ -40,6 +40,8 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
   const [deck, setDeck] = useState<PhraseListItem[]>([])
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
+  const [cardDirection, setCardDirection] = useState<'forward' | 'back'>('forward')
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     if (languageId == null) {
@@ -58,11 +60,20 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
     }
   }, [languageId, getLanguagePhrases])
 
-  // A category chosen for one language may not exist for another — reset rather than filter
-  // against an id that no longer applies once the language changes.
+  // Categories chosen for one language may not exist for another — reset rather than filter
+  // against ids that no longer apply once the language changes.
   useEffect(() => {
-    setCategoryId('all')
+    setCategoryIds(new Set())
   }, [languageId])
+
+  function toggleCategory(id: number) {
+    setCategoryIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const availableCategories = useMemo(() => {
     const map = new Map<number, string>()
@@ -79,10 +90,10 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
       if (!p.text) return false
       if (filter === 'favourites' && !p.favorite) return false
       if (filter === 'unlearned' && p.learned) return false
-      if (categoryId !== 'all' && p.categoryId !== categoryId) return false
+      if (categoryIds.size > 0 && (p.categoryId == null || !categoryIds.has(p.categoryId))) return false
       return true
     })
-  }, [languagePhrases, filter, categoryId])
+  }, [languagePhrases, filter, categoryIds])
 
   const activeLanguage = languages.find((l) => l.id === languageId)
   const languageCode = activeLanguage?.code ?? 'en'
@@ -105,12 +116,14 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
       setStep('complete')
       return
     }
+    setCardDirection('forward')
     setIndex((i) => i + 1)
     setFlipped(false)
   }
 
   function goPrev() {
     if (index === 0) return
+    setCardDirection('back')
     setIndex((i) => i - 1)
     setFlipped(false)
   }
@@ -120,6 +133,29 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
     setDeck((prev) => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)))
     if (patch.learned != null) onToggleLearned(card.translationId, patch.learned)
     if (patch.favorite != null) onToggleFavorite(card.translationId, patch.favorite)
+  }
+
+  function handleCardTouchStart(e: React.TouchEvent) {
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+
+  function handleCardTouchEnd(e: React.TouchEvent) {
+    const start = touchStartRef.current
+    touchStartRef.current = null
+    if (!start) return
+
+    const touch = e.changedTouches[0]
+    const deltaX = touch.clientX - start.x
+    const deltaY = touch.clientY - start.y
+
+    if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return
+
+    // A swipe would otherwise still end in the browser's emulated click a moment later, which
+    // would immediately flip the card that just slid in — stop that compatibility event outright
+    // rather than trying to detect and swallow it downstream.
+    e.preventDefault()
+    if (deltaX < 0) goNext()
+    else goPrev()
   }
 
   return (
@@ -194,11 +230,11 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
                   <section>
                     <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">Category</h2>
                     <div className="flex flex-wrap gap-2">
-                      <button onClick={() => setCategoryId('all')} className={pillClass(categoryId === 'all')}>
+                      <button onClick={() => setCategoryIds(new Set())} className={pillClass(categoryIds.size === 0)}>
                         All categories
                       </button>
                       {availableCategories.map((c) => (
-                        <button key={c.id} onClick={() => setCategoryId(c.id)} className={pillClass(categoryId === c.id)}>
+                        <button key={c.id} onClick={() => toggleCategory(c.id)} className={pillClass(categoryIds.has(c.id))}>
                           {c.name}
                         </button>
                       ))}
@@ -240,10 +276,28 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
 
       {step === 'session' && card && (
         <div className="flex-1 flex flex-col px-4 py-4 min-h-0">
+          <div className="flex items-center justify-center pb-3 shrink-0">
+            <button
+              onClick={() => {
+                setDirection((d) => (d === 'english' ? 'translation' : 'english'))
+                setFlipped(false)
+              }}
+              className="flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
+              title="Swap guess direction"
+            >
+              <ArrowLeftRight size={13} strokeWidth={2.5} className="text-fabpink" />
+              Guess via {promptIsTranslation ? (activeLanguage?.name ?? 'Translation') : 'English'}
+            </button>
+          </div>
+
           <div className="flex-1 flex items-center justify-center min-h-0">
             <button
+              key={index}
               onClick={() => setFlipped((f) => !f)}
-              className="w-full max-w-sm min-h-64 flex flex-col items-center justify-center gap-4 rounded-3xl border-2 border-fabpink/40 bg-surface px-6 py-10 shadow-xl active:scale-[0.99] transition-all text-center"
+              onTouchStart={handleCardTouchStart}
+              onTouchEnd={handleCardTouchEnd}
+              className="animate-slide-in w-full max-w-sm min-h-64 flex flex-col items-center justify-center gap-4 rounded-3xl border-2 border-fabpink/40 bg-surface px-6 py-10 shadow-xl active:scale-[0.99] transition-all text-center touch-pan-y"
+              style={{ '--slide-from': cardDirection === 'forward' ? '24px' : '-24px' } as React.CSSProperties}
             >
               <span className="text-xs font-bold uppercase tracking-wider text-muted">{flipped ? 'Answer' : 'Tap to reveal'}</span>
               <span className="text-2xl font-bold leading-snug text-ink break-words">{shownText || <span className="italic text-muted">&mdash;</span>}</span>
@@ -269,7 +323,7 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
             </button>
             <button onClick={() => updateCard({ learned: !card.learned })} className={pillClass(card.learned) + ' flex items-center gap-1.5'}>
               <Check size={15} strokeWidth={2.5} />
-              {card.learned ? 'Learnt' : 'Not learnt'}
+              Learnt
             </button>
           </div>
 
