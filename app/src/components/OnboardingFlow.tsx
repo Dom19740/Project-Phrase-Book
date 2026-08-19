@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ArrowDown, ArrowRight, Check, ChevronDown, Hand, Pencil, Plus, Trash2, Volume2 } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, ChevronDown, Hand, Layers, Pencil, Plus, Trash2, Volume2 } from 'lucide-react'
 import { Logo } from './Logo'
 
 interface Props {
@@ -85,6 +85,23 @@ const HOWTO_PAGES: HowToPage[] = [
             </span>
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">Delete</span>
           </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: 'Practice with flash cards',
+    body: 'Open the menu and tap Flash Cards to start a session — pick a language and filter, then tap a card to flip between English and the translation. Long-press a card to edit it.',
+    illustration: (
+      <div className="flex w-full flex-col items-center gap-3">
+        <div className="flex w-full max-w-xs items-center gap-2.5 rounded-xl border-2 border-fabpink bg-surface px-3 py-2.5 shadow-lg shadow-fabpink/20">
+          <Layers size={18} strokeWidth={2} className="text-fabpink" />
+          <span className="text-sm font-semibold text-ink">Flash Cards</span>
+        </div>
+        <ArrowDown size={18} strokeWidth={2.5} className="text-muted" />
+        <div className="flex w-full max-w-xs flex-col items-center gap-3 rounded-3xl border-2 border-fabpink/40 bg-surface px-6 py-7 shadow-xl text-center">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Tap to reveal</span>
+          <span className="text-xl font-bold text-ink">Bonjour</span>
         </div>
       </div>
     ),

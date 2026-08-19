@@ -1,20 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeftRight, Check, ChevronLeft, ChevronRight, Layers, Star, Volume2, X } from 'lucide-react'
-import type { Language, PhraseListItem } from '../db/types'
+import type { Category, Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { speak } from '../lib/tts'
+import { EditPhraseModal } from './EditPhraseModal'
 
 type FlashFilter = 'all' | 'unlearned' | 'favourites'
 type GuessDirection = 'english' | 'translation'
 
 interface Props {
   languages: Language[]
+  categories: Category[]
   activeLanguageId: number | null
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   onToggleLearned: (translationId: number, learned: boolean) => void
   onToggleFavorite: (translationId: number, favorite: boolean) => void
+  onEditPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
+  onDeleteOneLanguage: (translationId: number) => Promise<void>
+  onDeleteAllLanguages: (phraseConceptId: number) => Promise<void>
   onClose: () => void
 }
+
+const LONG_PRESS_MS = 500
 
 const FILTERS: { value: FlashFilter; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -28,7 +35,18 @@ function pillClass(active: boolean) {
   }`
 }
 
-export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrases, onToggleLearned, onToggleFavorite, onClose }: Props) {
+export function FlashCardsModal({
+  languages,
+  categories,
+  activeLanguageId,
+  getLanguagePhrases,
+  onToggleLearned,
+  onToggleFavorite,
+  onEditPhrase,
+  onDeleteOneLanguage,
+  onDeleteAllLanguages,
+  onClose,
+}: Props) {
   const [step, setStep] = useState<'setup' | 'session' | 'complete'>('setup')
   const [languageId, setLanguageId] = useState<number | null>(activeLanguageId ?? languages[0]?.id ?? null)
   const [filter, setFilter] = useState<FlashFilter>('all')
@@ -41,7 +59,11 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [cardDirection, setCardDirection] = useState<'forward' | 'back'>('forward')
+  const [speaking, setSpeaking] = useState(false)
+  const [editingCard, setEditingCard] = useState<PhraseListItem | null>(null)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+  const pressTimer = useRef<number | null>(null)
+  const longPressFired = useRef(false)
 
   useEffect(() => {
     if (languageId == null) {
@@ -65,6 +87,17 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
   useEffect(() => {
     setCategoryIds(new Set())
   }, [languageId])
+
+  // Deleting the card being studied (via the edit dialog) shrinks the deck out from under the
+  // current index — keep it in range, or end the session if nothing's left.
+  useEffect(() => {
+    if (step !== 'session') return
+    if (deck.length === 0) {
+      setStep('complete')
+    } else if (index > deck.length - 1) {
+      setIndex(deck.length - 1)
+    }
+  }, [deck, step, index])
 
   function toggleCategory(id: number) {
     setCategoryIds((prev) => {
@@ -135,8 +168,39 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
     if (patch.favorite != null) onToggleFavorite(card.translationId, patch.favorite)
   }
 
+  function clearPressTimer() {
+    if (pressTimer.current != null) {
+      window.clearTimeout(pressTimer.current)
+      pressTimer.current = null
+    }
+  }
+
+  function handleCardPointerDown() {
+    longPressFired.current = false
+    pressTimer.current = window.setTimeout(() => {
+      longPressFired.current = true
+      if (card) setEditingCard(card)
+    }, LONG_PRESS_MS)
+  }
+
+  function handleCardClick() {
+    if (longPressFired.current) {
+      longPressFired.current = false
+      return
+    }
+    setFlipped((f) => !f)
+  }
+
   function handleCardTouchStart(e: React.TouchEvent) {
     touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+
+  function handleCardTouchMove(e: React.TouchEvent) {
+    const start = touchStartRef.current
+    if (!start) return
+    const touch = e.touches[0]
+    // A finger that's already moved is swiping, not long-pressing — don't let a slow swipe open Edit.
+    if (Math.abs(touch.clientX - start.x) > 10 || Math.abs(touch.clientY - start.y) > 10) clearPressTimer()
   }
 
   function handleCardTouchEnd(e: React.TouchEvent) {
@@ -293,11 +357,17 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
           <div className="flex-1 flex items-center justify-center min-h-0">
             <button
               key={index}
-              onClick={() => setFlipped((f) => !f)}
+              onClick={handleCardClick}
+              onPointerDown={handleCardPointerDown}
+              onPointerUp={clearPressTimer}
+              onPointerLeave={clearPressTimer}
+              onPointerCancel={clearPressTimer}
               onTouchStart={handleCardTouchStart}
+              onTouchMove={handleCardTouchMove}
               onTouchEnd={handleCardTouchEnd}
               className="animate-slide-in w-full max-w-sm min-h-64 flex flex-col items-center justify-center gap-4 rounded-3xl border-2 border-fabpink/40 bg-surface px-6 py-10 shadow-xl active:scale-[0.99] transition-all text-center touch-pan-y"
               style={{ '--slide-from': cardDirection === 'forward' ? '24px' : '-24px' } as React.CSSProperties}
+              title="Tap to flip, long-press to edit"
             >
               <span className="text-xs font-bold uppercase tracking-wider text-muted">{flipped ? 'Answer' : 'Tap to reveal'}</span>
               <span className="text-2xl font-bold leading-snug text-ink break-words">{shownText || <span className="italic text-muted">&mdash;</span>}</span>
@@ -307,11 +377,17 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
 
           <div className="flex items-center justify-center gap-3 py-4 shrink-0">
             <button
-              onClick={() => {
-                if (shownIsTranslation) speak(card.text, languageCode)
+              onClick={async () => {
+                if (!shownIsTranslation) return
+                setSpeaking(true)
+                try {
+                  await speak(card.text, languageCode)
+                } finally {
+                  setSpeaking(false)
+                }
               }}
               disabled={!shownIsTranslation}
-              className="rounded-full p-2.5 border border-hairline text-muted hover:bg-surfacehover disabled:opacity-30 transition-all"
+              className={`rounded-full p-2.5 border border-hairline hover:bg-surfacehover disabled:opacity-30 transition-all ${speaking ? 'text-fabpink' : 'text-muted'}`}
               aria-label="Speak"
               title="Speak"
             >
@@ -374,6 +450,32 @@ export function FlashCardsModal({ languages, activeLanguageId, getLanguagePhrase
             </button>
           </div>
         </div>
+      )}
+
+      {editingCard && (
+        <EditPhraseModal
+          phrase={editingCard}
+          languageCode={languageCode}
+          languageName={activeLanguage?.name ?? ''}
+          categories={categories}
+          onClose={() => setEditingCard(null)}
+          onSubmit={async (english, text, categoryName) => {
+            await onEditPhrase(editingCard.phraseConceptId, editingCard.translationId, english, text, categoryName)
+            const patch = { english, text, categoryName }
+            setLanguagePhrases((prev) => prev.map((p) => (p.translationId === editingCard.translationId ? { ...p, ...patch } : p)))
+            setDeck((prev) => prev.map((p) => (p.translationId === editingCard.translationId ? { ...p, ...patch } : p)))
+          }}
+          onDeleteOneLanguage={async (translationId) => {
+            await onDeleteOneLanguage(translationId)
+            setLanguagePhrases((prev) => prev.filter((p) => p.translationId !== translationId))
+            setDeck((prev) => prev.filter((p) => p.translationId !== translationId))
+          }}
+          onDeleteAllLanguages={async (phraseConceptId) => {
+            await onDeleteAllLanguages(phraseConceptId)
+            setLanguagePhrases((prev) => prev.filter((p) => p.phraseConceptId !== phraseConceptId))
+            setDeck((prev) => prev.filter((p) => p.phraseConceptId !== phraseConceptId))
+          }}
+        />
       )}
     </div>
   )

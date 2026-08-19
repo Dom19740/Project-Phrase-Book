@@ -95,6 +95,12 @@ function Shell() {
   const activeLanguageCode = activeLanguage?.code ?? 'en'
   const activeLanguageName = activeLanguage?.name ?? ''
 
+  // Flash cards can study a language other than the active tab, so the edit modal must resolve
+  // its language from the phrase being edited rather than assuming the active tab's language.
+  const editingLanguage = editingPhrase ? languages.find((l) => l.id === editingPhrase.languageId) : undefined
+  const editingLanguageCode = editingLanguage?.code ?? 'en'
+  const editingLanguageName = editingLanguage?.name ?? ''
+
   return (
     <div
       className="flex h-full flex-col bg-appbg text-ink"
@@ -266,8 +272,8 @@ function Shell() {
       {editingPhrase && (
         <EditPhraseModal
           phrase={editingPhrase}
-          languageCode={activeLanguageCode}
-          languageName={activeLanguageName}
+          languageCode={editingLanguageCode}
+          languageName={editingLanguageName}
           categories={categories}
           onClose={() => setEditingPhrase(null)}
           onSubmit={(english, text, categoryName) =>
@@ -307,10 +313,14 @@ function Shell() {
       {showFlashCards && (
         <FlashCardsModal
           languages={languages}
+          categories={categories}
           activeLanguageId={activeLanguageId}
           getLanguagePhrases={getLanguagePhrases}
           onToggleLearned={toggleLearned}
           onToggleFavorite={toggleFavorite}
+          onEditPhrase={editPhrase}
+          onDeleteOneLanguage={deleteOneLanguage}
+          onDeleteAllLanguages={deleteAllLanguages}
           onClose={() => setShowFlashCards(false)}
         />
       )}
