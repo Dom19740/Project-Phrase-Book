@@ -212,7 +212,7 @@ export function BackupModal({
               <button
                 onClick={confirmRestore}
                 disabled={busy}
-                className="flex-1 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-40"
+                className="flex-1 rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Replace everything
               </button>

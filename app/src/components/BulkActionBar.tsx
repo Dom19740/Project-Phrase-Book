@@ -154,7 +154,7 @@ export function BulkActionBar({
                 setPanel(null)
               }}
               disabled={busy}
-              className="flex-1 rounded-full border border-red-800 px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-950/30 active:scale-95 transition-all disabled:opacity-40"
+              className="flex-1 rounded-full border border-fabpink px-3 py-1.5 text-sm font-medium text-fabpink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
             >
               {languageName} only
             </button>
@@ -166,7 +166,7 @@ export function BulkActionBar({
                 setPanel(null)
               }}
               disabled={busy}
-              className="flex-1 rounded-full bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-40"
+              className="flex-1 rounded-full bg-fabpink px-3 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
             >
               All languages
             </button>
@@ -219,7 +219,7 @@ export function BulkActionBar({
             disabled={selectedCount === 0}
             aria-label="Delete"
             title="Delete"
-            className="flex items-center rounded-full border border-red-800 p-1.5 text-red-400 hover:bg-red-950/40 active:scale-90 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+            className="flex items-center rounded-full border border-fabpink p-1.5 text-fabpink hover:bg-surfacehover active:scale-90 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Trash2 size={13} strokeWidth={2} />
           </button>

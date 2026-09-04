@@ -65,7 +65,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                       disabled={busy}
                       aria-label="Delete"
                       title="Delete"
-                      className="rounded-full p-1.5 bg-red-600 text-white active:scale-90 transition-transform disabled:opacity-40"
+                      className="rounded-full p-1.5 bg-fabpink text-onaccent active:scale-90 transition-transform disabled:opacity-40"
                     >
                       <Trash2 size={13} strokeWidth={2} />
                     </button>
@@ -101,7 +101,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                       onClick={() => setConfirmingDeleteId(c.id)}
                       aria-label="Delete"
                       title="Delete"
-                      className="rounded-full p-1.5 text-red-400 hover:bg-red-950/40 active:scale-90 transition-all"
+                      className="rounded-full p-1.5 text-fabpink hover:bg-surfacehover active:scale-90 transition-all"
                     >
                       <Trash2 size={13} strokeWidth={2} />
                     </button>

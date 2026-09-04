@@ -96,14 +96,14 @@ export function EditPhraseModal({
               <button
                 onClick={() => handleDelete('language')}
                 disabled={deleting}
-                className="rounded-full border border-red-800 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-950/30 active:scale-95 transition-all disabled:opacity-40"
+                className="rounded-full border border-fabpink px-4 py-2 text-sm font-medium text-fabpink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
               >
                 Delete from {languageName} only
               </button>
               <button
                 onClick={() => handleDelete('all')}
                 disabled={deleting}
-                className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-40"
+                className="rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Delete from all languages
               </button>
@@ -219,7 +219,7 @@ export function EditPhraseModal({
                 onClick={() => setConfirmingDelete(true)}
                 aria-label="Delete phrase"
                 title="Delete phrase"
-                className="rounded-full border border-red-800 p-2 text-red-400 hover:bg-red-950/30 active:scale-90 transition-all"
+                className="rounded-full border border-fabpink p-2 text-fabpink hover:bg-surfacehover active:scale-90 transition-all"
               >
                 <Trash2 size={16} strokeWidth={2} />
               </button>

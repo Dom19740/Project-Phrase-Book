@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeftRight, Check, ChevronLeft, ChevronRight, Layers, Star, Volume2, X } from 'lucide-react'
+import { ArrowLeftRight, Check, ChevronLeft, ChevronRight, Layers, Shuffle, Star, Volume2, X } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { speak } from '../lib/tts'
 import { EditPhraseModal } from './EditPhraseModal'
 
-type FlashFilter = 'all' | 'unlearned' | 'favourites'
+type FlashFilterFlag = 'unlearned' | 'favourites'
 type GuessDirection = 'english' | 'translation'
 
 interface Props {
@@ -23,11 +23,19 @@ interface Props {
 
 const LONG_PRESS_MS = 500
 
-const FILTERS: { value: FlashFilter; label: string }[] = [
-  { value: 'all', label: 'All' },
+const FILTERS: { value: FlashFilterFlag; label: string }[] = [
   { value: 'unlearned', label: 'Not Learnt' },
   { value: 'favourites', label: 'Favourites' },
 ]
+
+function shuffled<T>(items: T[]): T[] {
+  const result = [...items]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
 
 function pillClass(active: boolean) {
   return `rounded-full border px-3 py-1.5 text-sm font-medium transition-all active:scale-95 ${
@@ -49,9 +57,10 @@ export function FlashCardsModal({
 }: Props) {
   const [step, setStep] = useState<'setup' | 'session' | 'complete'>('setup')
   const [languageId, setLanguageId] = useState<number | null>(activeLanguageId ?? languages[0]?.id ?? null)
-  const [filter, setFilter] = useState<FlashFilter>('all')
+  const [filterFlags, setFilterFlags] = useState<Set<FlashFilterFlag>>(new Set())
   const [categoryIds, setCategoryIds] = useState<Set<number>>(new Set())
   const [direction, setDirection] = useState<GuessDirection>('english')
+  const [shuffle, setShuffle] = useState(false)
   const [languagePhrases, setLanguagePhrases] = useState<PhraseListItem[]>([])
   const [loadingPhrases, setLoadingPhrases] = useState(false)
 
@@ -61,9 +70,10 @@ export function FlashCardsModal({
   const [cardDirection, setCardDirection] = useState<'forward' | 'back'>('forward')
   const [speaking, setSpeaking] = useState(false)
   const [editingCard, setEditingCard] = useState<PhraseListItem | null>(null)
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null)
   const pressTimer = useRef<number | null>(null)
   const longPressFired = useRef(false)
+  const swipeFired = useRef(false)
 
   useEffect(() => {
     if (languageId == null) {
@@ -99,6 +109,15 @@ export function FlashCardsModal({
     }
   }, [deck, step, index])
 
+  function toggleFilterFlag(flag: FlashFilterFlag) {
+    setFilterFlags((prev) => {
+      const next = new Set(prev)
+      if (next.has(flag)) next.delete(flag)
+      else next.add(flag)
+      return next
+    })
+  }
+
   function toggleCategory(id: number) {
     setCategoryIds((prev) => {
       const next = new Set(prev)
@@ -121,12 +140,12 @@ export function FlashCardsModal({
   const matchingPhrases = useMemo(() => {
     return languagePhrases.filter((p) => {
       if (!p.text) return false
-      if (filter === 'favourites' && !p.favorite) return false
-      if (filter === 'unlearned' && p.learned) return false
+      if (filterFlags.has('favourites') && !p.favorite) return false
+      if (filterFlags.has('unlearned') && p.learned) return false
       if (categoryIds.size > 0 && (p.categoryId == null || !categoryIds.has(p.categoryId))) return false
       return true
     })
-  }, [languagePhrases, filter, categoryIds])
+  }, [languagePhrases, filterFlags, categoryIds])
 
   const activeLanguage = languages.find((l) => l.id === languageId)
   const languageCode = activeLanguage?.code ?? 'en'
@@ -134,11 +153,10 @@ export function FlashCardsModal({
   const promptIsTranslation = direction === 'translation'
   const frontText = card ? (promptIsTranslation ? card.text : card.english) : ''
   const backText = card ? (promptIsTranslation ? card.english : card.text) : ''
-  const shownText = flipped ? backText : frontText
   const shownIsTranslation = flipped ? !promptIsTranslation : promptIsTranslation
 
   function startSession() {
-    setDeck(matchingPhrases)
+    setDeck(shuffle ? shuffled(matchingPhrases) : matchingPhrases)
     setIndex(0)
     setFlipped(false)
     setStep('session')
@@ -175,12 +193,48 @@ export function FlashCardsModal({
     }
   }
 
-  function handleCardPointerDown() {
+  function handleCardPointerDown(e: React.PointerEvent) {
     longPressFired.current = false
+    dragStartRef.current = { x: e.clientX, y: e.clientY }
+    // Capture so a fast drag that carries the pointer outside the card's bounds still delivers
+    // move/up here instead of losing the gesture — without this, onPointerLeave firing mid-swipe
+    // reset the drag before pointerup could measure it, and the swipe never registered.
+    e.currentTarget.setPointerCapture(e.pointerId)
     pressTimer.current = window.setTimeout(() => {
       longPressFired.current = true
       if (card) setEditingCard(card)
     }, LONG_PRESS_MS)
+  }
+
+  function handleCardPointerMove(e: React.PointerEvent) {
+    const start = dragStartRef.current
+    if (!start) return
+    // A pointer that's already moved is swiping/dragging, not long-pressing — don't let a slow
+    // drag open Edit.
+    if (Math.abs(e.clientX - start.x) > 10 || Math.abs(e.clientY - start.y) > 10) clearPressTimer()
+  }
+
+  function handleCardPointerUp(e: React.PointerEvent) {
+    clearPressTimer()
+    const start = dragStartRef.current
+    dragStartRef.current = null
+    if (!start) return
+
+    const deltaX = e.clientX - start.x
+    const deltaY = e.clientY - start.y
+
+    if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return
+
+    // A drag would otherwise still end in a click a moment later, which would immediately flip
+    // the card that just slid in — flag it so handleCardClick can swallow that click.
+    swipeFired.current = true
+    if (deltaX < 0) goNext()
+    else goPrev()
+  }
+
+  function handleCardPointerCancel() {
+    clearPressTimer()
+    dragStartRef.current = null
   }
 
   function handleCardClick() {
@@ -188,38 +242,11 @@ export function FlashCardsModal({
       longPressFired.current = false
       return
     }
+    if (swipeFired.current) {
+      swipeFired.current = false
+      return
+    }
     setFlipped((f) => !f)
-  }
-
-  function handleCardTouchStart(e: React.TouchEvent) {
-    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-  }
-
-  function handleCardTouchMove(e: React.TouchEvent) {
-    const start = touchStartRef.current
-    if (!start) return
-    const touch = e.touches[0]
-    // A finger that's already moved is swiping, not long-pressing — don't let a slow swipe open Edit.
-    if (Math.abs(touch.clientX - start.x) > 10 || Math.abs(touch.clientY - start.y) > 10) clearPressTimer()
-  }
-
-  function handleCardTouchEnd(e: React.TouchEvent) {
-    const start = touchStartRef.current
-    touchStartRef.current = null
-    if (!start) return
-
-    const touch = e.changedTouches[0]
-    const deltaX = touch.clientX - start.x
-    const deltaY = touch.clientY - start.y
-
-    if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return
-
-    // A swipe would otherwise still end in the browser's emulated click a moment later, which
-    // would immediately flip the card that just slid in — stop that compatibility event outright
-    // rather than trying to detect and swallow it downstream.
-    e.preventDefault()
-    if (deltaX < 0) goNext()
-    else goPrev()
   }
 
   return (
@@ -282,8 +309,11 @@ export function FlashCardsModal({
                 <section>
                   <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">Phrases</h2>
                   <div className="flex flex-wrap gap-2">
+                    <button onClick={() => setFilterFlags(new Set())} className={pillClass(filterFlags.size === 0)}>
+                      All
+                    </button>
                     {FILTERS.map((f) => (
-                      <button key={f.value} onClick={() => setFilter(f.value)} className={pillClass(filter === f.value)}>
+                      <button key={f.value} onClick={() => toggleFilterFlag(f.value)} className={pillClass(filterFlags.has(f.value))}>
                         {f.label}
                       </button>
                     ))}
@@ -314,6 +344,16 @@ export function FlashCardsModal({
                     </button>
                     <button onClick={() => setDirection('translation')} className={pillClass(direction === 'translation')}>
                       {activeLanguage?.name ?? 'Translation'}
+                    </button>
+                  </div>
+                </section>
+
+                <section>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">Order</h2>
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => setShuffle((s) => !s)} className={pillClass(shuffle) + ' flex items-center gap-1.5'}>
+                      <Shuffle size={15} strokeWidth={2.5} />
+                      Shuffle cards
                     </button>
                   </div>
                 </section>
@@ -354,69 +394,84 @@ export function FlashCardsModal({
             </button>
           </div>
 
-          <div className="flex-1 flex items-center justify-center min-h-0">
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 min-h-0">
             <button
               key={index}
               onClick={handleCardClick}
               onPointerDown={handleCardPointerDown}
-              onPointerUp={clearPressTimer}
-              onPointerLeave={clearPressTimer}
-              onPointerCancel={clearPressTimer}
-              onTouchStart={handleCardTouchStart}
-              onTouchMove={handleCardTouchMove}
-              onTouchEnd={handleCardTouchEnd}
-              className="animate-slide-in w-full max-w-sm min-h-64 flex flex-col items-center justify-center gap-4 rounded-3xl border-2 border-fabpink/40 bg-surface px-6 py-10 shadow-xl active:scale-[0.99] transition-all text-center touch-pan-y"
-              style={{ '--slide-from': cardDirection === 'forward' ? '24px' : '-24px' } as React.CSSProperties}
+              onPointerMove={handleCardPointerMove}
+              onPointerUp={handleCardPointerUp}
+              onPointerCancel={handleCardPointerCancel}
+              className="animate-slide-in w-full max-w-sm h-64 shrink-0 select-none active:scale-[0.99] transition-transform touch-pan-y"
+              style={{ '--slide-from': cardDirection === 'forward' ? '24px' : '-24px', perspective: '1200px' } as React.CSSProperties}
               title="Tap to flip, long-press to edit"
             >
-              <span className="text-xs font-bold uppercase tracking-wider text-muted">{flipped ? 'Answer' : 'Tap to reveal'}</span>
-              <span className="text-2xl font-bold leading-snug text-ink break-words">{shownText || <span className="italic text-muted">&mdash;</span>}</span>
-              {card.categoryName && <span className="text-xs text-muted">{card.categoryName}</span>}
+              <div
+                className="relative h-full w-full transition-transform duration-500 ease-out"
+                style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+              >
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-y-auto rounded-3xl border-2 border-fabpink/40 bg-surface px-6 py-10 shadow-xl text-center"
+                  style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' } as React.CSSProperties}
+                >
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted">Tap to reveal</span>
+                  <span className="text-2xl font-bold leading-snug text-ink break-words">{frontText || <span className="italic text-muted">&mdash;</span>}</span>
+                </div>
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-y-auto rounded-3xl bg-fabpink px-6 py-10 shadow-xl text-center"
+                  style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' } as React.CSSProperties}
+                >
+                  <span className="text-xs font-bold uppercase tracking-wider text-black/70">
+                    {promptIsTranslation ? 'English' : (activeLanguage?.name ?? 'Translation')}
+                  </span>
+                  <span className="text-2xl font-bold leading-snug text-black break-words">{backText || <span className="italic text-black/60">&mdash;</span>}</span>
+                </div>
+              </div>
             </button>
-          </div>
 
-          <div className="flex items-center justify-center gap-3 py-4 shrink-0">
-            <button
-              onClick={async () => {
-                if (!shownIsTranslation) return
-                setSpeaking(true)
-                try {
-                  await speak(card.text, languageCode)
-                } finally {
-                  setSpeaking(false)
-                }
-              }}
-              disabled={!shownIsTranslation}
-              className={`rounded-full p-2.5 border border-hairline hover:bg-surfacehover disabled:opacity-30 transition-all ${speaking ? 'text-fabpink' : 'text-muted'}`}
-              aria-label="Speak"
-              title="Speak"
-            >
-              <Volume2 size={18} strokeWidth={2} />
-            </button>
-            <button onClick={() => updateCard({ favorite: !card.favorite })} className={pillClass(card.favorite) + ' flex items-center gap-1.5'}>
-              <Star size={15} strokeWidth={2.5} fill={card.favorite ? 'currentColor' : 'none'} />
-              Favourite
-            </button>
-            <button onClick={() => updateCard({ learned: !card.learned })} className={pillClass(card.learned) + ' flex items-center gap-1.5'}>
-              <Check size={15} strokeWidth={2.5} />
-              Learnt
-            </button>
-          </div>
+            <div className="w-full max-w-sm flex items-center justify-between gap-3 shrink-0">
+              <button
+                onClick={goPrev}
+                disabled={index === 0}
+                className="flex-1 rounded-full border border-hairline py-3 flex items-center justify-center gap-1 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-30"
+              >
+                <ChevronLeft size={18} strokeWidth={2} /> Previous
+              </button>
+              <button
+                onClick={goNext}
+                className="flex-1 rounded-full bg-fabpink py-3 text-sm font-semibold text-onaccent shadow-lg shadow-fabpink/20 flex items-center justify-center gap-1 active:scale-95 transition-all"
+              >
+                {index === deck.length - 1 ? 'Finish' : 'Next'} <ChevronRight size={18} strokeWidth={2} />
+              </button>
+            </div>
 
-          <div className="flex items-center justify-between gap-3 shrink-0">
-            <button
-              onClick={goPrev}
-              disabled={index === 0}
-              className="flex-1 rounded-full border border-hairline py-3 flex items-center justify-center gap-1 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-30"
-            >
-              <ChevronLeft size={18} strokeWidth={2} /> Previous
-            </button>
-            <button
-              onClick={goNext}
-              className="flex-1 rounded-full bg-fabpink py-3 text-sm font-semibold text-onaccent shadow-lg shadow-fabpink/20 flex items-center justify-center gap-1 active:scale-95 transition-all"
-            >
-              {index === deck.length - 1 ? 'Finish' : 'Next'} <ChevronRight size={18} strokeWidth={2} />
-            </button>
+            <div className="flex items-center justify-center gap-3 shrink-0">
+              <button
+                onClick={async () => {
+                  if (!shownIsTranslation) return
+                  setSpeaking(true)
+                  try {
+                    await speak(card.text, languageCode)
+                  } finally {
+                    setSpeaking(false)
+                  }
+                }}
+                disabled={!shownIsTranslation}
+                className={`rounded-full p-2.5 border border-hairline hover:bg-surfacehover disabled:opacity-30 transition-all ${speaking ? 'text-fabpink' : 'text-muted'}`}
+                aria-label="Speak"
+                title="Speak"
+              >
+                <Volume2 size={18} strokeWidth={2} />
+              </button>
+              <button onClick={() => updateCard({ favorite: !card.favorite })} className={pillClass(card.favorite) + ' flex items-center gap-1.5'}>
+                <Star size={15} strokeWidth={2.5} fill={card.favorite ? 'currentColor' : 'none'} />
+                Favourite
+              </button>
+              <button onClick={() => updateCard({ learned: !card.learned })} className={pillClass(card.learned) + ' flex items-center gap-1.5'}>
+                <Check size={15} strokeWidth={2.5} />
+                Learnt
+              </button>
+            </div>
           </div>
         </div>
       )}

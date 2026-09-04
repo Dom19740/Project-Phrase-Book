@@ -68,7 +68,7 @@ export function LanguageTabs({
                               onRemoveLanguage(lang.id)
                               setConfirmingRemoveId(null)
                             }}
-                            className="rounded-full px-2.5 py-1 text-xs font-medium bg-red-600 text-white active:scale-95 transition-transform"
+                            className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-onaccent active:scale-95 transition-transform"
                           >
                             Remove
                           </button>
@@ -92,7 +92,7 @@ export function LanguageTabs({
                           </button>
                           <button
                             onClick={() => setConfirmingRemoveId(lang.id)}
-                            className="shrink-0 rounded-lg p-2 text-muted hover:text-red-400 transition-colors"
+                            className="shrink-0 rounded-lg p-2 text-muted hover:text-fabpink transition-colors"
                             aria-label={`Remove ${lang.name}`}
                           >
                             <Trash2 size={14} strokeWidth={2} />
@@ -117,12 +117,16 @@ export function LanguageTabs({
           )}
         </div>
 
+        {/* Reserves the collapsed search control's width in the flex row so nothing has to
+            reflow when the overlay below expands/collapses — it stays absolutely positioned
+            the whole time instead of switching in and out of flow, which used to make a
+            mid-transition frame overlap the menu button next to it. */}
+        <div className="h-10 w-11 shrink-0" aria-hidden="true" />
+
         <div
-          className={
-            searchExpanded
-              ? 'absolute inset-y-0 right-0 z-10 flex h-10 w-full items-center overflow-hidden rounded-full border-2 border-fabpink bg-surface shadow-lg shadow-fabpink/10 transition-[width] duration-300 ease-out'
-              : 'relative flex h-10 w-11 shrink-0 items-center overflow-hidden rounded-full border-2 border-fabpink bg-surface shadow-lg shadow-fabpink/10 transition-[width] duration-300 ease-out'
-          }
+          className={`absolute inset-y-0 right-0 z-10 flex h-10 items-center overflow-hidden rounded-full border-2 border-fabpink bg-surface shadow-lg shadow-fabpink/10 transition-[width] duration-300 ease-out ${
+            searchExpanded ? 'w-full' : 'w-11'
+          }`}
         >
           <button
             type="button"

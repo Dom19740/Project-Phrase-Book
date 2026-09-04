@@ -80,7 +80,7 @@ const HOWTO_PAGES: HowToPage[] = [
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">Edit</span>
           </div>
           <div className="flex flex-col items-center gap-1.5">
-            <span className="flex size-12 items-center justify-center rounded-full border-2 border-red-800 bg-surface text-red-400 shadow-sm">
+            <span className="flex size-12 items-center justify-center rounded-full border-2 border-fabpink bg-surface text-fabpink shadow-sm">
               <Trash2 size={20} strokeWidth={2} />
             </span>
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">Delete</span>
