@@ -63,7 +63,10 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
     ? 'All languages'
     : selectedLanguageIds.size === 0
       ? 'Select at least one language'
-      : `${selectedLanguageIds.size} of ${languages.length} languages`
+      : languages
+          .filter((l) => selectedLanguageIds.has(l.id))
+          .map((l) => l.name)
+          .join(', ')
 
   function toggleLanguage(id: number) {
     setSelectedLanguageIds((prev) => {
@@ -163,6 +166,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
               <button
                 type="button"
                 onClick={() => setLanguagesOpen((v) => !v)}
+                title={languagesLabel}
                 className="flex w-full items-center gap-1.5 rounded-xl border border-hairline bg-surface px-3 py-2 text-sm text-ink hover:border-fabpink/40 transition-colors"
               >
                 <span className="flex-1 text-left truncate">{languagesLabel}</span>

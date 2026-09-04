@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ArrowDown, ArrowDownAZ, ArrowUp, ArrowUpZA, Check, ChevronDown, ChevronRight, Clock, Languages, ListChecks, Star, X } from 'lucide-react'
-import type { Category, PhraseListItem } from '../db/types'
+import type { Category, Language, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
@@ -12,6 +12,8 @@ interface Props {
   phrases: PhraseListItem[]
   languageCode: string
   languageName: string
+  activeLanguageId: number
+  languages: Language[]
   translating?: boolean
   categories: Category[]
   search: string
@@ -24,6 +26,7 @@ interface Props {
   onBulkDeleteOneLanguage: (translationIds: number[]) => Promise<void>
   onBulkDeleteAllLanguages: (phraseConceptIds: number[]) => Promise<void>
   onBulkChangeCategory: (phraseConceptIds: number[], categoryName: string | null) => Promise<void>
+  onBulkCopyToLanguages: (phraseConceptIds: number[], targetLanguageIds: number[]) => Promise<void>
   onCreateCategory: (name: string) => Promise<void>
   onRenameCategory: (categoryId: number, newName: string) => Promise<void>
   onDeleteCategory: (categoryId: number) => Promise<void>
@@ -140,6 +143,8 @@ export function PhraseList({
   phrases,
   languageCode,
   languageName,
+  activeLanguageId,
+  languages,
   translating = false,
   categories,
   search,
@@ -152,6 +157,7 @@ export function PhraseList({
   onBulkDeleteOneLanguage,
   onBulkDeleteAllLanguages,
   onBulkChangeCategory,
+  onBulkCopyToLanguages,
   onCreateCategory,
   onRenameCategory,
   onDeleteCategory,
@@ -353,6 +359,8 @@ export function PhraseList({
         <BulkActionBar
           selectedCount={selectedIds.size}
           languageName={languageName}
+          currentLanguageId={activeLanguageId}
+          languages={languages}
           categories={categories}
           onMarkLearned={async (learnedVal) => {
             await onBulkMarkLearned(selectedTranslationIds, learnedVal)
@@ -364,6 +372,10 @@ export function PhraseList({
           }}
           onChangeCategory={async (categoryName) => {
             await onBulkChangeCategory(selectedConceptIds, categoryName)
+            exitSelectionMode()
+          }}
+          onCopyToLanguages={async (targetLanguageIds) => {
+            await onBulkCopyToLanguages(selectedConceptIds, targetLanguageIds)
             exitSelectionMode()
           }}
           onDeleteOneLanguage={async () => {

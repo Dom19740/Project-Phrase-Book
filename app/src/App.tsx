@@ -16,7 +16,7 @@ import type { PhraseListItem } from './db/types'
 type Theme = 'dark' | 'light'
 
 const DEFAULT_ACCENT = '#EC1D8B'
-const ACCENT_COLORS = ['#c6ff3d', '#71e3ca', DEFAULT_ACCENT]
+const ACCENT_COLORS = [DEFAULT_ACCENT, '#71e3ca', '#c6ff3d']
 
 // The lemon-yellow accent is nearly invisible on the light theme's white/near-white surfaces,
 // so swap it for a darker olive tone whenever light theme is active. The picker dot itself still
@@ -60,6 +60,7 @@ function Shell() {
     bulkDeleteOneLanguage,
     bulkDeleteAllLanguages,
     bulkChangeCategory,
+    bulkCopyToLanguages,
     createCategory,
     renameCategory,
     deleteCategory,
@@ -248,6 +249,8 @@ function Shell() {
             phrases={phrases}
             languageCode={activeLanguageCode}
             languageName={activeLanguageName}
+            activeLanguageId={activeLanguageId!}
+            languages={languages}
             categories={categories}
             search={search}
             onToggleLearned={(id, learned) => toggleLearned(id, learned)}
@@ -259,6 +262,7 @@ function Shell() {
             onBulkDeleteOneLanguage={bulkDeleteOneLanguage}
             onBulkDeleteAllLanguages={bulkDeleteAllLanguages}
             onBulkChangeCategory={bulkChangeCategory}
+            onBulkCopyToLanguages={bulkCopyToLanguages}
             onCreateCategory={createCategory}
             onRenameCategory={renameCategory}
             onDeleteCategory={deleteCategory}

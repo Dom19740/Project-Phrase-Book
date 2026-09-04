@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Check, Star, Tag, Trash2, X } from 'lucide-react'
-import type { Category } from '../db/types'
+import { Check, Copy, Star, Tag, Trash2, X } from 'lucide-react'
+import type { Category, Language } from '../db/types'
+import { getLanguageFlag } from '../lib/languageFlags'
 import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
@@ -8,24 +9,30 @@ const NEW_CATEGORY = '__new__'
 interface Props {
   selectedCount: number
   languageName: string
+  currentLanguageId: number
+  languages: Language[]
   categories: Category[]
   onMarkLearned: (learned: boolean) => Promise<void>
   onMarkFavorite: (favorite: boolean) => Promise<void>
   onChangeCategory: (categoryName: string | null) => Promise<void>
+  onCopyToLanguages: (targetLanguageIds: number[]) => Promise<void>
   onDeleteOneLanguage: () => Promise<void>
   onDeleteAllLanguages: () => Promise<void>
   onCancel: () => void
 }
 
-type Panel = null | 'category' | 'delete'
+type Panel = null | 'category' | 'copy' | 'delete'
 
 export function BulkActionBar({
   selectedCount,
   languageName,
+  currentLanguageId,
+  languages,
   categories,
   onMarkLearned,
   onMarkFavorite,
   onChangeCategory,
+  onCopyToLanguages,
   onDeleteOneLanguage,
   onDeleteAllLanguages,
   onCancel,
@@ -33,7 +40,28 @@ export function BulkActionBar({
   const [panel, setPanel] = useState<Panel>(null)
   const [categoryChoice, setCategoryChoice] = useState('')
   const [newCategory, setNewCategory] = useState('')
+  const [copyTargetIds, setCopyTargetIds] = useState<Set<number>>(new Set())
   const [busy, setBusy] = useState(false)
+
+  const otherLanguages = languages.filter((l) => l.id !== currentLanguageId)
+
+  function toggleCopyTarget(id: number) {
+    setCopyTargetIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function applyCopy() {
+    if (copyTargetIds.size === 0) return
+    setBusy(true)
+    await onCopyToLanguages([...copyTargetIds])
+    setBusy(false)
+    setCopyTargetIds(new Set())
+    setPanel(null)
+  }
 
   async function applyCategory() {
     setBusy(true)
@@ -74,6 +102,41 @@ export function BulkActionBar({
           >
             Apply
           </button>
+        </div>
+      )}
+
+      {panel === 'copy' && (
+        <div className="flex flex-col gap-2 px-4 py-2 border-b border-hairline">
+          {otherLanguages.length === 0 ? (
+            <p className="text-sm text-muted">Add another language first to copy phrases into it.</p>
+          ) : (
+            <>
+              <p className="text-sm text-muted">Copy {selectedCount} phrase(s) into:</p>
+              <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
+                {otherLanguages.map((lang) => (
+                  <label key={lang.id} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover transition-colors cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={copyTargetIds.has(lang.id)}
+                      onChange={() => toggleCopyTarget(lang.id)}
+                      className="size-4 rounded accent-fabpink cursor-pointer"
+                    />
+                    <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                    {lang.name}
+                  </label>
+                ))}
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={applyCopy}
+                  disabled={busy || copyTargetIds.size === 0}
+                  className="rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                >
+                  Copy
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -142,6 +205,14 @@ export function BulkActionBar({
           >
             <Tag size={13} strokeWidth={2} />
             Category
+          </button>
+          <button
+            onClick={() => setPanel(panel === 'copy' ? null : 'copy')}
+            disabled={selectedCount === 0}
+            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+          >
+            <Copy size={13} strokeWidth={2} />
+            Copy to...
           </button>
           <button
             onClick={() => setPanel(panel === 'delete' ? null : 'delete')}

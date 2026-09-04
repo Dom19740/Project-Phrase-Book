@@ -373,6 +373,44 @@ export async function bulkSetCategory(phraseConceptIds: number[], categoryName: 
   await persist()
 }
 
+/**
+ * Copies phrase concepts into additional languages, skipping any (concept, language) pair that
+ * already has a row there rather than overwriting it. Returns the pairs that were newly created —
+ * blank, for the caller to auto-translate — so an already-translated phrase is left untouched.
+ */
+export async function copyPhrasesToLanguages(
+  phraseConceptIds: number[],
+  targetLanguageIds: number[],
+): Promise<{ languageId: number; conceptId: number; english: string }[]> {
+  if (phraseConceptIds.length === 0 || targetLanguageIds.length === 0) return []
+  const db = await getDb()
+
+  const concepts = await getAllPhraseConcepts()
+  const englishMap = new Map(concepts.map((c) => [c.id, c.english]))
+
+  const toInsert: { languageId: number; conceptId: number; english: string }[] = []
+  for (const languageId of targetLanguageIds) {
+    const existing = await db.query('SELECT phrase_concept_id FROM translations WHERE language_id = ?;', [languageId])
+    const existingConceptIds = new Set((existing.values ?? []).map((r) => r.phrase_concept_id as number))
+    for (const conceptId of phraseConceptIds) {
+      if (!existingConceptIds.has(conceptId)) {
+        toInsert.push({ languageId, conceptId, english: englishMap.get(conceptId) ?? '' })
+      }
+    }
+  }
+
+  if (toInsert.length > 0) {
+    const sets = toInsert.map((t) => ({
+      statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, 0);',
+      values: [t.conceptId, t.languageId, ''],
+    }))
+    await db.executeSet(sets)
+    await persist()
+  }
+
+  return toInsert
+}
+
 export async function reorderTranslations(orderedTranslationIds: number[]): Promise<void> {
   const db = await getDb()
   const sets = orderedTranslationIds.map((id, index) => ({

@@ -8,6 +8,7 @@ import {
   bulkSetFavorite,
   bulkSetLearned,
   bulkSetTranslationText,
+  copyPhrasesToLanguages,
   deleteCategory as deleteCategoryQuery,
   deleteLanguage as deleteLanguageQuery,
   deletePhraseConcept,
@@ -64,6 +65,7 @@ interface PhraseBookContextValue {
   bulkDeleteOneLanguage: (translationIds: number[]) => Promise<void>
   bulkDeleteAllLanguages: (phraseConceptIds: number[]) => Promise<void>
   bulkChangeCategory: (phraseConceptIds: number[], categoryName: string | null) => Promise<void>
+  bulkCopyToLanguages: (phraseConceptIds: number[], targetLanguageIds: number[]) => Promise<void>
   createCategory: (name: string) => Promise<void>
   renameCategory: (categoryId: number, newName: string) => Promise<void>
   deleteCategory: (categoryId: number) => Promise<void>
@@ -413,6 +415,27 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     [refreshCategories, setActiveLanguageId, runBackgroundTranslation],
   )
 
+  const bulkCopyToLanguages = useCallback(
+    async (phraseConceptIds: number[], targetLanguageIds: number[]) => {
+      const added = await copyPhrasesToLanguages(phraseConceptIds, targetLanguageIds)
+      await refreshPhrases()
+
+      // Auto-translate just the rows that were actually newly created (blank) — a phrase already
+      // present in a target language is left as-is rather than re-translated over.
+      const conceptsByLanguage = new Map<number, { id: number; english: string }[]>()
+      for (const entry of added) {
+        const list = conceptsByLanguage.get(entry.languageId) ?? []
+        list.push({ id: entry.conceptId, english: entry.english })
+        conceptsByLanguage.set(entry.languageId, list)
+      }
+      for (const [languageId, concepts] of conceptsByLanguage) {
+        const lang = languages.find((l) => l.id === languageId)
+        if (lang) runBackgroundTranslation(languageId, lang.code, lang.name, concepts)
+      }
+    },
+    [languages, refreshPhrases, runBackgroundTranslation],
+  )
+
   const getLanguagePhrases = useCallback((languageId: number) => getPhraseList(languageId), [])
 
   const createLanguage = useCallback(
@@ -504,6 +527,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       bulkDeleteOneLanguage,
       bulkDeleteAllLanguages,
       bulkChangeCategory,
+      bulkCopyToLanguages,
       createCategory,
       renameCategory,
       deleteCategory,
@@ -545,6 +569,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       bulkDeleteOneLanguage,
       bulkDeleteAllLanguages,
       bulkChangeCategory,
+      bulkCopyToLanguages,
       createCategory,
       renameCategory,
       deleteCategory,
