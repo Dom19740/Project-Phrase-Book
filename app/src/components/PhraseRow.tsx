@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Check, Loader2, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
+import { useSpeakRate } from '../lib/useSpeakRate'
 import type { PhraseListItem } from '../db/types'
 import { PhraseQuickMenu } from './PhraseQuickMenu'
 
@@ -37,6 +38,7 @@ export function PhraseRow({
   const [speaking, setSpeaking] = useState(false)
   const pressTimer = useRef<number | null>(null)
   const longPressFired = useRef(false)
+  const nextSpeakRate = useSpeakRate()
 
   function clearPressTimer() {
     if (pressTimer.current != null) {
@@ -85,7 +87,7 @@ export function PhraseRow({
           e.stopPropagation()
           setSpeaking(true)
           try {
-            await speak(phrase.text, languageCode)
+            await speak(phrase.text, languageCode, nextSpeakRate(phrase.translationId))
           } finally {
             setSpeaking(false)
           }

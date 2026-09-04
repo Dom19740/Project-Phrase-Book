@@ -8,11 +8,11 @@ const LOCALE_MAP: Record<string, string> = {
   id: 'id-ID',
 }
 
-export async function speak(text: string, languageCode: string): Promise<void> {
+export async function speak(text: string, languageCode: string, rate = 1.0): Promise<void> {
   if (!text) return
   const lang = LOCALE_MAP[languageCode] ?? languageCode
   try {
-    await TextToSpeech.speak({ text, lang, rate: 1.0, pitch: 1.0, volume: 1.0, category: 'ambient' })
+    await TextToSpeech.speak({ text, lang, rate, pitch: 1.0, volume: 1.0, category: 'ambient' })
   } catch (err) {
     console.error('TTS failed', err)
   }

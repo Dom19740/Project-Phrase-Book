@@ -3,6 +3,7 @@ import { ArrowLeftRight, Check, ChevronLeft, ChevronRight, Layers, Shuffle, Star
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { speak } from '../lib/tts'
+import { useSpeakRate } from '../lib/useSpeakRate'
 import { EditPhraseModal } from './EditPhraseModal'
 
 type FlashFilterFlag = 'unlearned' | 'favourites'
@@ -74,6 +75,7 @@ export function FlashCardsModal({
   const pressTimer = useRef<number | null>(null)
   const longPressFired = useRef(false)
   const swipeFired = useRef(false)
+  const nextSpeakRate = useSpeakRate()
 
   useEffect(() => {
     if (languageId == null) {
@@ -451,7 +453,7 @@ export function FlashCardsModal({
                   if (!shownIsTranslation) return
                   setSpeaking(true)
                   try {
-                    await speak(card.text, languageCode)
+                    await speak(card.text, languageCode, nextSpeakRate(card.translationId))
                   } finally {
                     setSpeaking(false)
                   }
