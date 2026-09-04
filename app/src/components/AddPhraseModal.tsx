@@ -6,10 +6,25 @@ import { translateAlternatives } from '../lib/translateApi'
 import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
+const TRANSLATE_INTO_STORAGE_KEY = 'phrasebook-translate-into-language-ids'
+
+/** Remembers the last set of languages picked in "Translate into", filtered to ones that still exist. */
+function loadPersistedLanguageIds(languages: Language[]): number[] | null {
+  try {
+    const raw = localStorage.getItem(TRANSLATE_INTO_STORAGE_KEY)
+    if (!raw) return null
+    const ids: number[] = JSON.parse(raw)
+    const valid = ids.filter((id) => languages.some((l) => l.id === id))
+    return valid.length > 0 ? valid : null
+  } catch {
+    return null
+  }
+}
 
 interface Props {
   categories: Category[]
   languages: Language[]
+  activeLanguageId: number | null
   onClose: () => void
   onSubmit: (
     english: string,
@@ -21,13 +36,17 @@ interface Props {
 
 type Step = 'details' | 'translations'
 
-export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Props) {
+export function AddPhraseModal({ categories, languages, activeLanguageId, onClose, onSubmit }: Props) {
   const [step, setStep] = useState<Step>('details')
   const [english, setEnglish] = useState('')
   const [categoryChoice, setCategoryChoice] = useState('')
   const [newCategory, setNewCategory] = useState('')
   const [saving, setSaving] = useState(false)
-  const [selectedLanguageIds, setSelectedLanguageIds] = useState<Set<number>>(() => new Set(languages.map((l) => l.id)))
+  const [selectedLanguageIds, setSelectedLanguageIds] = useState<Set<number>>(() => {
+    const persisted = loadPersistedLanguageIds(languages)
+    if (persisted) return new Set(persisted)
+    return new Set(activeLanguageId != null ? [activeLanguageId] : languages.map((l) => l.id))
+  })
   const [languagesOpen, setLanguagesOpen] = useState(false)
   const [translationText, setTranslationText] = useState<Record<number, string>>({})
   const [alternatives, setAlternatives] = useState<Record<number, string[]>>({})
@@ -36,6 +55,8 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
 
   const canProceed =
     english.trim().length > 0 && (categoryChoice !== NEW_CATEGORY || newCategory.trim().length > 0) && selectedLanguageIds.size > 0
+
+  const anyLoadingAlternatives = Object.values(loadingAlternatives).some(Boolean)
 
   const allSelected = selectedLanguageIds.size === languages.length
   const languagesLabel = allSelected
@@ -52,6 +73,14 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
       return next
     })
   }
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(TRANSLATE_INTO_STORAGE_KEY, JSON.stringify([...selectedLanguageIds]))
+    } catch {
+      // localStorage unavailable — the default just won't be remembered next time
+    }
+  }, [selectedLanguageIds])
 
   async function handleGetAlternatives(lang: Language) {
     if (!english.trim()) return
@@ -115,7 +144,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
               options={[
                 { value: '', label: 'Uncategorized' },
                 ...categories.map((c) => ({ value: c.name, label: c.name })),
-                { value: NEW_CATEGORY, label: '+ New category...' },
+                { value: NEW_CATEGORY, label: '+ New category...', neutral: true },
               ]}
             />
 
@@ -193,7 +222,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
             <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Add phrase</h2>
             <p className="text-sm text-muted mb-4 truncate">{english}</p>
 
-            <p className="text-xs text-muted mb-2">Pick a suggestion or edit the text yourself. Leave a language blank to auto-translate it later.</p>
+            <p className="text-xs text-muted mb-2">Pick a suggestion or edit the text yourself. Leave a language blank to choose the default translation.</p>
 
             <div className="flex flex-col gap-3 max-h-80 overflow-y-auto mb-4 rounded-xl border border-hairline p-2.5">
               {languages
@@ -243,7 +272,8 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
                 ))}
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex items-center justify-end gap-2">
+              {anyLoadingAlternatives && <p className="mr-auto text-xs text-muted">Fetching suggestions&hellip;</p>}
               <button
                 onClick={() => setStep('details')}
                 disabled={saving}
@@ -253,10 +283,11 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={saving}
+                disabled={saving || anyLoadingAlternatives}
+                title={anyLoadingAlternatives ? 'Waiting for suggestions to load so you don’t miss them' : undefined}
                 className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
-                {saving ? 'Saving...' : 'Add phrase'}
+                {saving ? 'Saving...' : anyLoadingAlternatives ? 'Loading…' : 'Add phrase'}
               </button>
             </div>
           </>

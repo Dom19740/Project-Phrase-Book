@@ -7,6 +7,8 @@ interface Option<T> {
   label: string
   /** Compact content shown on the closed trigger instead of `label` (e.g. an icon). Falls back to `label`. */
   shortLabel?: ReactNode
+  /** Skip the accent-color highlight when this option is active — for action rows (e.g. "+ New category...") that shouldn't be tinted by whatever accent color is selected. */
+  neutral?: boolean
 }
 
 interface Props<T> {
@@ -48,7 +50,7 @@ export function PopoutSelect<T extends string | number>({
           <div
             className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
               dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
-            } z-50 w-48 max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-1.5 shadow-xl`}
+            } z-50 w-48 max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl`}
           >
             {options.map((opt) => (
               <button
@@ -60,7 +62,7 @@ export function PopoutSelect<T extends string | number>({
                   setOpen(false)
                 }}
                 className={`flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left hover:bg-surfacehover transition-colors ${
-                  opt.value === value ? 'text-fabpink font-medium' : 'text-ink'
+                  opt.value === value && !opt.neutral ? 'text-fabpink font-medium' : 'text-ink'
                 }`}
               >
                 {opt.shortLabel ? (

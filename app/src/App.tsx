@@ -16,13 +16,13 @@ import type { PhraseListItem } from './db/types'
 type Theme = 'dark' | 'light'
 
 const DEFAULT_ACCENT = '#EC1D8B'
-const ACCENT_COLORS = ['#d2fe63', '#71e3ca', DEFAULT_ACCENT]
+const ACCENT_COLORS = ['#c6ff3d', '#71e3ca', DEFAULT_ACCENT]
 
 // The lemon-yellow accent is nearly invisible on the light theme's white/near-white surfaces,
 // so swap it for a darker olive tone whenever light theme is active. The picker dot itself still
 // shows the original lemon yellow so the user's selection stays recognizable.
 const LIGHT_MODE_ACCENT_OVERRIDES: Record<string, string> = {
-  '#d2fe63': '#6B8E12',
+  '#c6ff3d': '#6B8E12',
 }
 
 /** Used only the very first time the app opens, before the user has ever picked a theme themselves. */
@@ -305,6 +305,7 @@ function Shell() {
         <AddPhraseModal
           categories={categories}
           languages={languages}
+          activeLanguageId={activeLanguageId}
           onClose={() => setShowAddPhrase(false)}
           onSubmit={(english, categoryName, languageIds, manualTranslations) => addPhrase(english, categoryName, languageIds, manualTranslations)}
         />
