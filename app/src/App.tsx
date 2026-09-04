@@ -6,7 +6,6 @@ import { EditPhraseModal } from './components/EditPhraseModal'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { FlashCardsModal } from './components/FlashCardsModal'
 import { LanguageTabs } from './components/LanguageTabs'
-import { Logo } from './components/Logo'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
@@ -132,101 +131,6 @@ function Shell() {
       className="flex h-full flex-col bg-appbg text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
-      <header className="flex items-center justify-between px-4 py-.5">
-        <div className="flex items-center gap-2">
-          <Logo size={40} className="text-fabpink shrink-0" />
-          <h1 className="text-2xl font-black tracking-tight leading-none text-ink">
-            Travel <span className="text-fabpink">Chatter</span>
-          </h1>
-        </div>
-        <div className="relative">
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink active:scale-90 transition-all"
-            aria-label="Menu"
-            title="Menu"
-          >
-            <Menu size={20} strokeWidth={2} />
-          </button>
-
-          {menuOpen && (
-            <>
-              <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenuOpen(false)} aria-label="Close menu" />
-              <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-1.5 shadow-xl">
-                <button
-                  onClick={() => {
-                    setShowOnboarding(true)
-                    setMenuOpen(false)
-                  }}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
-                >
-                  <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
-                  How to use
-                </button>
-                <button
-                  onClick={() => {
-                    setShowFlashCards(true)
-                    setMenuOpen(false)
-                  }}
-                  disabled={languages.length === 0}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
-                >
-                  <Layers size={16} strokeWidth={2} className="text-fabpink" />
-                  Flash Cards
-                </button>
-                <button
-                  onClick={() => {
-                    setShowBackup(true)
-                    setMenuOpen(false)
-                  }}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
-                >
-                  <Save size={16} strokeWidth={2} className="text-fabpink" />
-                  Backup / Import
-                </button>
-
-                <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">
-                  <p className="mb-1.5 text-xs font-medium text-muted">Theme</p>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setTheme('dark')}
-                      aria-label="Dark theme"
-                      aria-pressed={theme === 'dark'}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
-                      style={theme === 'dark' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
-                    >
-                      <Moon size={13} strokeWidth={2} />
-                    </button>
-                    <button
-                      onClick={() => setTheme('light')}
-                      aria-label="Light theme"
-                      aria-pressed={theme === 'light'}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
-                      style={theme === 'light' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
-                    >
-                      <Sun size={13} strokeWidth={2} />
-                    </button>
-                    <div className="mx-0.5 h-4 w-px shrink-0 bg-hairline" />
-                    {ACCENT_COLORS.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setAccent(color)}
-                        aria-label={`Use accent color ${color}`}
-                        aria-pressed={accent === color}
-                        className={`h-6 w-6 shrink-0 rounded-full transition-transform active:scale-90 ${
-                          accent === color ? 'ring-2 ring-offset-2 ring-offset-surface ring-ink' : ''
-                        }`}
-                        style={{ backgroundColor: theme === 'light' ? (LIGHT_MODE_ACCENT_OVERRIDES[color] ?? color) : color }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </header>
-
       <LanguageTabs
         languages={languages}
         activeLanguageId={activeLanguageId}
@@ -236,6 +140,94 @@ function Shell() {
         getLanguagePhrases={getLanguagePhrases}
         search={search}
         onSearchChange={setSearch}
+        menu={
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink active:scale-90 transition-all"
+              aria-label="Menu"
+              title="Menu"
+            >
+              <Menu size={20} strokeWidth={2} />
+            </button>
+
+            {menuOpen && (
+              <>
+                <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenuOpen(false)} aria-label="Close menu" />
+                <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-1.5 shadow-xl">
+                  <button
+                    onClick={() => {
+                      setShowOnboarding(true)
+                      setMenuOpen(false)
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                  >
+                    <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
+                    How to use
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowFlashCards(true)
+                      setMenuOpen(false)
+                    }}
+                    disabled={languages.length === 0}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+                  >
+                    <Layers size={16} strokeWidth={2} className="text-fabpink" />
+                    Flash Cards
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowBackup(true)
+                      setMenuOpen(false)
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                  >
+                    <Save size={16} strokeWidth={2} className="text-fabpink" />
+                    Backup / Import
+                  </button>
+
+                  <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">
+                    <p className="mb-1.5 text-xs font-medium text-muted">Theme</p>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setTheme('dark')}
+                        aria-label="Dark theme"
+                        aria-pressed={theme === 'dark'}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
+                        style={theme === 'dark' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
+                      >
+                        <Moon size={13} strokeWidth={2} />
+                      </button>
+                      <button
+                        onClick={() => setTheme('light')}
+                        aria-label="Light theme"
+                        aria-pressed={theme === 'light'}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
+                        style={theme === 'light' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
+                      >
+                        <Sun size={13} strokeWidth={2} />
+                      </button>
+                      <div className="mx-0.5 h-4 w-px shrink-0 bg-hairline" />
+                      {ACCENT_COLORS.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => setAccent(color)}
+                          aria-label={`Use accent color ${color}`}
+                          aria-pressed={accent === color}
+                          className={`h-6 w-6 shrink-0 rounded-full transition-transform active:scale-90 ${
+                            accent === color ? 'ring-2 ring-offset-2 ring-offset-surface ring-ink' : ''
+                          }`}
+                          style={{ backgroundColor: theme === 'light' ? (LIGHT_MODE_ACCENT_OVERRIDES[color] ?? color) : color }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        }
       />
 
       <main className="flex-1 overflow-hidden">
