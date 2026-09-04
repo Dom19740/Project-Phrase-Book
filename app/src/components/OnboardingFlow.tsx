@@ -25,7 +25,7 @@ const HOWTO_PAGES: HowToPage[] = [
           <span className="flex-1 text-xl font-bold text-ink">French</span>
           <ChevronDown size={26} strokeWidth={2.5} className="text-fabpink" />
         </div>
-        <div className="flex items-center gap-2 rounded-full bg-fabpink px-5 py-2.5 text-base font-bold text-white shadow-lg shadow-fabpink/20">
+        <div className="flex items-center gap-2 rounded-full bg-fabpink px-5 py-2.5 text-base font-bold text-onaccent shadow-lg shadow-fabpink/20">
           <Plus size={18} strokeWidth={2.5} />
           Add language
         </div>
@@ -47,7 +47,7 @@ const HOWTO_PAGES: HowToPage[] = [
           </span>
           <Check size={22} strokeWidth={2.5} className="text-fabpink" />
         </div>
-        <div className="flex size-16 items-center justify-center rounded-full bg-fabpink text-white shadow-lg shadow-black/30">
+        <div className="flex size-16 items-center justify-center rounded-full bg-fabpink text-onaccent shadow-lg shadow-black/30">
           <Plus size={30} strokeWidth={2.5} />
         </div>
       </div>
@@ -67,7 +67,7 @@ const HOWTO_PAGES: HowToPage[] = [
             <span className="font-bold text-ink">Bonjour</span>
           </span>
           <Check size={22} strokeWidth={2.5} className="text-fabpink" />
-          <span className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full bg-fabpink text-white shadow-lg shadow-fabpink/30">
+          <span className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full bg-fabpink text-onaccent shadow-lg shadow-fabpink/30">
             <Hand size={16} strokeWidth={2.5} />
           </span>
         </div>
@@ -240,7 +240,7 @@ export function OnboardingFlow({ onFinish }: Props) {
           )}
           <button
             onClick={() => (isLast ? onFinish() : goTo(page + 1))}
-            className="h-11 shrink-0 rounded-full bg-fabpink px-10 text-sm font-bold text-white shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all"
+            className="h-11 shrink-0 rounded-full bg-fabpink px-10 text-sm font-bold text-onaccent shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all"
           >
             {isLast ? "Let's go" : page === 0 ? 'Get started' : 'Next'}
           </button>

@@ -182,7 +182,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
               <button
                 onClick={() => setStep('translations')}
                 disabled={!canProceed}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Next
               </button>
@@ -254,7 +254,7 @@ export function AddPhraseModal({ categories, languages, onClose, onSubmit }: Pro
               <button
                 onClick={handleSubmit}
                 disabled={saving}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 {saving ? 'Saving...' : 'Add phrase'}
               </button>

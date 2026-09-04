@@ -176,7 +176,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               <button
                 onClick={handleAdd}
                 disabled={saving || loadingPhrases}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 {saving ? 'Adding...' : 'Add language'}
               </button>
@@ -210,7 +210,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               <button
                 onClick={() => chooseLanguage({ name: manualName.trim(), code: manualCode.trim() })}
                 disabled={!canSubmitManual || saving}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 {saving ? 'Adding...' : 'Next'}
               </button>

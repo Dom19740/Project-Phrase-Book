@@ -70,7 +70,7 @@ export function BulkActionBar({
           <button
             onClick={applyCategory}
             disabled={busy || (categoryChoice === NEW_CATEGORY && !newCategory.trim())}
-            className="shrink-0 rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 disabled:active:scale-100 transition-all disabled:opacity-40"
+            className="shrink-0 rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 disabled:active:scale-100 transition-all disabled:opacity-40"
           >
             Apply
           </button>

@@ -17,6 +17,8 @@
   --color-hairline: #333333;
   --color-ink: #d1d5db;
   --color-muted: #9ca3af;
+  --color-fabpink: #EC1D8B;
+  --color-onaccent: #ffffff;
 }
 
 :root[data-theme='light'] {

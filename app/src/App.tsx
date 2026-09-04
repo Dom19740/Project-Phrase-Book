@@ -16,9 +16,28 @@ import type { PhraseListItem } from './db/types'
 
 type Theme = 'dark' | 'light'
 
+const DEFAULT_ACCENT = '#EC1D8B'
+const ACCENT_COLORS = ['#d2fe63', '#71e3ca', DEFAULT_ACCENT]
+
+// The lemon-yellow accent is nearly invisible on the light theme's white/near-white surfaces,
+// so swap it for a darker olive tone whenever light theme is active. The picker dot itself still
+// shows the original lemon yellow so the user's selection stays recognizable.
+const LIGHT_MODE_ACCENT_OVERRIDES: Record<string, string> = {
+  '#d2fe63': '#6B8E12',
+}
+
 /** Used only the very first time the app opens, before the user has ever picked a theme themselves. */
 function getSystemTheme(): Theme {
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+/** Picks black or white text so it stays legible on a solid-fill button/badge in this accent color. */
+function readableTextOn(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000
+  return yiq >= 128 ? '#000000' : '#ffffff'
 }
 
 function Shell() {
@@ -63,10 +82,12 @@ function Shell() {
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
   const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', getSystemTheme())
+  const [accent, setAccent] = usePersistedState<string>('phrasebook-accent', DEFAULT_ACCENT)
   const [search, setSearch] = useState('')
   const [startupPhrasesLanguageId, setStartupPhrasesLanguageId] = useState<number | null>(null)
   const [onboardingSeen, setOnboardingSeen] = usePersistedState('phrasebook-onboarding-seen', false)
   const [showOnboarding, setShowOnboarding] = useState(() => !onboardingSeen)
+  const appliedAccent = theme === 'light' ? (LIGHT_MODE_ACCENT_OVERRIDES[accent] ?? accent) : accent
 
   function finishOnboarding() {
     setOnboardingSeen(true)
@@ -82,6 +103,11 @@ function Shell() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--color-fabpink', appliedAccent)
+    document.documentElement.style.setProperty('--color-onaccent', readableTextOn(appliedAccent))
+  }, [appliedAccent])
 
   if (loading) {
     return (
@@ -129,20 +155,6 @@ function Shell() {
               <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-1.5 shadow-xl">
                 <button
                   onClick={() => {
-                    setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
-                    setMenuOpen(false)
-                  }}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
-                >
-                  {theme === 'dark' ? (
-                    <Sun size={16} strokeWidth={2} className="text-fabpink" />
-                  ) : (
-                    <Moon size={16} strokeWidth={2} className="text-fabpink" />
-                  )}
-                  {theme === 'dark' ? 'Light theme' : 'Dark theme'}
-                </button>
-                <button
-                  onClick={() => {
                     setShowOnboarding(true)
                     setMenuOpen(false)
                   }}
@@ -170,8 +182,45 @@ function Shell() {
                   className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
                 >
                   <Save size={16} strokeWidth={2} className="text-fabpink" />
-                  Backup
+                  Backup / Import
                 </button>
+
+                <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">
+                  <p className="mb-1.5 text-xs font-medium text-muted">Theme</p>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setTheme('dark')}
+                      aria-label="Dark theme"
+                      aria-pressed={theme === 'dark'}
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
+                      style={theme === 'dark' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
+                    >
+                      <Moon size={13} strokeWidth={2} />
+                    </button>
+                    <button
+                      onClick={() => setTheme('light')}
+                      aria-label="Light theme"
+                      aria-pressed={theme === 'light'}
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
+                      style={theme === 'light' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
+                    >
+                      <Sun size={13} strokeWidth={2} />
+                    </button>
+                    <div className="mx-0.5 h-4 w-px shrink-0 bg-hairline" />
+                    {ACCENT_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setAccent(color)}
+                        aria-label={`Use accent color ${color}`}
+                        aria-pressed={accent === color}
+                        className={`h-6 w-6 shrink-0 rounded-full transition-transform active:scale-90 ${
+                          accent === color ? 'ring-2 ring-offset-2 ring-offset-surface ring-ink' : ''
+                        }`}
+                        style={{ backgroundColor: theme === 'light' ? (LIGHT_MODE_ACCENT_OVERRIDES[color] ?? color) : color }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -252,7 +301,7 @@ function Shell() {
         <button
           onClick={() => setShowAddPhrase(true)}
           disabled={languages.length === 0}
-          className="fixed right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-white shadow-lg shadow-black/30 transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+          className="fixed right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-onaccent shadow-lg shadow-black/30 transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
           style={{ bottom: 'calc(1.5rem + var(--safe-area-inset-bottom, 0px))' }}
           aria-label="Add phrase"
         >

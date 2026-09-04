@@ -322,7 +322,7 @@ export function PhraseList({
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
             className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium active:scale-95 transition-all ${
-              selectionMode ? 'bg-fabpink text-white shadow-lg shadow-fabpink/20' : 'border border-fabpink text-ink hover:bg-surfacehover'
+              selectionMode ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'border border-fabpink text-ink hover:bg-surfacehover'
             }`}
           >
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}

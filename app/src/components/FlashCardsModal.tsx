@@ -329,7 +329,7 @@ export function FlashCardsModal({
               <button
                 onClick={startSession}
                 disabled={matchingPhrases.length === 0 || loadingPhrases}
-                className="w-full rounded-full bg-fabpink px-5 py-3 text-base font-semibold text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                className="w-full rounded-full bg-fabpink px-5 py-3 text-base font-semibold text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Start
               </button>
@@ -413,7 +413,7 @@ export function FlashCardsModal({
             </button>
             <button
               onClick={goNext}
-              className="flex-1 rounded-full bg-fabpink py-3 text-sm font-semibold text-white shadow-lg shadow-fabpink/20 flex items-center justify-center gap-1 active:scale-95 transition-all"
+              className="flex-1 rounded-full bg-fabpink py-3 text-sm font-semibold text-onaccent shadow-lg shadow-fabpink/20 flex items-center justify-center gap-1 active:scale-95 transition-all"
             >
               {index === deck.length - 1 ? 'Finish' : 'Next'} <ChevronRight size={18} strokeWidth={2} />
             </button>
@@ -435,7 +435,7 @@ export function FlashCardsModal({
                 setFlipped(false)
                 setStep('session')
               }}
-              className="rounded-full bg-fabpink px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
+              className="rounded-full bg-fabpink px-5 py-3 text-sm font-semibold text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
             >
               Study again
             </button>

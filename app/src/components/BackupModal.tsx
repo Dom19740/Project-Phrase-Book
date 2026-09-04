@@ -250,7 +250,7 @@ export function BackupModal({
               <button
                 onClick={confirmImportCsv}
                 disabled={busy}
-                className="flex-1 rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                className="flex-1 rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Import
               </button>
@@ -297,7 +297,7 @@ export function BackupModal({
                       <button
                         onClick={confirmManual}
                         disabled={!manualName.trim() || !manualCode.trim()}
-                        className="rounded-full bg-fabpink px-4 py-1.5 text-xs font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                        className="rounded-full bg-fabpink px-4 py-1.5 text-xs font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
                       >
                         Use this language
                       </button>
@@ -367,7 +367,7 @@ export function BackupModal({
               <button
                 onClick={confirmImportCsv}
                 disabled={busy || !importTarget}
-                className="flex-1 rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                className="flex-1 rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
                 Import
               </button>
@@ -378,7 +378,7 @@ export function BackupModal({
             <button
               onClick={handleBackUpNow}
               disabled={busy}
-              className="rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all disabled:opacity-40"
+              className="rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all disabled:opacity-40"
             >
               Back up now
             </button>
@@ -392,7 +392,7 @@ export function BackupModal({
 
             {languages.length > 0 && (
               <div className="mt-2 border-t border-hairline pt-3">
-                <label className="block text-sm font-medium mb-1 text-ink">Export phrases (CSV)</label>
+                <label className="block text-sm font-medium mb-1 text-ink">Export phrases</label>
                 <div className="flex gap-2">
                   <PopoutSelect
                     className="flex-1 min-w-0"

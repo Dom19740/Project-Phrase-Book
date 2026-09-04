@@ -83,7 +83,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                     onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
                     className="flex-1 min-w-0 rounded-lg border border-hairline bg-transparent text-ink px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
                   />
-                  <button onClick={saveEdit} disabled={busy} className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-white active:scale-95 transition-transform disabled:opacity-40">
+                  <button onClick={saveEdit} disabled={busy} className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-onaccent active:scale-95 transition-transform disabled:opacity-40">
                     Save
                   </button>
                   <button onClick={() => setEditingId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted hover:text-ink transition-colors">
@@ -125,7 +125,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
           <button
             onClick={handleCreate}
             disabled={busy || !newName.trim()}
-            className="rounded-full px-4 py-2 text-sm font-medium bg-fabpink text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+            className="rounded-full px-4 py-2 text-sm font-medium bg-fabpink text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
           >
             Add
           </button>

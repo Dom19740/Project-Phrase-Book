@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <p className="text-sm text-muted">Your saved phrasebook is unaffected. Try reloading the app.</p>
           <button
             onClick={() => window.location.reload()}
-            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-white shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
+            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
           >
             Reload
           </button>
