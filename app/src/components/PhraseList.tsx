@@ -1,9 +1,24 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ArrowDown, ArrowDownAZ, ArrowUp, ArrowUpZA, Check, ChevronDown, ChevronRight, Clock, Languages, ListChecks, Star, X } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowDownAZ,
+  ArrowUp,
+  ArrowUpZA,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  GripVertical,
+  Languages,
+  ListChecks,
+  Star,
+  X,
+} from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
 import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
+import { DragReorderList } from './DragReorderList'
 import { ManageCategoriesModal } from './ManageCategoriesModal'
 import { PhraseRow } from './PhraseRow'
 import { PopoutSelect } from './PopoutSelect'
@@ -18,6 +33,7 @@ interface Props {
   categories: Category[]
   search: string
   onToggleLearned: (id: number, learned: boolean) => void
+  onReorder: (orderedTranslationIds: number[]) => Promise<void>
   onToggleFavorite: (id: number, favorite: boolean) => void
   onEdit: (phrase: PhraseListItem) => void
   onSelectionModeChange?: (active: boolean) => void
@@ -37,7 +53,7 @@ interface Group {
   items: PhraseListItem[]
 }
 
-type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc' | 'date-desc' | 'date-asc'
+type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc' | 'date-desc' | 'date-asc' | 'custom'
 
 const SORT_ICON_BOX = 'inline-flex w-4 h-4 shrink-0 items-center justify-center'
 
@@ -48,6 +64,8 @@ function SortIcon({ mode }: { mode: SortMode }) {
         <span className="text-xs font-semibold leading-none">EN</span>
       ) : mode.startsWith('date') ? (
         <Clock size={14} strokeWidth={2} />
+      ) : mode === 'custom' ? (
+        <GripVertical size={14} strokeWidth={2} />
       ) : (
         <Languages size={14} strokeWidth={2} />
       )}
@@ -56,6 +74,7 @@ function SortIcon({ mode }: { mode: SortMode }) {
 }
 
 function SortDirectionIcon({ mode }: { mode: SortMode }) {
+  if (mode === 'custom') return null
   const asc = mode.endsWith('asc')
   return (
     <span className={SORT_ICON_BOX}>
@@ -81,16 +100,25 @@ const SORT_OPTION_LABELS: { value: SortMode; label: string }[] = [
   { value: 'translation-desc', label: 'Translation Z>A' },
   { value: 'date-desc', label: 'Newest added' },
   { value: 'date-asc', label: 'Oldest added' },
+  { value: 'custom', label: 'Custom order' },
 ]
 
 const SORT_OPTIONS: { value: SortMode; label: string; shortLabel: ReactNode }[] = SORT_OPTION_LABELS.map((opt) => ({
   ...opt,
-  shortLabel: (
-    <>
-      <SortIcon mode={opt.value} />
-      <SortDirectionIcon mode={opt.value} />
-    </>
-  ),
+  // Every other option is a self-explanatory icon pair (EN/translation flag + direction arrow) —
+  // "custom" has no such shorthand, so it gets a plain text label instead of a lone grip icon.
+  shortLabel:
+    opt.value === 'custom' ? (
+      <>
+        <SortIcon mode={opt.value} />
+        Custom
+      </>
+    ) : (
+      <>
+        <SortIcon mode={opt.value} />
+        <SortDirectionIcon mode={opt.value} />
+      </>
+    ),
 }))
 
 const ALPHA_BUCKETS: { label: string; letters: string }[] = [
@@ -115,6 +143,7 @@ function sortItems(items: PhraseListItem[], mode: SortMode): PhraseListItem[] {
   const dir = mode.endsWith('asc') ? 1 : -1
   return [...items].sort((a, b) => {
     if (a.favorite !== b.favorite) return a.favorite ? -1 : 1
+    if (mode === 'custom') return a.sortOrder - b.sortOrder
     // Phrase concept ids are assigned in insertion order, so they double as a "date added" sort
     // without needing a dedicated timestamp column.
     if (mode.startsWith('date')) return dir * (a.phraseConceptId - b.phraseConceptId)
@@ -150,6 +179,7 @@ export function PhraseList({
   search,
   onToggleLearned,
   onToggleFavorite,
+  onReorder,
   onEdit,
   onSelectionModeChange,
   onBulkMarkLearned,
@@ -283,7 +313,14 @@ export function PhraseList({
   const selectedTranslationIds = selectedItems.map((p) => p.translationId)
   const selectedConceptIds = [...new Set(selectedItems.map((p) => p.phraseConceptId))]
 
-  function renderRow(item: PhraseListItem) {
+  // Dragging always switches to Custom order — any other sort mode would just re-sort the
+  // dropped item straight back to where it started.
+  function commitReorder(orderedTranslationIds: number[]) {
+    setSortMode('custom')
+    onReorder(orderedTranslationIds)
+  }
+
+  function renderRow(item: PhraseListItem, dragHandleProps?: { onPointerDown: (e: React.PointerEvent) => void }, dragging?: boolean) {
     return (
       <PhraseRow
         key={item.translationId}
@@ -297,6 +334,21 @@ export function PhraseList({
         selectionMode={selectionMode}
         selected={selectedIds.has(item.translationId)}
         onToggleSelect={toggleSelect}
+        dragHandleProps={dragHandleProps}
+        dragging={dragging}
+      />
+    )
+  }
+
+  /** Renders one draggable bucket — items can be reordered within it, never out of it. */
+  function renderDraggableGroup(items: PhraseListItem[]) {
+    return (
+      <DragReorderList
+        items={items}
+        getId={(item) => item.translationId}
+        onReorder={commitReorder}
+        className="flex flex-col gap-1.5"
+        renderItem={(item, dragHandleProps, dragging) => renderRow(item, dragHandleProps, dragging)}
       />
     )
   }
@@ -337,7 +389,7 @@ export function PhraseList({
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
-          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" />
+          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" panelWidthClassName="w-max" />
 
           {ALPHA_BUCKETS.map((b) => {
             const hasMatch = bucketTargetLists.has(b.label)
@@ -430,7 +482,7 @@ export function PhraseList({
                             {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
                           </button>
                         )}
-                        {!isCollapsed && <div className="mt-1.5 flex flex-col gap-1.5">{group.items.map((item) => renderRow(item))}</div>}
+                        {!isCollapsed && <div className="mt-1.5">{renderDraggableGroup(group.items)}</div>}
                       </div>
                     )
                   })}
@@ -469,7 +521,7 @@ export function PhraseList({
                             {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
                           </button>
                         )}
-                        {!isCollapsed && <div className="mt-1.5 flex flex-col gap-1.5">{group.items.map((item) => renderRow(item))}</div>}
+                        {!isCollapsed && <div className="mt-1.5">{renderDraggableGroup(group.items)}</div>}
                       </div>
                     )
                   })}
@@ -493,7 +545,7 @@ export function PhraseList({
                   <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
                 )}
               </button>
-              {secondaryExpanded && <div className="mt-1.5 flex flex-col gap-1.5">{secondarySorted.map((item) => renderRow(item))}</div>}
+              {secondaryExpanded && <div className="mt-1.5">{renderDraggableGroup(secondarySorted)}</div>}
             </div>
           )}
         </div>

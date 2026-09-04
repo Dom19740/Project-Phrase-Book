@@ -166,13 +166,13 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     [refreshPhrases],
   )
 
-  const reorder = useCallback(
-    async (orderedTranslationIds: number[]) => {
-      await reorderTranslations(orderedTranslationIds)
-      await refreshPhrases()
-    },
-    [refreshPhrases],
-  )
+  const reorder = useCallback(async (orderedTranslationIds: number[]) => {
+    // Apply the new order to local state immediately — waiting on the DB write and a full
+    // refetch would otherwise show a one-frame flash back to the old order right after the drop.
+    const indexById = new Map(orderedTranslationIds.map((id, index) => [id, index]))
+    setPhrases((prev) => prev.map((p) => (indexById.has(p.translationId) ? { ...p, sortOrder: indexById.get(p.translationId)! } : p)))
+    await reorderTranslations(orderedTranslationIds)
+  }, [])
 
   const addPhrase = useCallback(
     async (english: string, categoryName: string | null, languageIds: number[], manualTranslations?: { languageId: number; text: string }[]) => {

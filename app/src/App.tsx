@@ -51,6 +51,7 @@ function Shell() {
     translationIncomplete,
     toggleLearned,
     toggleFavorite,
+    reorder,
     addPhrase,
     editPhrase,
     deleteOneLanguage,
@@ -255,6 +256,7 @@ function Shell() {
             search={search}
             onToggleLearned={(id, learned) => toggleLearned(id, learned)}
             onToggleFavorite={(id, favorite) => toggleFavorite(id, favorite)}
+            onReorder={reorder}
             onEdit={setEditingPhrase}
             onSelectionModeChange={setSelectionModeActive}
             onBulkMarkLearned={bulkMarkLearned}

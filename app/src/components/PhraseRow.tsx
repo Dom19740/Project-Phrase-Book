@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Check, Loader2, Star, Volume2 } from 'lucide-react'
+import { Check, GripVertical, Loader2, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
 import { useSpeakRate } from '../lib/useSpeakRate'
 import type { PhraseListItem } from '../db/types'
@@ -18,6 +18,9 @@ interface Props {
   selectionMode?: boolean
   selected?: boolean
   onToggleSelect?: (translationId: number) => void
+  /** Present when this row can be drag-reordered — wire its onPointerDown to the grip handle. */
+  dragHandleProps?: { onPointerDown: (e: React.PointerEvent) => void }
+  dragging?: boolean
 }
 
 const LONG_PRESS_MS = 500
@@ -33,6 +36,8 @@ export function PhraseRow({
   selectionMode = false,
   selected = false,
   onToggleSelect,
+  dragHandleProps,
+  dragging = false,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [speaking, setSpeaking] = useState(false)
@@ -71,9 +76,9 @@ export function PhraseRow({
   return (
     <div
       id={`phrase-row-${phrase.translationId}`}
-      className={`group relative flex items-center gap-1.5 rounded-2xl bg-surface border border-hairline px-2 py-0.1 shadow-sm transition-all hover:border-fabpink/40 cursor-pointer select-none ${
-        menuOpen ? '' : 'active:scale-[0.99]'
-      }`}
+      className={`group relative flex items-center gap-1.5 rounded-2xl bg-surface border px-2 py-0.1 shadow-sm transition-all hover:border-fabpink/40 cursor-pointer select-none ${
+        dragging ? 'border-fabpink' : 'border-hairline'
+      } ${menuOpen ? '' : 'active:scale-[0.99]'}`}
       onPointerDown={handlePointerDown}
       onPointerUp={clearPressTimer}
       onPointerLeave={clearPressTimer}
@@ -153,6 +158,22 @@ export function PhraseRow({
             aria-label={phrase.learned ? 'Learned' : 'Not learned'}
           />
         </div>
+      )}
+
+      {dragHandleProps && !selectionMode && (
+        <button
+          type="button"
+          onPointerDown={(e) => {
+            e.stopPropagation()
+            dragHandleProps.onPointerDown(e)
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 touch-none rounded-full p-1.5 text-muted hover:bg-surfacehover active:cursor-grabbing cursor-grab"
+          aria-label="Drag to reorder"
+          title="Drag to reorder"
+        >
+          <GripVertical size={16} strokeWidth={2} />
+        </button>
       )}
 
       {menuOpen && (

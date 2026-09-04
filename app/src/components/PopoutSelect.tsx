@@ -19,6 +19,10 @@ interface Props<T> {
   align?: 'left' | 'right'
   /** Which way the panel opens relative to the trigger. Use 'up' when the trigger sits near the bottom of the screen (e.g. a fixed bottom bar), so the panel doesn't render under the system gesture bar. */
   dropDirection?: 'down' | 'up'
+  /** Width utility class for the dropdown panel. Defaults to a fixed w-48 (right for text-label
+   * options); pass 'w-max' for compact icon-only option lists so the panel shrinks to fit them
+   * instead of leaving a lot of empty space. */
+  panelWidthClassName?: string
 }
 
 export function PopoutSelect<T extends string | number>({
@@ -28,6 +32,7 @@ export function PopoutSelect<T extends string | number>({
   className,
   align = 'right',
   dropDirection = 'down',
+  panelWidthClassName = 'w-48',
 }: Props<T>) {
   const [open, setOpen] = useState(false)
   const activeOption = options.find((o) => o.value === value)
@@ -50,7 +55,7 @@ export function PopoutSelect<T extends string | number>({
           <div
             className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
               dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
-            } z-50 w-48 max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl`}
+            } z-50 ${panelWidthClassName} max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl`}
           >
             {options.map((opt) => (
               <button
@@ -61,7 +66,7 @@ export function PopoutSelect<T extends string | number>({
                   onChange(opt.value)
                   setOpen(false)
                 }}
-                className={`flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left hover:bg-surfacehover transition-colors ${
+                className={`flex w-full items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-sm text-left hover:bg-surfacehover transition-colors ${
                   opt.value === value && !opt.neutral ? 'text-fabpink font-medium' : 'text-ink'
                 }`}
               >
