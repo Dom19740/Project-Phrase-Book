@@ -121,22 +121,8 @@ const SORT_OPTIONS: { value: SortMode; label: string; shortLabel: ReactNode }[] 
     ),
 }))
 
-const ALPHA_BUCKETS: { label: string; letters: string }[] = [
-  { label: 'A-D', letters: 'ABCD' },
-  { label: 'E-H', letters: 'EFGH' },
-  { label: 'I-L', letters: 'IJKL' },
-  { label: 'M-P', letters: 'MNOP' },
-  { label: 'Q-T', letters: 'QRST' },
-  { label: 'U-Z', letters: 'UVWXYZ' },
-]
-
 function sortKey(item: PhraseListItem, mode: SortMode): string {
   return mode.startsWith('translation') ? item.text : item.english
-}
-
-function bucketFor(value: string): string {
-  const ch = value.trim()[0]?.toUpperCase() ?? ''
-  return ALPHA_BUCKETS.find((b) => b.letters.includes(ch))?.label ?? '#'
 }
 
 function sortItems(items: PhraseListItem[], mode: SortMode): PhraseListItem[] {
@@ -258,39 +244,6 @@ export function PhraseList({
     [nonFavoritePrimaryItems, groupByCategoryOn, sortMode],
   )
 
-  // Alphabet jump index: an ordered list of stops per bucket, one per "pinned section" that could
-  // hold a letter — the favourites section's groups, then the main section's groups. Repeated presses
-  // of the same button step through the list (wrapping back to the top), instead of a single
-  // first-occurrence target — otherwise a favourite would permanently claim its letter range and
-  // every press would land back on it.
-  const bucketTargetLists = useMemo(() => {
-    const dir = sortMode.endsWith('asc') ? 1 : -1
-    const lists = new Map<string, number[]>()
-    for (const group of [...favoriteGroups, ...groups]) {
-      const alphaOrdered = [...group.items].sort((a, b) => dir * sortKey(a, sortMode).localeCompare(sortKey(b, sortMode)))
-      const seenBuckets = new Set<string>()
-      for (const item of alphaOrdered) {
-        const bucket = bucketFor(sortKey(item, sortMode))
-        if (seenBuckets.has(bucket)) continue
-        seenBuckets.add(bucket)
-        const arr = lists.get(bucket) ?? []
-        arr.push(item.translationId)
-        lists.set(bucket, arr)
-      }
-    }
-    return lists
-  }, [favoriteGroups, groups, sortMode])
-
-  const [bucketCycleIndex, setBucketCycleIndex] = useState<Record<string, number>>({})
-
-  function jumpTo(bucketLabel: string) {
-    const targets = bucketTargetLists.get(bucketLabel)
-    if (!targets || targets.length === 0) return
-    const nextIndex = ((bucketCycleIndex[bucketLabel] ?? -1) + 1) % targets.length
-    setBucketCycleIndex((prev) => ({ ...prev, [bucketLabel]: nextIndex }))
-    document.getElementById(`phrase-row-${targets[nextIndex]}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-  }
-
   function toggleCategoryVisible(categoryName: string, visible: boolean) {
     setHiddenCategoryList((prev) => (visible ? prev.filter((n) => n !== categoryName) : [...prev, categoryName]))
   }
@@ -376,7 +329,9 @@ export function PhraseList({
             <Check size={13} strokeWidth={2} className="text-fabpink" />
             {LEARNED_FILTER_LABEL[learnedFilter]}
           </button>
+        </div>
 
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
             className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium active:scale-95 transition-all ${
@@ -386,24 +341,16 @@ export function PhraseList({
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
             {selectionMode ? 'Cancel' : 'Select'}
           </button>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-1">
-          <PopoutSelect value={sortMode} onChange={setSortMode} options={SORT_OPTIONS} align="left" panelWidthClassName="w-max" />
-
-          {ALPHA_BUCKETS.map((b) => {
-            const hasMatch = bucketTargetLists.has(b.label)
-            return (
-              <button
-                key={b.label}
-                onClick={() => jumpTo(b.label)}
-                disabled={!hasMatch}
-                className="rounded-full px-1.5 py-1 text-xs font-medium border border-hairline text-ink enabled:hover:border-fabpink enabled:hover:text-fabpink enabled:active:scale-90 disabled:opacity-30 transition-all"
-              >
-                {b.label}
-              </button>
-            )
-          })}
+          <PopoutSelect
+            value={sortMode}
+            onChange={setSortMode}
+            options={SORT_OPTIONS}
+            align="right"
+            panelWidthClassName="w-max"
+            accent
+            dense
+          />
         </div>
       </div>
 
@@ -449,7 +396,14 @@ export function PhraseList({
         }}
       >
         <div className="flex flex-col gap-4">
-          {primaryItems.length === 0 && <p className="text-center text-muted text-sm py-8">No phrases here — add one to get started.</p>}
+          {primaryItems.length === 0 && (
+            <div className="flex flex-col items-center gap-2 py-10 text-center">
+              <p className="font-brand text-xl font-bold tracking-[-0.035em] text-ink">Every phrase you actually needed.</p>
+              <p className="max-w-xs text-sm leading-relaxed text-muted">
+                Tap the <span className="text-fabpink">+</span> button to capture your first phrase in this language.
+              </p>
+            </div>
+          )}
 
           {favoriteItems.length > 0 && (
             <div>

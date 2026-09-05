@@ -157,7 +157,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                     />
                     <span className="min-w-0 flex-1 truncate">
                       <span className="text-ink">{p.english}</span>
-                      {p.text ? <span className="text-muted"> — {p.text}</span> : <span className="italic text-neutral-600"> — untranslated</span>}
+                      {p.text ? <span className="text-muted"> - {p.text}</span> : <span className="italic text-neutral-600"> - untranslated</span>}
                     </span>
                   </label>
                 ))}

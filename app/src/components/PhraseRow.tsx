@@ -75,7 +75,6 @@ export function PhraseRow({
 
   return (
     <div
-      id={`phrase-row-${phrase.translationId}`}
       className={`group relative flex items-center gap-1.5 rounded-2xl bg-surface border px-2 py-0.1 shadow-sm transition-all hover:border-fabpink/40 cursor-pointer select-none ${
         dragging ? 'border-fabpink' : 'border-hairline'
       } ${menuOpen ? '' : 'active:scale-[0.99]'}`}
@@ -149,14 +148,9 @@ export function PhraseRow({
           />
         </label>
       ) : (
-        <div className="shrink-0 flex items-center justify-center gap-0.5 size-9">
+        <div className="shrink-0 flex items-center justify-end gap-0.5">
           {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favourite" />}
-          <Check
-            size={18}
-            strokeWidth={2.5}
-            className={phrase.learned ? 'text-fabpink' : 'text-muted'}
-            aria-label={phrase.learned ? 'Learned' : 'Not learned'}
-          />
+          {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learned" />}
         </div>
       )}
 

@@ -205,7 +205,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
               )}
             </div>
             <p className="text-xs text-muted mb-4">
-              Only the languages you pick get this phrase at all — a deselected language won't show it.
+              Only the languages you pick get this phrase at all - a deselected language won't show it.
             </p>
 
             <div className="flex justify-end gap-2">

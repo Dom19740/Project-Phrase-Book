@@ -90,7 +90,7 @@ export function EditPhraseModal({
           <>
             <h2 className="text-lg font-bold tracking-tight mb-2 text-ink">Delete phrase</h2>
             <p className="text-sm text-muted mb-4">
-              "{phrase.english}" — delete just the {languageName} translation, or remove this phrase from every language?
+              "{phrase.english}" - delete just the {languageName} translation, or remove this phrase from every language?
             </p>
             <div className="flex flex-col gap-2">
               <button

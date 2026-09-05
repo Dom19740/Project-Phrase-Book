@@ -5,6 +5,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        brand: ['Archivo', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
         appbg: 'var(--color-appbg)',
@@ -14,6 +15,7 @@ export default {
         ink: 'var(--color-ink)',
         muted: 'var(--color-muted)',
         brandteal: '#207781',
+        brandink: 'var(--color-brandink)',
         fabpink: 'var(--color-fabpink)',
         onaccent: 'var(--color-onaccent)',
       },

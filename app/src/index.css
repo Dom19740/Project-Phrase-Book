@@ -5,6 +5,11 @@
 @import '@fontsource/plus-jakarta-sans/600.css';
 @import '@fontsource/plus-jakarta-sans/700.css';
 @import '@fontsource/plus-jakarta-sans/800.css';
+@import '@fontsource/archivo/400.css';
+@import '@fontsource/archivo/500.css';
+@import '@fontsource/archivo/600.css';
+@import '@fontsource/archivo/700.css';
+@import '@fontsource/archivo/800.css';
 
 @tailwind base;
 @tailwind components;
@@ -19,6 +24,7 @@
   --color-muted: #9ca3af;
   --color-fabpink: #EC1D8B;
   --color-onaccent: #ffffff;
+  --color-brandink: #201e1d;
 }
 
 :root[data-theme='light'] {
@@ -54,4 +60,9 @@ body {
 
 .animate-slide-in {
   animation: slide-in 0.3s ease-in-out;
+}
+
+:focus-visible {
+  outline: 2px solid #EC1D8B;
+  outline-offset: 2px;
 }

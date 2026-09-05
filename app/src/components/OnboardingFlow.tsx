@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { ArrowDown, ArrowRight, Check, ChevronDown, Hand, Layers, Pencil, Plus, Trash2, Volume2 } from 'lucide-react'
-import { Logo } from './Logo'
+import { Logo, Wordmark } from './Logo'
 
 interface Props {
   onFinish: () => void
@@ -55,7 +55,7 @@ const HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Edit or delete a phrase',
-    body: 'Long-press a phrase to open it up — fix a typo, change its category, or delete it for good.',
+    body: 'Long-press a phrase to open it up - fix a typo, change its category, or delete it for good.',
     illustration: (
       <div className="flex w-full flex-col items-center gap-3">
         <div className="relative flex w-full max-w-xs items-center gap-3 rounded-2xl border-2 border-dashed border-fabpink bg-surface px-4 py-3.5 shadow-md">
@@ -91,7 +91,7 @@ const HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Practice with flash cards',
-    body: 'Open the menu and tap Flash Cards to start a session — pick a language and filter, then tap a card to flip between English and the translation. Long-press a card to edit it.',
+    body: 'Open the menu and tap Flash Cards to start a session - pick a language and filter, then tap a card to flip between English and the translation. Long-press a card to edit it.',
     illustration: (
       <div className="flex w-full flex-col items-center gap-3">
         <div className="flex w-full max-w-xs items-center gap-2.5 rounded-xl border-2 border-fabpink bg-surface px-3 py-2.5 shadow-lg shadow-fabpink/20">
@@ -108,7 +108,7 @@ const HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Add more languages and phrases',
-    body: "Heading somewhere new? Add another language and every phrase you've already built gets translated and added automatically — nothing to retype.",
+    body: "Heading somewhere new? Add another language and every phrase you've already built gets translated and added automatically - nothing to retype.",
     illustration: (
       <div className="flex w-full items-center justify-center gap-3">
         <div className="flex max-w-[9.5rem] flex-1 items-center justify-center gap-2 rounded-full border-2 border-hairline bg-surface px-4 py-3 shadow-sm">
@@ -196,23 +196,19 @@ export function OnboardingFlow({ onFinish }: Props) {
               aria-hidden="true"
             />
             <Logo size={72} className="relative text-fabpink" />
-            <h1 className="relative mt-4 text-4xl font-black leading-none tracking-tight text-ink">
-              Travel <span className="text-fabpink">Chatter</span>
-            </h1>
-            <p className="relative mt-5 text-lg font-semibold leading-snug text-ink">
-              Build your own phrase book to chat with locals as you travel.
+            <Wordmark size={28} className="relative mt-4 text-ink" />
+            <p className="relative mt-4 font-brand text-xs font-semibold uppercase tracking-[0.26em] text-muted">
+              The phrasebook you write
             </p>
-            <p className="relative mt-4 text-sm leading-relaxed text-muted">
-              Want to be able to chat with locals: 'How are you?', 'Nice to meet you.'', 'One more beer please' but don't need to know
-              all that useless stuff like asking where the library is or saying the cat is in the garage? All the phrases you want to learn and none of the ones you don't. Your language, your way.
-            </p>
-            <p className="relative mt-3 text-sm font-bold leading-relaxed text-ink">
-              Get chatting with the locals while you travel, <span className="text-fabpink">instantly</span>.
+
+            <p className="relative mt-5 text-sm leading-relaxed text-muted">
+              Capture a phrase the moment you need it, in any language, and keep it. No lessons, no streaks. A phrasebook that only
+              contains what you choose to put in it.
             </p>
           </div>
         ) : (
           <div className="flex w-full max-w-sm flex-col items-center text-center">
-            <h2 className="text-2xl font-black tracking-tight text-ink">{HOWTO_PAGES[page - 1].title}</h2>
+            <h2 className="font-brand text-2xl font-bold tracking-[-0.035em] text-ink">{HOWTO_PAGES[page - 1].title}</h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">{HOWTO_PAGES[page - 1].body}</p>
             <div className="mt-8 w-full">{HOWTO_PAGES[page - 1].illustration}</div>
           </div>

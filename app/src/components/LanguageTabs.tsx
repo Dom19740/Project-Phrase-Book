@@ -124,8 +124,8 @@ export function LanguageTabs({
         <div className="h-10 w-11 shrink-0" aria-hidden="true" />
 
         <div
-          className={`absolute inset-y-0 right-0 z-10 flex h-10 items-center overflow-hidden rounded-full border-2 border-fabpink bg-surface shadow-lg shadow-fabpink/10 transition-[width] duration-300 ease-out ${
-            searchExpanded ? 'w-full' : 'w-11'
+          className={`absolute inset-y-0 right-0 z-10 flex h-10 items-center overflow-hidden rounded-full border-2 bg-surface transition-[width,border-color,box-shadow] duration-300 ease-out ${
+            searchExpanded ? 'w-full border-fabpink shadow-lg shadow-fabpink/10' : 'w-11 border-hairline'
           }`}
         >
           <button
@@ -134,7 +134,7 @@ export function LanguageTabs({
             className="absolute inset-y-0 left-0 z-20 flex w-11 shrink-0 items-center justify-center"
             aria-label="Search"
           >
-            <Search size={16} strokeWidth={2} className="text-fabpink" />
+            <Search size={16} strokeWidth={2} className={searchExpanded ? 'text-fabpink' : 'text-muted'} />
           </button>
           <input
             ref={searchInputRef}

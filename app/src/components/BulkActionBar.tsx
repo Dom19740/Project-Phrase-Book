@@ -154,7 +154,7 @@ export function BulkActionBar({
                 setPanel(null)
               }}
               disabled={busy}
-              className="flex-1 rounded-full border border-fabpink px-3 py-1.5 text-sm font-medium text-fabpink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
+              className="flex-1 rounded-full border border-hairline px-3 py-1.5 text-sm font-medium text-muted hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
             >
               {languageName} only
             </button>
@@ -185,7 +185,7 @@ export function BulkActionBar({
           <button
             onClick={() => onMarkLearned(true)}
             disabled={selectedCount === 0}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+            className="flex items-center gap-1 rounded-full border border-hairline text-muted px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Check size={13} strokeWidth={2} />
             Learned
@@ -193,7 +193,7 @@ export function BulkActionBar({
           <button
             onClick={() => onMarkFavorite(true)}
             disabled={selectedCount === 0}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+            className="flex items-center gap-1 rounded-full border border-hairline text-muted px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Star size={13} strokeWidth={2} />
             Favourite
@@ -201,7 +201,7 @@ export function BulkActionBar({
           <button
             onClick={() => setPanel(panel === 'category' ? null : 'category')}
             disabled={selectedCount === 0}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+            className="flex items-center gap-1 rounded-full border border-hairline text-muted px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Tag size={13} strokeWidth={2} />
             Category
@@ -209,7 +209,7 @@ export function BulkActionBar({
           <button
             onClick={() => setPanel(panel === 'copy' ? null : 'copy')}
             disabled={selectedCount === 0}
-            className="flex items-center gap-1 rounded-full border border-fabpink text-fabpink px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+            className="flex items-center gap-1 rounded-full border border-hairline text-muted px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Copy size={13} strokeWidth={2} />
             Copy to...
@@ -219,7 +219,7 @@ export function BulkActionBar({
             disabled={selectedCount === 0}
             aria-label="Delete"
             title="Delete"
-            className="flex items-center rounded-full border border-fabpink p-1.5 text-fabpink hover:bg-surfacehover active:scale-90 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+            className="flex items-center rounded-full border border-hairline p-1.5 text-fabpink hover:bg-surfacehover active:scale-90 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Trash2 size={13} strokeWidth={2} />
           </button>

@@ -23,6 +23,10 @@ interface Props<T> {
    * options); pass 'w-max' for compact icon-only option lists so the panel shrinks to fit them
    * instead of leaving a lot of empty space. */
   panelWidthClassName?: string
+  /** Gives the trigger a solid accent border instead of the default hairline, matching the other filter pills. */
+  accent?: boolean
+  /** Shrinks the trigger to the same height/text size as the other filter pills (px-2.5 py-1.5 text-xs). */
+  dense?: boolean
 }
 
 export function PopoutSelect<T extends string | number>({
@@ -33,6 +37,8 @@ export function PopoutSelect<T extends string | number>({
   align = 'right',
   dropDirection = 'down',
   panelWidthClassName = 'w-48',
+  accent = false,
+  dense = false,
 }: Props<T>) {
   const [open, setOpen] = useState(false)
   const activeOption = options.find((o) => o.value === value)
@@ -43,10 +49,12 @@ export function PopoutSelect<T extends string | number>({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-1.5 rounded-full border border-hairline bg-surface px-3.5 py-2 text-sm text-ink hover:border-fabpink/40 active:scale-[0.98] transition-all"
+        className={`flex w-full items-center gap-1.5 rounded-full border bg-surface text-ink active:scale-[0.98] transition-all ${
+          dense ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3.5 py-2 text-sm'
+        } ${accent ? 'border-fabpink hover:bg-surfacehover' : 'border-hairline hover:border-fabpink/40'}`}
       >
         <span className="flex-1 flex items-center gap-1 text-left truncate">{activeTrigger}</span>
-        <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-ink" />
+        <ChevronDown size={14} strokeWidth={2} className={`shrink-0 ${accent ? 'text-fabpink' : 'text-ink'}`} />
       </button>
 
       {open && (
