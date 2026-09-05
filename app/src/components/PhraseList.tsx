@@ -413,7 +413,7 @@ export function PhraseList({
               >
                 <span className="flex items-center gap-1.5">
                   <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" />
-                  Favourites ({favoriteItems.length})
+                  Favorites ({favoriteItems.length})
                 </span>
                 {favoritesExpanded ? (
                   <ChevronDown size={16} strokeWidth={2} className="text-fabpink" />

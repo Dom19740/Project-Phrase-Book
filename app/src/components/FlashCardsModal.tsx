@@ -6,7 +6,7 @@ import { speak } from '../lib/tts'
 import { useSpeakRate } from '../lib/useSpeakRate'
 import { EditPhraseModal } from './EditPhraseModal'
 
-type FlashFilterFlag = 'unlearned' | 'favourites'
+type FlashFilterFlag = 'unlearned' | 'favorites'
 type GuessDirection = 'english' | 'translation'
 
 interface Props {
@@ -26,7 +26,7 @@ const LONG_PRESS_MS = 500
 
 const FILTERS: { value: FlashFilterFlag; label: string }[] = [
   { value: 'unlearned', label: 'Not Learnt' },
-  { value: 'favourites', label: 'Favourites' },
+  { value: 'favorites', label: 'Favorites' },
 ]
 
 function shuffled<T>(items: T[]): T[] {
@@ -142,7 +142,7 @@ export function FlashCardsModal({
   const matchingPhrases = useMemo(() => {
     return languagePhrases.filter((p) => {
       if (!p.text) return false
-      if (filterFlags.has('favourites') && !p.favorite) return false
+      if (filterFlags.has('favorites') && !p.favorite) return false
       if (filterFlags.has('unlearned') && p.learned) return false
       if (categoryIds.size > 0 && (p.categoryId == null || !categoryIds.has(p.categoryId))) return false
       return true
@@ -467,7 +467,7 @@ export function FlashCardsModal({
               </button>
               <button onClick={() => updateCard({ favorite: !card.favorite })} className={pillClass(card.favorite) + ' flex items-center gap-1.5'}>
                 <Star size={15} strokeWidth={2.5} fill={card.favorite ? 'currentColor' : 'none'} />
-                Favourite
+                Favorite
               </button>
               <button onClick={() => updateCard({ learned: !card.learned })} className={pillClass(card.learned) + ' flex items-center gap-1.5'}>
                 <Check size={15} strokeWidth={2.5} />

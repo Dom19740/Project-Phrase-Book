@@ -196,7 +196,7 @@ export function BulkActionBar({
             className="flex items-center gap-1 rounded-full border border-hairline text-muted px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Star size={13} strokeWidth={2} />
-            Favourite
+            Favorite
           </button>
           <button
             onClick={() => setPanel(panel === 'category' ? null : 'category')}

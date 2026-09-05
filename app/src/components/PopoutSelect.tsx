@@ -63,7 +63,7 @@ export function PopoutSelect<T extends string | number>({
           <div
             className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
               dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
-            } z-50 ${panelWidthClassName} max-h-64 overflow-y-auto rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl`}
+            } z-50 ${panelWidthClassName} max-h-64 overflow-y-auto rounded-2xl border border-fabpink bg-surface p-1.5 shadow-xl`}
           >
             {options.map((opt) => (
               <button

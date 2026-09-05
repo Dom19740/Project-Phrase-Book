@@ -34,7 +34,7 @@ const HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Add the phrases you want',
-    body: 'Tap the + button to add a phrase in your own words. Tap a phrase to hear it, mark it learned, or make it a favourite.',
+    body: 'Tap the + button to add a phrase in your own words. Tap a phrase to hear it, mark it learned, or make it a favorite.',
     illustration: (
       <div className="flex w-full flex-col items-center gap-5">
         <div className="flex w-full max-w-xs items-center gap-3 rounded-2xl border-2 border-hairline bg-surface px-4 py-3.5 shadow-md">

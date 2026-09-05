@@ -44,6 +44,7 @@ export function PhraseRow({
   const pressTimer = useRef<number | null>(null)
   const longPressFired = useRef(false)
   const nextSpeakRate = useSpeakRate()
+  const rowRef = useRef<HTMLDivElement>(null)
 
   function clearPressTimer() {
     if (pressTimer.current != null) {
@@ -75,6 +76,7 @@ export function PhraseRow({
 
   return (
     <div
+      ref={rowRef}
       className={`group relative flex items-center gap-1.5 rounded-2xl bg-surface border px-2 py-0.1 shadow-sm transition-all hover:border-fabpink/40 cursor-pointer select-none ${
         dragging ? 'border-fabpink' : 'border-hairline'
       } ${menuOpen ? '' : 'active:scale-[0.99]'}`}
@@ -149,8 +151,14 @@ export function PhraseRow({
         </label>
       ) : (
         <div className="shrink-0 flex items-center justify-end gap-0.5">
-          {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favourite" />}
-          {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learned" />}
+          {phrase.learned && phrase.favorite ? (
+            <Star size={16} strokeWidth={2.5} className="text-fabpink" aria-label="Favorite and learned" />
+          ) : (
+            <>
+              {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learned" />}
+              {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favorite" />}
+            </>
+          )}
         </div>
       )}
 
@@ -172,6 +180,7 @@ export function PhraseRow({
 
       {menuOpen && (
         <PhraseQuickMenu
+          anchorRef={rowRef}
           learned={phrase.learned}
           favorite={phrase.favorite}
           onToggleLearned={() => onToggleLearned(phrase.translationId, !phrase.learned)}
