@@ -155,7 +155,7 @@ export function PhraseRow({
             <Star size={16} strokeWidth={2.5} className="text-fabpink" aria-label="Favorite and learned" />
           ) : (
             <>
-              {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learned" />}
+              {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learnt" />}
               {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favorite" />}
             </>
           )}

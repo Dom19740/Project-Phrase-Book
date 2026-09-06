@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Copy, Star, Tag, Trash2, X } from 'lucide-react'
+import { Check, Copy, Star, StarOff, Tag, Trash2, X, XCircle } from 'lucide-react'
 import type { Category, Language } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { PopoutSelect } from './PopoutSelect'
@@ -188,7 +188,15 @@ export function BulkActionBar({
             className="flex items-center gap-1 rounded-full border border-hairline text-muted px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
           >
             <Check size={13} strokeWidth={2} />
-            Learned
+            Learnt
+          </button>
+          <button
+            onClick={() => onMarkLearned(false)}
+            disabled={selectedCount === 0}
+            className="flex items-center gap-1 rounded-full border border-hairline text-muted px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+          >
+            <XCircle size={13} strokeWidth={2} />
+            Unlearn
           </button>
           <button
             onClick={() => onMarkFavorite(true)}
@@ -197,6 +205,14 @@ export function BulkActionBar({
           >
             <Star size={13} strokeWidth={2} />
             Favorite
+          </button>
+          <button
+            onClick={() => onMarkFavorite(false)}
+            disabled={selectedCount === 0}
+            className="flex items-center gap-1 rounded-full border border-hairline text-muted px-2.5 py-1.5 text-xs font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:active:scale-100"
+          >
+            <StarOff size={13} strokeWidth={2} />
+            Unfavorite
           </button>
           <button
             onClick={() => setPanel(panel === 'category' ? null : 'category')}
