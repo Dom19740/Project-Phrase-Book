@@ -1,24 +1,18 @@
-import { useEffect, useState } from 'react'
-import { ChevronDown, RefreshCw } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronDown, Mic, RefreshCw, X } from 'lucide-react'
 import type { Category, Language } from '../db/types'
-import { getLanguageFlag } from '../lib/languageFlags'
-import { translateAlternatives } from '../lib/translateApi'
+import { getLanguageFlag, getSpeechLocale } from '../lib/languageFlags'
+import { translateAlternatives, translatePhrase } from '../lib/translateApi'
+import { useSpeechToText } from '../lib/useSpeechToText'
 import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
-const TRANSLATE_INTO_STORAGE_KEY = 'phrasebook-translate-into-language-ids'
 
-/** Remembers the last set of languages picked in "Translate into", filtered to ones that still exist. */
-function loadPersistedLanguageIds(languages: Language[]): number[] | null {
-  try {
-    const raw = localStorage.getItem(TRANSLATE_INTO_STORAGE_KEY)
-    if (!raw) return null
-    const ids: number[] = JSON.parse(raw)
-    const valid = ids.filter((id) => languages.some((l) => l.id === id))
-    return valid.length > 0 ? valid : null
-  } catch {
-    return null
-  }
+/** Shared look for every toggle/chip control in this modal (language pills, alternate-translation pills). */
+function pillClass(selected: boolean) {
+  return `rounded-full border px-3 py-1.5 text-sm transition-colors ${
+    selected ? 'border-fabpink text-fabpink' : 'border-hairline bg-surfacehover text-ink hover:border-fabpink'
+  }`
 }
 
 interface Props {
@@ -34,29 +28,31 @@ interface Props {
   ) => Promise<void>
 }
 
-type Step = 'details' | 'translations'
-
 export function AddPhraseModal({ categories, languages, activeLanguageId, onClose, onSubmit }: Props) {
-  const [step, setStep] = useState<Step>('details')
   const [english, setEnglish] = useState('')
   const [categoryChoice, setCategoryChoice] = useState('')
   const [newCategory, setNewCategory] = useState('')
   const [saving, setSaving] = useState(false)
-  const [selectedLanguageIds, setSelectedLanguageIds] = useState<Set<number>>(() => {
-    const persisted = loadPersistedLanguageIds(languages)
-    if (persisted) return new Set(persisted)
-    return new Set(activeLanguageId != null ? [activeLanguageId] : languages.map((l) => l.id))
-  })
+  const [selectedLanguageIds, setSelectedLanguageIds] = useState<Set<number>>(
+    () => new Set(activeLanguageId != null ? [activeLanguageId] : languages.map((l) => l.id)),
+  )
   const [languagesOpen, setLanguagesOpen] = useState(false)
   const [translationText, setTranslationText] = useState<Record<number, string>>({})
   const [alternatives, setAlternatives] = useState<Record<number, string[]>>({})
   const [loadingAlternatives, setLoadingAlternatives] = useState<Record<number, boolean>>({})
   const [alternativesError, setAlternativesError] = useState<Record<number, string>>({})
 
-  const canProceed =
+  const speech = useSpeechToText()
+
+  const canSubmit =
     english.trim().length > 0 && (categoryChoice !== NEW_CATEGORY || newCategory.trim().length > 0) && selectedLanguageIds.size > 0
 
   const anyLoadingAlternatives = Object.values(loadingAlternatives).some(Boolean)
+
+  // Once every selected language has text you typed, spoke, or accepted from a translation,
+  // there's nothing left to auto-translate — the button reflects that it's the final step.
+  const allTranslated =
+    selectedLanguageIds.size > 0 && [...selectedLanguageIds].every((id) => (translationText[id] ?? '').trim().length > 0)
 
   const allSelected = selectedLanguageIds.size === languages.length
   const languagesLabel = allSelected
@@ -68,6 +64,15 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
           .map((l) => l.name)
           .join(', ')
 
+  const categoryOptions = [
+    { value: '', label: 'Uncategorized' },
+    ...categories.map((c) => ({ value: c.name, label: c.name })),
+    ...(categoryChoice && categoryChoice !== NEW_CATEGORY && !categories.some((c) => c.name === categoryChoice)
+      ? [{ value: categoryChoice, label: categoryChoice }]
+      : []),
+    { value: NEW_CATEGORY, label: '+ New category...', neutral: true },
+  ]
+
   function toggleLanguage(id: number) {
     setSelectedLanguageIds((prev) => {
       const next = new Set(prev)
@@ -77,21 +82,14 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
     })
   }
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(TRANSLATE_INTO_STORAGE_KEY, JSON.stringify([...selectedLanguageIds]))
-    } catch {
-      // localStorage unavailable — the default just won't be remembered next time
-    }
-  }, [selectedLanguageIds])
-
-  async function handleGetAlternatives(lang: Language) {
+  async function handleTranslate(lang: Language) {
     if (!english.trim()) return
     setLoadingAlternatives((prev) => ({ ...prev, [lang.id]: true }))
     setAlternativesError((prev) => ({ ...prev, [lang.id]: '' }))
     try {
       const results = await translateAlternatives(english.trim(), lang.code, lang.name)
       setAlternatives((prev) => ({ ...prev, [lang.id]: results }))
+      if (results.length > 0) setTranslationText((prev) => ({ ...prev, [lang.id]: results[0] }))
     } catch (err) {
       setAlternativesError((prev) => ({ ...prev, [lang.id]: err instanceof Error ? err.message : 'Translation failed' }))
     } finally {
@@ -99,17 +97,31 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
     }
   }
 
-  // Arriving on the translations step: kick off suggestions for every selected language at once
-  // rather than making the user click "Suggest" one by one.
-  useEffect(() => {
-    if (step !== 'translations') return
-    for (const lang of languages) {
-      if (selectedLanguageIds.has(lang.id) && !(lang.id in alternatives) && !loadingAlternatives[lang.id]) {
-        handleGetAlternatives(lang)
+  /** Best-effort category suggestion, piggybacking on the same moment the phrase gets auto-translated. Never overrides a category you already picked. */
+  async function handleSuggestCategory(targetLangs: Language[]) {
+    if (categoryChoice || targetLangs.length === 0) return
+    try {
+      const result = await translatePhrase(
+        english.trim(),
+        targetLangs.map((l) => l.code),
+        null,
+        categories.map((c) => c.name),
+        Object.fromEntries(targetLangs.map((l) => [l.code, l.name])),
+      )
+      if (result.suggestedCategory) {
+        setCategoryChoice((current) => current || result.suggestedCategory!)
       }
+    } catch {
+      // Best-effort — leave the category picker on "Uncategorized" if this fails.
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step])
+  }
+
+  /** The primary button's default action: translate every selected language that's still blank, all at once, and suggest a category. */
+  async function handleAutoTranslate() {
+    const targets = languages.filter((lang) => selectedLanguageIds.has(lang.id) && !(translationText[lang.id] ?? '').trim())
+    if (targets.length === 0) return
+    await Promise.all([...targets.map((lang) => handleTranslate(lang)), handleSuggestCategory(targets)])
+  }
 
   async function handleSubmit() {
     setSaving(true)
@@ -125,177 +137,177 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
       <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
-        {step === 'details' ? (
-          <>
-            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add phrase</h2>
+        <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add phrase</h2>
 
-            <label className="block text-sm font-medium mb-1 text-ink">English</label>
-            <input
-              autoFocus
-              value={english}
-              onChange={(e) => setEnglish(e.target.value)}
-              className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
-              placeholder="e.g. Where is the bathroom?"
-            />
+        <label className="block text-sm font-medium mb-1 text-ink">English</label>
+        <div className="relative mb-4">
+          <input
+            autoFocus
+            value={english}
+            onChange={(e) => setEnglish(e.target.value)}
+            className={`w-full rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-shadow ${speech.supported ? 'pr-10' : ''}`}
+            placeholder={speech.activeId === 'english' ? 'Listening…' : 'e.g. Where is the bathroom?'}
+          />
+          {speech.supported && (
+            <button
+              type="button"
+              onClick={() => (speech.activeId === 'english' ? speech.stop() : speech.start('english', 'en-US', setEnglish))}
+              aria-label={speech.activeId === 'english' ? 'Stop recording' : 'Record English phrase'}
+              title={speech.activeId === 'english' ? 'Stop recording' : 'Record'}
+              className={`absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-all active:scale-90 ${
+                speech.activeId === 'english' ? 'text-red-500 animate-pulse' : 'text-muted hover:bg-surfacehover'
+              }`}
+            >
+              <Mic size={16} strokeWidth={2} />
+            </button>
+          )}
+        </div>
 
-            <label className="block text-sm font-medium mb-1 text-ink">Category</label>
-            <PopoutSelect
-              className="mb-3 w-full"
-              align="left"
-              value={categoryChoice}
-              onChange={setCategoryChoice}
-              options={[
-                { value: '', label: 'Uncategorized' },
-                ...categories.map((c) => ({ value: c.name, label: c.name })),
-                { value: NEW_CATEGORY, label: '+ New category...', neutral: true },
-              ]}
-            />
+        <label className="block text-sm font-medium mb-1 text-ink">Translate into</label>
+        <div className="relative mb-4">
+          <button
+            type="button"
+            onClick={() => setLanguagesOpen((v) => !v)}
+            title={languagesLabel}
+            className="flex w-full items-center gap-1.5 rounded-xl border border-hairline bg-surface px-3 py-2 text-sm text-ink hover:border-fabpink/40 transition-colors"
+          >
+            <span className="flex-1 text-left truncate">{languagesLabel}</span>
+            <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-muted" />
+          </button>
 
-            {categoryChoice === NEW_CATEGORY && (
-              <input
-                autoFocus
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
-                placeholder="New category name"
-              />
-            )}
+          {languagesOpen && (
+            <>
+              <button className="fixed inset-0 z-40 cursor-default" onClick={() => setLanguagesOpen(false)} aria-label="Close language selector" />
+              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-fabpink bg-surface/95 backdrop-blur-md p-3 pr-9 shadow-xl">
+                <button
+                  type="button"
+                  onClick={() => setLanguagesOpen(false)}
+                  aria-label="Close language selector"
+                  className="absolute right-2 top-2 rounded-full p-1 text-muted hover:bg-surfacehover active:scale-90 transition-all"
+                >
+                  <X size={14} strokeWidth={2.5} />
+                </button>
+                <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedLanguageIds(allSelected ? new Set() : new Set(languages.map((l) => l.id)))}
+                    className={pillClass(allSelected)}
+                  >
+                    All languages
+                  </button>
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.id}
+                      type="button"
+                      onClick={() => toggleLanguage(lang.id)}
+                      className={`flex items-center gap-1.5 ${pillClass(selectedLanguageIds.has(lang.id))}`}
+                    >
+                      <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                      {lang.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
-            <label className="block text-sm font-medium mb-1 text-ink">Translate into</label>
-            <div className="relative mb-1">
-              <button
-                type="button"
-                onClick={() => setLanguagesOpen((v) => !v)}
-                title={languagesLabel}
-                className="flex w-full items-center gap-1.5 rounded-xl border border-hairline bg-surface px-3 py-2 text-sm text-ink hover:border-fabpink/40 transition-colors"
-              >
-                <span className="flex-1 text-left truncate">{languagesLabel}</span>
-                <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-muted" />
-              </button>
-
-              {languagesOpen && (
-                <>
-                  <button className="fixed inset-0 z-40 cursor-default" onClick={() => setLanguagesOpen(false)} aria-label="Close language selector" />
-                  <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-fabpink bg-surface/95 backdrop-blur-md p-3 shadow-xl">
-                    <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 mb-1 border-b border-hairline pb-2">
-                      <input
-                        type="checkbox"
-                        checked={allSelected}
-                        onChange={(e) => setSelectedLanguageIds(e.target.checked ? new Set(languages.map((l) => l.id)) : new Set())}
-                        className="size-4 rounded accent-fabpink cursor-pointer"
-                      />
-                      All languages
+        <div className="flex flex-col gap-4 mb-4">
+          {languages
+            .filter((lang) => selectedLanguageIds.has(lang.id))
+            .map((lang) => {
+              const micId = `lang-${lang.id}`
+              const hasTranslatedOnce = alternatives[lang.id] !== undefined
+              return (
+                <div key={lang.id}>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-ink">
+                      <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                      {lang.name}
                     </label>
-                    <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
-                      {languages.map((lang) => (
-                        <label key={lang.id} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover transition-colors cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedLanguageIds.has(lang.id)}
-                            onChange={() => toggleLanguage(lang.id)}
-                            className="size-4 rounded accent-fabpink cursor-pointer"
-                          />
-                          <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
-                          {lang.name}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <p className="text-xs text-muted mb-4">
-              Only the languages you pick get this phrase at all - a deselected language won't show it.
-            </p>
-
-            <div className="flex justify-end gap-2">
-              <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
-                Cancel
-              </button>
-              <button
-                onClick={() => setStep('translations')}
-                disabled={!canProceed}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Add phrase</h2>
-            <p className="text-sm text-muted mb-4 truncate">{english}</p>
-
-            <p className="text-xs text-muted mb-2">Pick a suggestion or edit the text yourself. Leave a language blank to choose the default translation.</p>
-
-            <div className="flex flex-col gap-3 max-h-80 overflow-y-auto mb-4 rounded-xl border border-hairline p-2.5">
-              {languages
-                .filter((lang) => selectedLanguageIds.has(lang.id))
-                .map((lang) => (
-                  <div key={lang.id}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="flex items-center gap-1.5 text-sm text-ink">
-                        <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
-                        {lang.name}
-                      </span>
+                    {hasTranslatedOnce && (
                       <button
                         type="button"
-                        onClick={() => handleGetAlternatives(lang)}
+                        onClick={() => handleTranslate(lang)}
                         disabled={!english.trim() || loadingAlternatives[lang.id]}
                         className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-fabpink disabled:opacity-40"
-                        title="Get suggested translations"
+                        title="Retranslate"
                       >
                         <RefreshCw size={12} strokeWidth={2.5} className={loadingAlternatives[lang.id] ? 'animate-spin' : ''} />
-                        {loadingAlternatives[lang.id] ? 'Translating...' : 'Suggest'}
+                        {loadingAlternatives[lang.id] ? 'Retranslating…' : 'Retranslate'}
                       </button>
-                    </div>
+                    )}
+                  </div>
+                  <div className="relative">
                     <input
                       value={translationText[lang.id] ?? ''}
                       onChange={(e) => setTranslationText((prev) => ({ ...prev, [lang.id]: e.target.value }))}
-                      className="w-full rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
-                      placeholder="Leave blank to auto-translate"
+                      className={`w-full rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-shadow ${speech.supported ? 'pr-9' : ''}`}
+                      placeholder={speech.activeId === micId ? 'Listening…' : 'Type or record translation'}
                     />
-                    {alternativesError[lang.id] && <p className="text-xs text-red-400 mt-1">{alternativesError[lang.id]}</p>}
-                    {alternatives[lang.id] && alternatives[lang.id].length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-1.5">
-                        {alternatives[lang.id].map((alt, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => setTranslationText((prev) => ({ ...prev, [lang.id]: alt }))}
-                            className={`rounded-full border px-3 py-1.5 text-sm text-left transition-colors ${
-                              alt === translationText[lang.id] ? 'border-fabpink text-fabpink' : 'border-hairline text-ink hover:border-fabpink'
-                            }`}
-                          >
-                            {alt}
-                          </button>
-                        ))}
-                      </div>
+                    {speech.supported && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          speech.activeId === micId
+                            ? speech.stop()
+                            : speech.start(micId, getSpeechLocale(lang.code), (text) => setTranslationText((prev) => ({ ...prev, [lang.id]: text })))
+                        }
+                        aria-label={speech.activeId === micId ? 'Stop recording' : `Record ${lang.name} translation`}
+                        title={speech.activeId === micId ? 'Stop recording' : 'Record'}
+                        className={`absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-all active:scale-90 ${
+                          speech.activeId === micId ? 'text-red-500 animate-pulse' : 'text-muted hover:bg-surfacehover'
+                        }`}
+                      >
+                        <Mic size={14} strokeWidth={2} />
+                      </button>
                     )}
                   </div>
-                ))}
-            </div>
+                  {alternativesError[lang.id] && <p className="text-xs text-red-400 mt-1">{alternativesError[lang.id]}</p>}
+                  {alternatives[lang.id] && alternatives[lang.id].length > 1 && (
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {alternatives[lang.id].map((alt, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setTranslationText((prev) => ({ ...prev, [lang.id]: alt }))}
+                          className={`${pillClass(alt === translationText[lang.id])} text-left`}
+                        >
+                          {alt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+        </div>
 
-            <div className="flex items-center justify-end gap-2">
-              {anyLoadingAlternatives && <p className="mr-auto text-xs text-muted">Fetching suggestions&hellip;</p>}
-              <button
-                onClick={() => setStep('details')}
-                disabled={saving}
-                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
-              >
-                Back
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={saving || anyLoadingAlternatives}
-                title={anyLoadingAlternatives ? 'Waiting for suggestions to load so you don’t miss them' : undefined}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-              >
-                {saving ? 'Saving...' : anyLoadingAlternatives ? 'Loading…' : 'Add phrase'}
-              </button>
-            </div>
-          </>
+        <label className="block text-sm font-medium mb-1 text-ink">Category</label>
+        <PopoutSelect className="mb-3 w-full" align="left" value={categoryChoice} onChange={setCategoryChoice} options={categoryOptions} />
+
+        {categoryChoice === NEW_CATEGORY && (
+          <input
+            autoFocus
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-shadow"
+            placeholder="New category name"
+          />
         )}
+
+        <div className="flex justify-end gap-2 mt-3">
+          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
+            Cancel
+          </button>
+          <button
+            onClick={allTranslated ? handleSubmit : handleAutoTranslate}
+            disabled={!canSubmit || saving || anyLoadingAlternatives}
+            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+          >
+            {saving ? 'Saving...' : anyLoadingAlternatives ? 'Translating…' : allTranslated ? 'Add phrase' : 'Auto translate'}
+          </button>
+        </div>
       </div>
     </div>
   )

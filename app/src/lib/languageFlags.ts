@@ -125,3 +125,16 @@ export function getLanguageFlag(code: string): string {
 
   return GLOBE
 }
+
+/** Best-effort BCP-47 locale (e.g. "es-ES") for the SpeechRecognition API, reusing the same region lookup as the flag. */
+export function getSpeechLocale(code: string): string {
+  if (code.includes('-')) return code
+
+  const override = CODE_OVERRIDES[code]
+  if (override) return `${code}-${override}`
+
+  const country = LANGUAGE_TO_COUNTRY[code.toLowerCase()]
+  if (country) return `${code}-${country}`
+
+  return code
+}
