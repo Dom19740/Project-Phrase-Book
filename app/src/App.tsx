@@ -65,6 +65,7 @@ function Shell() {
     createCategory,
     renameCategory,
     deleteCategory,
+    reorderCategories,
     createLanguage,
     addStartupPhrases,
     removeLanguage,
@@ -268,6 +269,7 @@ function Shell() {
             onCreateCategory={createCategory}
             onRenameCategory={renameCategory}
             onDeleteCategory={deleteCategory}
+            onReorderCategories={reorderCategories}
           />
         )}
       </main>

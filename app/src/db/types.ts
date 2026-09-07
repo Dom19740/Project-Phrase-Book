@@ -8,6 +8,7 @@ export interface Language {
 export interface Category {
   id: number
   name: string
+  sortOrder: number
 }
 
 export interface PhraseConcept {

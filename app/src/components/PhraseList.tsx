@@ -47,6 +47,7 @@ interface Props {
   onCreateCategory: (name: string) => Promise<void>
   onRenameCategory: (categoryId: number, newName: string) => Promise<void>
   onDeleteCategory: (categoryId: number) => Promise<void>
+  onReorderCategories: (orderedCategoryIds: number[]) => Promise<void>
 }
 
 interface Group {
@@ -143,7 +144,7 @@ type LearnedFilter = 'unlearned' | 'learned' | 'all'
 const LEARNED_FILTER_CYCLE: LearnedFilter[] = ['unlearned', 'learned', 'all']
 const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Not Learnt', learned: 'Learnt', all: 'All' }
 
-function groupByCategory(items: PhraseListItem[], mode: SortMode): Group[] {
+function groupByCategory(items: PhraseListItem[], mode: SortMode, categoryOrderIndex: Map<string, number>): Group[] {
   const map = new Map<string, PhraseListItem[]>()
   for (const item of items) {
     const key = item.categoryName ?? 'Uncategorized'
@@ -151,7 +152,11 @@ function groupByCategory(items: PhraseListItem[], mode: SortMode): Group[] {
     map.get(key)!.push(item)
   }
   return [...map.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => {
+      const ia = categoryOrderIndex.get(a) ?? Infinity
+      const ib = categoryOrderIndex.get(b) ?? Infinity
+      return ia !== ib ? ia - ib : a.localeCompare(b)
+    })
     .map(([categoryName, groupItems]) => ({ categoryName, items: sortItems(groupItems, mode) }))
 }
 
@@ -178,6 +183,7 @@ export function PhraseList({
   onCreateCategory,
   onRenameCategory,
   onDeleteCategory,
+  onReorderCategories,
 }: Props) {
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
   const [groupByCategoryOn, setGroupByCategoryOn] = usePersistedState('phrasebook-group-by-category', false)
@@ -197,11 +203,21 @@ export function PhraseList({
     onSelectionModeChange?.(selectionMode)
   }, [selectionMode, onSelectionModeChange])
 
+  const categoryOrderIndex = useMemo(() => {
+    const map = new Map<string, number>()
+    categories.forEach((c, i) => map.set(c.name, i))
+    return map
+  }, [categories])
+
   const allCategoryNames = useMemo(() => {
     const names = new Set<string>()
     for (const p of phrases) names.add(p.categoryName ?? 'Uncategorized')
-    return [...names].sort((a, b) => a.localeCompare(b))
-  }, [phrases])
+    return [...names].sort((a, b) => {
+      const ia = categoryOrderIndex.get(a) ?? Infinity
+      const ib = categoryOrderIndex.get(b) ?? Infinity
+      return ia !== ib ? ia - ib : a.localeCompare(b)
+    })
+  }, [phrases, categoryOrderIndex])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -233,16 +249,16 @@ export function PhraseList({
   const favoriteGroups = useMemo<Group[]>(
     () =>
       groupByCategoryOn
-        ? groupByCategory(favoriteItems, sortMode)
+        ? groupByCategory(favoriteItems, sortMode, categoryOrderIndex)
         : [{ categoryName: '', items: sortItems(favoriteItems, sortMode) }],
-    [favoriteItems, groupByCategoryOn, sortMode],
+    [favoriteItems, groupByCategoryOn, sortMode, categoryOrderIndex],
   )
   const groups = useMemo<Group[]>(
     () =>
       groupByCategoryOn
-        ? groupByCategory(nonFavoritePrimaryItems, sortMode)
+        ? groupByCategory(nonFavoritePrimaryItems, sortMode, categoryOrderIndex)
         : [{ categoryName: '', items: sortItems(nonFavoritePrimaryItems, sortMode) }],
-    [nonFavoritePrimaryItems, groupByCategoryOn, sortMode],
+    [nonFavoritePrimaryItems, groupByCategoryOn, sortMode, categoryOrderIndex],
   )
 
   function toggleCategoryVisible(categoryName: string, visible: boolean) {
@@ -508,6 +524,7 @@ export function PhraseList({
           onCreate={onCreateCategory}
           onRename={onRenameCategory}
           onDelete={onDeleteCategory}
+          onReorder={onReorderCategories}
         />
       )}
     </div>

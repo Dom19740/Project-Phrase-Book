@@ -68,8 +68,8 @@ export async function bulkSetTranslationText(entries: { phraseConceptId: number;
 
 export async function getCategories(): Promise<Category[]> {
   const db = await getDb()
-  const res = await db.query('SELECT id, name FROM categories ORDER BY name;')
-  return (res.values ?? []).map((r) => ({ id: r.id, name: r.name }))
+  const res = await db.query('SELECT id, name, sort_order FROM categories ORDER BY sort_order, name;')
+  return (res.values ?? []).map((r) => ({ id: r.id, name: r.name, sortOrder: r.sort_order }))
 }
 
 /** Finds a category by exact name, creating it if it doesn't exist yet. */
@@ -77,9 +77,21 @@ export async function findOrCreateCategory(name: string): Promise<number> {
   const db = await getDb()
   const existing = await db.query('SELECT id FROM categories WHERE name = ?;', [name])
   if (existing.values?.[0]) return existing.values[0].id as number
-  const res = await db.run('INSERT INTO categories (name) VALUES (?);', [name])
+  const maxOrder = await db.query('SELECT COALESCE(MAX(sort_order), -1) AS m FROM categories;')
+  const sortOrder = (maxOrder.values?.[0]?.m ?? -1) + 1
+  const res = await db.run('INSERT INTO categories (name, sort_order) VALUES (?, ?);', [name, sortOrder])
   await persist()
   return res.changes?.lastId ?? 0
+}
+
+export async function reorderCategories(orderedCategoryIds: number[]): Promise<void> {
+  const db = await getDb()
+  const sets = orderedCategoryIds.map((id, index) => ({
+    statement: 'UPDATE categories SET sort_order = ? WHERE id = ?;',
+    values: [index, id],
+  }))
+  if (sets.length > 0) await db.executeSet(sets)
+  await persist()
 }
 
 export async function renameCategory(categoryId: number, newName: string): Promise<void> {

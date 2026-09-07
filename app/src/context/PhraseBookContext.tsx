@@ -20,6 +20,7 @@ import {
   getPhraseList,
   importCsvPhrases,
   renameCategory as renameCategoryQuery,
+  reorderCategories as reorderCategoriesQuery,
   reorderTranslations,
   setFavorite,
   setLearned,
@@ -69,6 +70,7 @@ interface PhraseBookContextValue {
   createCategory: (name: string) => Promise<void>
   renameCategory: (categoryId: number, newName: string) => Promise<void>
   deleteCategory: (categoryId: number) => Promise<void>
+  reorderCategories: (orderedCategoryIds: number[]) => Promise<void>
   createLanguage: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<Language>
   addStartupPhrases: (languageId: number, englishKeys?: string[]) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
@@ -316,6 +318,16 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     [refreshCategories, refreshPhrases],
   )
 
+  const reorderCategories = useCallback(async (orderedCategoryIds: number[]) => {
+    // Apply the new order to local state immediately — waiting on the DB write and a full
+    // refetch would otherwise show a one-frame flash back to the old order right after the drop.
+    const indexById = new Map(orderedCategoryIds.map((id, index) => [id, index]))
+    setCategories((prev) =>
+      [...prev].sort((a, b) => (indexById.get(a.id) ?? a.sortOrder) - (indexById.get(b.id) ?? b.sortOrder)),
+    )
+    await reorderCategoriesQuery(orderedCategoryIds)
+  }, [])
+
   const backUpToFile = useCallback(async () => {
     const snapshot = await exportSnapshot()
     await saveBackupToPickedLocation(JSON.stringify(snapshot, null, 2))
@@ -531,6 +543,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       createCategory,
       renameCategory,
       deleteCategory,
+      reorderCategories,
       createLanguage,
       addStartupPhrases,
       removeLanguage,
@@ -573,6 +586,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       createCategory,
       renameCategory,
       deleteCategory,
+      reorderCategories,
       createLanguage,
       addStartupPhrases,
       removeLanguage,

@@ -45,6 +45,20 @@ async function migrate(db: SQLiteDBConnection): Promise<void> {
   if (!hasFavorite) {
     await db.execute('ALTER TABLE translations ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;')
   }
+
+  const categoryColumns = await db.query('PRAGMA table_info(categories);')
+  const hasCategorySortOrder = (categoryColumns.values ?? []).some((c) => c.name === 'sort_order')
+  if (!hasCategorySortOrder) {
+    await db.execute('ALTER TABLE categories ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;')
+    // Backfill existing categories with the alphabetical order they were already shown in, so
+    // adding this column doesn't visibly reshuffle anyone's categories until they drag one.
+    const existing = await db.query('SELECT id FROM categories ORDER BY name;')
+    const sets = (existing.values ?? []).map((row, index) => ({
+      statement: 'UPDATE categories SET sort_order = ? WHERE id = ?;',
+      values: [index, row.id],
+    }))
+    if (sets.length > 0) await db.executeSet(sets)
+  }
 }
 
 /** Lazily opens (or reuses) the single app-wide SQLite connection. */
