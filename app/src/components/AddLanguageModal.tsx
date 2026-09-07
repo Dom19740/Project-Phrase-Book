@@ -144,23 +144,28 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               {loadingPhrases && <p className="text-sm text-muted text-center py-4">Loading phrases...</p>}
               {!loadingPhrases && sourcePhrases?.length === 0 && <p className="text-sm text-muted text-center py-4">No phrases yet.</p>}
               {!loadingPhrases &&
-                sourcePhrases?.map((p) => (
-                  <label
-                    key={p.phraseConceptId}
-                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-surfacehover transition-colors cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={includedIds.has(p.phraseConceptId)}
-                      onChange={() => toggleIncluded(p.phraseConceptId)}
-                      className="size-4 shrink-0 rounded accent-fabpink cursor-pointer"
-                    />
-                    <span className="min-w-0 flex-1 truncate">
-                      <span className="text-ink">{p.english}</span>
-                      {p.text ? <span className="text-muted"> - {p.text}</span> : <span className="italic text-neutral-600"> - untranslated</span>}
-                    </span>
-                  </label>
-                ))}
+                sourcePhrases?.map((p) => {
+                  const checked = includedIds.has(p.phraseConceptId)
+                  return (
+                    <button
+                      key={p.phraseConceptId}
+                      type="button"
+                      role="checkbox"
+                      aria-checked={checked}
+                      onClick={() => toggleIncluded(p.phraseConceptId)}
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`size-4 shrink-0 rounded-full border-2 transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
+                      />
+                      <span className="min-w-0 flex-1 truncate">
+                        <span className="text-ink">{p.english}</span>
+                        {p.text ? <span className="text-muted"> - {p.text}</span> : <span className="italic text-neutral-600"> - untranslated</span>}
+                      </span>
+                    </button>
+                  )
+                })}
             </div>
 
             <p className="text-xs text-muted mb-4">{includedIds.size} of {sourcePhrases?.length ?? 0} phrases selected.</p>

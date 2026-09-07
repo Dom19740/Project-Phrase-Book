@@ -4,13 +4,14 @@ import {
   ArrowDownAZ,
   ArrowUp,
   ArrowUpZA,
-  Check,
   ChevronDown,
   ChevronRight,
   Clock,
+  Eye,
   GripVertical,
   Languages,
   ListChecks,
+  ListFilter,
   Star,
   X,
 } from 'lucide-react'
@@ -323,10 +324,10 @@ export function PhraseList({
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full border border-fabpink px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
+            className="flex items-center gap-1.5 shrink-0 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
             title="Cycle: Not Learnt → Learnt → All"
           >
-            <Check size={13} strokeWidth={2} className="text-fabpink" />
+            <Eye size={13} strokeWidth={2} className="text-onaccent" />
             {LEARNED_FILTER_LABEL[learnedFilter]}
           </button>
         </div>
@@ -334,11 +335,9 @@ export function PhraseList({
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium active:scale-95 transition-all ${
-              selectionMode ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'border border-fabpink text-ink hover:bg-surfacehover'
-            }`}
+            className="flex items-center gap-1.5 shrink-0 rounded-full bg-fabpink px-2.5 py-1.5 text-xs font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
           >
-            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
+            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-onaccent" />}
             {selectionMode ? 'Cancel' : 'Select'}
           </button>
 
@@ -350,6 +349,7 @@ export function PhraseList({
             panelWidthClassName="w-max"
             accent
             dense
+            icon={<ListFilter size={14} strokeWidth={2} className="text-onaccent shrink-0" />}
           />
         </div>
       </div>
@@ -398,7 +398,7 @@ export function PhraseList({
         <div className="flex flex-col gap-4">
           {primaryItems.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
-              <p className="font-brand text-xl font-bold tracking-[-0.035em] text-ink">Every phrase you actually needed.</p>
+              <p className="font-brand text-xl font-bold tracking-[-0.035em] text-ink">Write it as you go.</p>
               <p className="max-w-xs text-sm leading-relaxed text-muted">
                 Tap the <span className="text-fabpink">+</span> button to capture your first phrase in this language.
               </p>

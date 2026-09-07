@@ -22,7 +22,7 @@ const ACCENT_COLORS = [DEFAULT_ACCENT, '#71e3ca', '#c6ff3d']
 // so swap it for a darker olive tone whenever light theme is active. The picker dot itself still
 // shows the original lemon yellow so the user's selection stays recognizable.
 const LIGHT_MODE_ACCENT_OVERRIDES: Record<string, string> = {
-  '#c6ff3d': '#6B8E12',
+  '#c6ff3d': '#3D8B40',
 }
 
 /** Used only the very first time the app opens, before the user has ever picked a theme themselves. */
@@ -323,12 +323,14 @@ function Shell() {
           languageCode={editingLanguageCode}
           languageName={editingLanguageName}
           categories={categories}
+          languages={languages}
           onClose={() => setEditingPhrase(null)}
           onSubmit={(english, text, categoryName) =>
             editPhrase(editingPhrase.phraseConceptId, editingPhrase.translationId, english, text, categoryName)
           }
           onDeleteOneLanguage={deleteOneLanguage}
           onDeleteAllLanguages={deleteAllLanguages}
+          onCopyToLanguages={(targetLanguageIds) => bulkCopyToLanguages([editingPhrase.phraseConceptId], targetLanguageIds)}
         />
       )}
 
@@ -369,6 +371,7 @@ function Shell() {
           onEditPhrase={editPhrase}
           onDeleteOneLanguage={deleteOneLanguage}
           onDeleteAllLanguages={deleteAllLanguages}
+          onCopyToLanguages={(phraseConceptId, targetLanguageIds) => bulkCopyToLanguages([phraseConceptId], targetLanguageIds)}
           onClose={() => setShowFlashCards(false)}
         />
       )}

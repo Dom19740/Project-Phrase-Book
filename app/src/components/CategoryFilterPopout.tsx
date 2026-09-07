@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ListFilter, Settings2, Star } from 'lucide-react'
+import { Settings2, Star, Tag } from 'lucide-react'
 
 interface Props {
   allCategoryNames: string[]
@@ -29,15 +29,15 @@ export function CategoryFilterPopout({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-fabpink px-3 py-1.5 text-xs font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
+        className="flex items-center gap-1.5 rounded-full bg-fabpink px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
       >
-        <ListFilter size={14} strokeWidth={2} className="text-fabpink" />
+        <Tag size={14} strokeWidth={2} className="text-onaccent" />
         Categories
         {favoritesOnly && (
-          <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-hidden="true" />
+          <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-onaccent" aria-hidden="true" />
         )}
         {hiddenCount > 0 && (
-          <span className="rounded-full bg-fabpink/15 border border-fabpink/40 text-fabpink text-[10px] font-bold uppercase tracking-wider leading-none px-1.5 py-0.5">
+          <span className="rounded-full bg-white/20 border border-white/30 text-onaccent text-[10px] font-bold uppercase tracking-wider leading-none px-1.5 py-0.5">
             {hiddenCount} hidden
           </span>
         )}
@@ -47,37 +47,52 @@ export function CategoryFilterPopout({
         <>
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close category filter" />
           <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-2xl border border-hairline bg-surface p-3 shadow-xl">
-            <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1">
-              <input
-                type="checkbox"
-                checked={favoritesOnly}
-                onChange={(e) => onToggleFavoritesOnly(e.target.checked)}
-                className="size-4 accent-fabpink"
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={favoritesOnly}
+              onClick={() => onToggleFavoritesOnly(!favoritesOnly)}
+              className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+            >
+              <span
+                aria-hidden="true"
+                className={`size-4 shrink-0 rounded-full border-2 transition-colors ${favoritesOnly ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
               />
               Favorites only
-            </label>
-            <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 mb-1 border-b border-hairline pb-2">
-              <input
-                type="checkbox"
-                checked={groupByCategoryOn}
-                onChange={(e) => onToggleGroupByCategory(e.target.checked)}
-                className="size-4 accent-fabpink"
+            </button>
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={groupByCategoryOn}
+              onClick={() => onToggleGroupByCategory(!groupByCategoryOn)}
+              className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 mb-1 border-b border-hairline pb-2 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+            >
+              <span
+                aria-hidden="true"
+                className={`size-4 shrink-0 rounded-full border-2 transition-colors ${groupByCategoryOn ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
               />
               Group by category
-            </label>
+            </button>
 
-            <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto">
-              {allCategoryNames.map((name) => (
-                <label key={name} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={!hiddenCategories.has(name)}
-                    onChange={(e) => onToggleCategoryVisible(name, e.target.checked)}
-                    className="size-4 accent-fabpink"
-                  />
-                  {name}
-                </label>
-              ))}
+            <div className="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto">
+              {allCategoryNames.map((name) => {
+                const visible = !hiddenCategories.has(name)
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => onToggleCategoryVisible(name, !visible)}
+                    aria-pressed={visible}
+                    className={`rounded-full px-3 py-1 text-xs font-medium active:scale-95 transition-all ${
+                      visible
+                        ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20'
+                        : 'border border-fabpink text-ink hover:bg-surfacehover'
+                    }`}
+                  >
+                    {name}
+                  </button>
+                )
+              })}
             </div>
             <button
               onClick={() => {

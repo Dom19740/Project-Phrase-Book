@@ -20,6 +20,7 @@ interface Props {
   onEditPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
   onDeleteOneLanguage: (translationId: number) => Promise<void>
   onDeleteAllLanguages: (phraseConceptId: number) => Promise<void>
+  onCopyToLanguages: (phraseConceptId: number, targetLanguageIds: number[]) => Promise<void>
   onClose: () => void
 }
 
@@ -53,6 +54,7 @@ export function FlashCardsModal({
   onEditPhrase,
   onDeleteOneLanguage,
   onDeleteAllLanguages,
+  onCopyToLanguages,
   onClose,
 }: Props) {
   const [step, setStep] = useState<'setup' | 'session' | 'complete'>('setup')
@@ -514,6 +516,7 @@ export function FlashCardsModal({
           languageCode={languageCode}
           languageName={activeLanguage?.name ?? ''}
           categories={categories}
+          languages={languages}
           onClose={() => setEditingCard(null)}
           onSubmit={async (english, text, categoryName) => {
             await onEditPhrase(editingCard.phraseConceptId, editingCard.translationId, english, text, categoryName)
@@ -531,6 +534,7 @@ export function FlashCardsModal({
             setLanguagePhrases((prev) => prev.filter((p) => p.phraseConceptId !== phraseConceptId))
             setDeck((prev) => prev.filter((p) => p.phraseConceptId !== phraseConceptId))
           }}
+          onCopyToLanguages={(targetLanguageIds) => onCopyToLanguages(editingCard.phraseConceptId, targetLanguageIds)}
         />
       )}
     </div>

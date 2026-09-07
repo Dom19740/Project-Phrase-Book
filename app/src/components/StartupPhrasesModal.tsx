@@ -47,20 +47,25 @@ export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
         </div>
 
         <div className="flex flex-col gap-0.5 max-h-72 overflow-y-auto mb-4 rounded-xl border border-hairline p-1.5">
-          {startupPhrases.map((p) => (
-            <label
-              key={p.english}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ink hover:bg-surfacehover transition-colors cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={includedKeys.has(p.english)}
-                onChange={() => toggle(p.english)}
-                className="size-4 shrink-0 rounded accent-fabpink cursor-pointer"
-              />
-              <span className="min-w-0 flex-1 truncate text-ink">{p.english}</span>
-            </label>
-          ))}
+          {startupPhrases.map((p) => {
+            const checked = includedKeys.has(p.english)
+            return (
+              <button
+                key={p.english}
+                type="button"
+                role="checkbox"
+                aria-checked={checked}
+                onClick={() => toggle(p.english)}
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`size-4 shrink-0 rounded-full border-2 transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
+                />
+                <span className="min-w-0 flex-1 truncate text-ink">{p.english}</span>
+              </button>
+            )
+          })}
         </div>
 
         <p className="text-xs text-muted mb-4">{includedKeys.size} of {startupPhrases.length} phrases selected.</p>

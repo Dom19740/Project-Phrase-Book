@@ -113,18 +113,26 @@ export function BulkActionBar({
             <>
               <p className="text-sm text-muted">Copy {selectedCount} phrase(s) into:</p>
               <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
-                {otherLanguages.map((lang) => (
-                  <label key={lang.id} className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1 hover:bg-surfacehover transition-colors cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={copyTargetIds.has(lang.id)}
-                      onChange={() => toggleCopyTarget(lang.id)}
-                      className="size-4 rounded accent-fabpink cursor-pointer"
-                    />
-                    <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
-                    {lang.name}
-                  </label>
-                ))}
+                {otherLanguages.map((lang) => {
+                  const checked = copyTargetIds.has(lang.id)
+                  return (
+                    <button
+                      key={lang.id}
+                      type="button"
+                      role="checkbox"
+                      aria-checked={checked}
+                      onClick={() => toggleCopyTarget(lang.id)}
+                      className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`size-4 shrink-0 rounded-full border-2 transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
+                      />
+                      <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                      {lang.name}
+                    </button>
+                  )
+                })}
               </div>
               <div className="flex justify-end">
                 <button

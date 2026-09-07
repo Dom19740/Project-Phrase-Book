@@ -132,8 +132,8 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
-      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
+      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
         <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add phrase</h2>
 
         <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">English</label>

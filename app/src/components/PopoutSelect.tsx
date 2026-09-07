@@ -27,6 +27,8 @@ interface Props<T> {
   accent?: boolean
   /** Shrinks the trigger to the same height/text size as the other filter pills (px-2.5 py-1.5 text-xs). */
   dense?: boolean
+  /** Static icon shown before the active option on the closed trigger, e.g. to label what the control does. */
+  icon?: ReactNode
 }
 
 export function PopoutSelect<T extends string | number>({
@@ -39,6 +41,7 @@ export function PopoutSelect<T extends string | number>({
   panelWidthClassName = 'w-48',
   accent = false,
   dense = false,
+  icon,
 }: Props<T>) {
   const [open, setOpen] = useState(false)
   const activeOption = options.find((o) => o.value === value)
@@ -49,12 +52,17 @@ export function PopoutSelect<T extends string | number>({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center gap-1.5 rounded-full bg-surface text-ink active:scale-[0.98] transition-all ${
+        className={`flex w-full items-center gap-1.5 rounded-full active:scale-[0.98] transition-all ${
           dense ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3.5 py-2 text-sm'
-        } ${open ? 'border-2 border-fabpink' : accent ? 'border border-fabpink hover:bg-surfacehover' : 'border border-hairline hover:border-fabpink/40'}`}
+        } ${
+          accent
+            ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20'
+            : `bg-surface text-ink ${open ? 'border-2 border-fabpink' : 'border border-hairline hover:border-fabpink/40'}`
+        }`}
       >
+        {icon}
         <span className="flex-1 min-w-0 flex items-center gap-1 text-left truncate">{activeTrigger}</span>
-        <ChevronDown size={14} strokeWidth={2} className={`shrink-0 ${accent ? 'text-fabpink' : 'text-ink'}`} />
+        <ChevronDown size={14} strokeWidth={2} className={`shrink-0 ${accent ? 'text-onaccent' : 'text-ink'}`} />
       </button>
 
       {open && (

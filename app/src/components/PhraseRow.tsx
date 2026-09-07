@@ -141,14 +141,12 @@ export function PhraseRow({
       </div>
 
       {selectionMode ? (
-        <label className="shrink-0 flex items-center justify-center gap-0.5 size-9 cursor-pointer" onClick={(e) => e.stopPropagation()}>
-          <input
-            type="checkbox"
-            checked={selected}
-            onChange={() => onToggleSelect?.(phrase.translationId)}
-            className="size-4 shrink-0 rounded accent-fabpink cursor-pointer"
+        <div className="shrink-0 flex items-center justify-center gap-0.5 size-9" role="checkbox" aria-checked={selected}>
+          <span
+            aria-hidden="true"
+            className={`size-4 shrink-0 rounded-full border-2 transition-colors ${selected ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
           />
-        </label>
+        </div>
       ) : (
         <div className="shrink-0 flex items-center justify-end gap-0.5">
           {phrase.learned && phrase.favorite ? (

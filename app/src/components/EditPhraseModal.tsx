@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { Check, Copy, RefreshCw, Trash2 } from 'lucide-react'
-import type { Category, PhraseListItem } from '../db/types'
+import { Check, Copy, Mic, RefreshCw, Trash2 } from 'lucide-react'
+import type { Category, Language, PhraseListItem } from '../db/types'
+import { getLanguageFlag, getSpeechLocale } from '../lib/languageFlags'
 import { pillClass } from '../lib/pillStyles'
 import { translateAlternatives } from '../lib/translateApi'
+import { useSpeechToText } from '../lib/useSpeechToText'
 import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
@@ -15,10 +17,12 @@ interface Props {
   languageCode: string
   languageName: string
   categories: Category[]
+  languages: Language[]
   onClose: () => void
   onSubmit: (english: string, text: string, categoryName: string | null) => Promise<void>
   onDeleteOneLanguage: (translationId: number) => Promise<void>
   onDeleteAllLanguages: (phraseConceptId: number) => Promise<void>
+  onCopyToLanguages: (targetLanguageIds: number[]) => Promise<void>
 }
 
 export function EditPhraseModal({
@@ -26,10 +30,12 @@ export function EditPhraseModal({
   languageCode,
   languageName,
   categories,
+  languages,
   onClose,
   onSubmit,
   onDeleteOneLanguage,
   onDeleteAllLanguages,
+  onCopyToLanguages,
 }: Props) {
   const [english, setEnglish] = useState(phrase.english)
   const [text, setText] = useState(phrase.text)
@@ -42,8 +48,32 @@ export function EditPhraseModal({
   const [loadingAlternatives, setLoadingAlternatives] = useState(false)
   const [alternativesError, setAlternativesError] = useState<string | null>(null)
   const [copiedField, setCopiedField] = useState<'english' | 'text' | null>(null)
+  const [copyPanelOpen, setCopyPanelOpen] = useState(false)
+  const [copyTargetIds, setCopyTargetIds] = useState<Set<number>>(new Set())
+  const [copying, setCopying] = useState(false)
+  const speech = useSpeechToText()
+
+  const otherLanguages = languages.filter((l) => l.id !== phrase.languageId)
 
   const canSubmit = english.trim().length > 0 && (categoryChoice !== NEW_CATEGORY || newCategory.trim().length > 0)
+
+  function toggleCopyTarget(id: number) {
+    setCopyTargetIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function applyCopy() {
+    if (copyTargetIds.size === 0) return
+    setCopying(true)
+    await onCopyToLanguages([...copyTargetIds])
+    setCopying(false)
+    setCopyTargetIds(new Set())
+    setCopyPanelOpen(false)
+  }
 
   async function handleCopy(field: 'english' | 'text', value: string) {
     if (!value) return
@@ -88,8 +118,8 @@ export function EditPhraseModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
-      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
+      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
         {confirmingDelete ? (
           <>
             <h2 className="text-lg font-bold tracking-tight mb-2 text-ink">Delete phrase</h2>
@@ -130,8 +160,22 @@ export function EditPhraseModal({
                 autoFocus
                 value={english}
                 onChange={(e) => setEnglish(e.target.value)}
-                className={`w-full rounded-xl pl-3 pr-10 py-2 ${fieldClass}`}
+                className={`w-full rounded-xl pl-3 py-2 ${fieldClass} ${speech.supported ? 'pr-16' : 'pr-10'}`}
+                placeholder={speech.activeId === 'english' ? 'Listening…' : undefined}
               />
+              {speech.supported && (
+                <button
+                  type="button"
+                  onClick={() => (speech.activeId === 'english' ? speech.stop() : speech.start('english', 'en-US', setEnglish))}
+                  aria-label={speech.activeId === 'english' ? 'Stop recording' : 'Record English phrase'}
+                  title={speech.activeId === 'english' ? 'Stop recording' : 'Record'}
+                  className={`absolute right-9 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-all active:scale-90 ${
+                    speech.activeId === 'english' ? 'text-red-500 animate-pulse' : 'text-muted hover:bg-surfacehover'
+                  }`}
+                >
+                  <Mic size={16} strokeWidth={2} />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => handleCopy('english', english)}
@@ -161,9 +205,22 @@ export function EditPhraseModal({
               <input
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                className={`w-full rounded-xl pl-3 pr-10 py-2 ${fieldClass}`}
-                placeholder="Leave blank if not translated yet"
+                className={`w-full rounded-xl pl-3 py-2 ${fieldClass} ${speech.supported ? 'pr-16' : 'pr-10'}`}
+                placeholder={speech.activeId === 'text' ? 'Listening…' : 'Leave blank if not translated yet'}
               />
+              {speech.supported && (
+                <button
+                  type="button"
+                  onClick={() => (speech.activeId === 'text' ? speech.stop() : speech.start('text', getSpeechLocale(languageCode), setText))}
+                  aria-label={speech.activeId === 'text' ? 'Stop recording' : `Record ${languageName} translation`}
+                  title={speech.activeId === 'text' ? 'Stop recording' : 'Record'}
+                  className={`absolute right-9 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-all active:scale-90 ${
+                    speech.activeId === 'text' ? 'text-red-500 animate-pulse' : 'text-muted hover:bg-surfacehover'
+                  }`}
+                >
+                  <Mic size={16} strokeWidth={2} />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => handleCopy('text', text)}
@@ -216,15 +273,70 @@ export function EditPhraseModal({
               />
             )}
 
+            {copyPanelOpen && (
+              <div className="mb-4 rounded-xl border border-hairline p-3">
+                {otherLanguages.length === 0 ? (
+                  <p className="text-sm text-muted">Add another language first to copy this phrase into.</p>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted mb-2">Copy this phrase into:</p>
+                    <div className="flex flex-col gap-1 max-h-40 overflow-y-auto mb-2">
+                      {otherLanguages.map((lang) => {
+                        const checked = copyTargetIds.has(lang.id)
+                        return (
+                          <button
+                            key={lang.id}
+                            type="button"
+                            role="checkbox"
+                            aria-checked={checked}
+                            onClick={() => toggleCopyTarget(lang.id)}
+                            className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`size-4 shrink-0 rounded-full border-2 transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
+                            />
+                            <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                            {lang.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={applyCopy}
+                        disabled={copying || copyTargetIds.size === 0}
+                        className="rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                      >
+                        {copying ? 'Copying...' : 'Copy'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center justify-between gap-2 mt-1">
-              <button
-                onClick={() => setConfirmingDelete(true)}
-                aria-label="Delete phrase"
-                title="Delete phrase"
-                className="rounded-full border border-fabpink p-2 text-fabpink hover:bg-surfacehover active:scale-90 transition-all"
-              >
-                <Trash2 size={16} strokeWidth={2} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setConfirmingDelete(true)}
+                  aria-label="Delete phrase"
+                  title="Delete phrase"
+                  className="rounded-full border border-fabpink p-2 text-fabpink hover:bg-surfacehover active:scale-90 transition-all"
+                >
+                  <Trash2 size={16} strokeWidth={2} />
+                </button>
+                <button
+                  onClick={() => setCopyPanelOpen((v) => !v)}
+                  aria-label="Copy phrase to other languages"
+                  title="Copy to..."
+                  className={`rounded-full border p-2 transition-all active:scale-90 ${
+                    copyPanelOpen ? 'border-fabpink bg-fabpink text-onaccent' : 'border-hairline text-muted hover:bg-surfacehover'
+                  }`}
+                >
+                  <Copy size={16} strokeWidth={2} />
+                </button>
+              </div>
               <div className="flex gap-2">
                 <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
                   Cancel
