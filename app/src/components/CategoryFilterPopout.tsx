@@ -83,10 +83,8 @@ export function CategoryFilterPopout({
                     type="button"
                     onClick={() => onToggleCategoryVisible(name, !visible)}
                     aria-pressed={visible}
-                    className={`rounded-full px-3 py-1 text-xs font-medium active:scale-95 transition-all ${
-                      visible
-                        ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20'
-                        : 'border border-fabpink text-ink hover:bg-surfacehover'
+                    className={`rounded-full border border-fabpink px-3 py-1 text-xs font-medium active:scale-95 transition-all ${
+                      visible ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'text-ink hover:bg-surfacehover'
                     }`}
                   >
                     {name}

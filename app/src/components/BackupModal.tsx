@@ -281,13 +281,13 @@ export function BackupModal({
                         value={manualName}
                         onChange={(e) => setManualName(e.target.value)}
                         placeholder="Name, e.g. Vietnamese"
-                        className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
+                        className="flex-1 min-w-0 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-all"
                       />
                       <input
                         value={manualCode}
                         onChange={(e) => setManualCode(e.target.value)}
                         placeholder="Code, e.g. vi"
-                        className="w-24 shrink-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
+                        className="w-24 shrink-0 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-all"
                       />
                     </div>
                     <div className="flex items-center justify-between gap-2">

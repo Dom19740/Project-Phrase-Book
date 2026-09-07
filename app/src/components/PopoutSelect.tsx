@@ -57,7 +57,7 @@ export function PopoutSelect<T extends string | number>({
         } ${
           accent
             ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20'
-            : `bg-surface text-ink ${open ? 'border-2 border-fabpink' : 'border border-hairline hover:border-fabpink/40'}`
+            : `border-2 bg-surface text-ink ${open ? 'border-fabpink' : 'border-hairline hover:border-fabpink/40'}`
         }`}
       >
         {icon}

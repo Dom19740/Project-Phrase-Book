@@ -196,14 +196,14 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               autoFocus
               value={manualName}
               onChange={(e) => setManualName(e.target.value)}
-              className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-2 focus:border-fabpink transition-all"
+              className="w-full mb-3 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-all"
               placeholder="e.g. Klingon"
             />
             <label className="block text-sm font-medium mb-1 text-ink">Language code</label>
             <input
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
-              className="w-full mb-1 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-2 focus:border-fabpink transition-all"
+              className="w-full mb-1 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-all"
               placeholder="e.g. de or pt-PT"
             />
             <p className="text-xs text-muted mb-4">An ISO 639-1 code or BCP-47 locale, e.g. "de" or "pt-PT".</p>

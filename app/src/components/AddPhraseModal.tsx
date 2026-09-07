@@ -10,7 +10,7 @@ import { PopoutSelect } from './PopoutSelect'
 const NEW_CATEGORY = '__new__'
 
 /** Soft grey at rest, thicker accent border when focused — same treatment as every other field in the app. */
-const fieldClass = 'border border-hairline bg-transparent text-ink outline-none focus:border-2 focus:border-fabpink transition-all'
+const fieldClass = 'border-2 border-hairline bg-transparent text-ink outline-none focus:border-fabpink transition-all'
 
 interface Props {
   categories: Category[]
@@ -166,8 +166,8 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
             type="button"
             onClick={() => setLanguagesOpen((v) => !v)}
             title={languagesLabel}
-            className={`flex w-full items-center gap-1.5 rounded-full bg-surface px-3 py-2 text-sm text-ink transition-all ${
-              languagesOpen ? 'border-2 border-fabpink' : 'border border-hairline hover:border-fabpink/40'
+            className={`flex w-full items-center gap-1.5 rounded-full border-2 bg-surface px-3 py-2 text-sm text-ink transition-all ${
+              languagesOpen ? 'border-fabpink' : 'border-hairline hover:border-fabpink/40'
             }`}
           >
             <span className="flex-1 min-w-0 text-left truncate">{languagesLabel}</span>

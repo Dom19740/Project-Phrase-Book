@@ -10,7 +10,7 @@ import { PopoutSelect } from './PopoutSelect'
 const NEW_CATEGORY = '__new__'
 
 /** Same accent-border, doubles-in-thickness treatment as every other field/menu — see pillStyles.ts. */
-const fieldClass = 'border border-hairline bg-transparent text-ink outline-none focus:border-2 focus:border-fabpink transition-all'
+const fieldClass = 'border-2 border-hairline bg-transparent text-ink outline-none focus:border-fabpink transition-all'
 
 interface Props {
   phrase: PhraseListItem

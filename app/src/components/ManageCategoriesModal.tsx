@@ -81,7 +81,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                    className="flex-1 min-w-0 rounded-lg border border-hairline bg-transparent text-ink px-2 py-1 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
+                    className="flex-1 min-w-0 rounded-lg border-2 border-hairline bg-transparent text-ink px-2 py-1 text-sm outline-none focus:border-fabpink transition-all"
                   />
                   <button onClick={saveEdit} disabled={busy} className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-onaccent active:scale-95 transition-transform disabled:opacity-40">
                     Save
@@ -119,7 +119,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-            className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
+            className="flex-1 min-w-0 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-all"
             placeholder="e.g. Emergencies"
           />
           <button

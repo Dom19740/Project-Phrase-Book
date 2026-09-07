@@ -335,7 +335,7 @@ export function PhraseList({
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className="flex items-center gap-1.5 shrink-0 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
+            className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
           >
             {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-onaccent" />}
             {selectionMode ? 'Cancel' : 'Select'}
