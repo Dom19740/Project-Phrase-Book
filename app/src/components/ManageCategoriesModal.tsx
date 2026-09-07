@@ -48,7 +48,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
       <div
-        className="w-full sm:max-w-md max-h-[75vh] overflow-y-auto rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0"
+        className="w-full min-w-0 sm:max-w-md max-h-[75vh] overflow-y-auto rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Manage categories</h2>
@@ -81,7 +81,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                    className="flex-1 min-w-0 rounded-lg border border-hairline bg-transparent text-ink px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+                    className="flex-1 min-w-0 rounded-lg border border-hairline bg-transparent text-ink px-2 py-1 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
                   />
                   <button onClick={saveEdit} disabled={busy} className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-onaccent active:scale-95 transition-transform disabled:opacity-40">
                     Save
@@ -119,7 +119,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-            className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+            className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
             placeholder="e.g. Emergencies"
           />
           <button

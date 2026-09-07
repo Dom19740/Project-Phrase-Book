@@ -156,7 +156,7 @@ function Shell() {
             {menuOpen && (
               <>
                 <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenuOpen(false)} aria-label="Close menu" />
-                <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-hairline bg-surface/95 backdrop-blur-md p-1.5 shadow-xl">
+                <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl">
                   <button
                     onClick={() => {
                       setShowOnboarding(true)

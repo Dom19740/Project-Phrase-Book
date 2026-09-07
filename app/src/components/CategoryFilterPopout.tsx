@@ -46,7 +46,7 @@ export function CategoryFilterPopout({
       {open && (
         <>
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close category filter" />
-          <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-2xl border border-fabpink bg-surface/95 backdrop-blur-md p-3 shadow-xl">
+          <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-2xl border border-hairline bg-surface p-3 shadow-xl">
             <label className="flex items-center gap-2 text-sm text-ink rounded-lg px-1.5 py-1">
               <input
                 type="checkbox"

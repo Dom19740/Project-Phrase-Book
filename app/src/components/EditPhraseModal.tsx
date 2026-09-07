@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import { Check, Copy, RefreshCw, Trash2 } from 'lucide-react'
 import type { Category, PhraseListItem } from '../db/types'
+import { pillClass } from '../lib/pillStyles'
 import { translateAlternatives } from '../lib/translateApi'
 import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
+
+/** Same accent-border, doubles-in-thickness treatment as every other field/menu — see pillStyles.ts. */
+const fieldClass = 'border border-hairline bg-transparent text-ink outline-none focus:border-2 focus:border-fabpink transition-all'
 
 interface Props {
   phrase: PhraseListItem
@@ -85,7 +89,7 @@ export function EditPhraseModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
-      <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         {confirmingDelete ? (
           <>
             <h2 className="text-lg font-bold tracking-tight mb-2 text-ink">Delete phrase</h2>
@@ -120,13 +124,13 @@ export function EditPhraseModal({
           <>
             <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Edit phrase</h2>
 
-            <label className="block text-sm font-medium mb-1 text-ink">English</label>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">English</label>
             <div className="relative mb-3">
               <input
                 autoFocus
                 value={english}
                 onChange={(e) => setEnglish(e.target.value)}
-                className="w-full rounded-xl border border-hairline bg-transparent text-ink pl-3 pr-10 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+                className={`w-full rounded-xl pl-3 pr-10 py-2 ${fieldClass}`}
               />
               <button
                 type="button"
@@ -141,7 +145,7 @@ export function EditPhraseModal({
             </div>
 
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-ink">Translation</label>
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Translation</label>
               <button
                 type="button"
                 onClick={handleRetranslate}
@@ -157,7 +161,7 @@ export function EditPhraseModal({
               <input
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                className="w-full rounded-xl border border-hairline bg-transparent text-ink pl-3 pr-10 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+                className={`w-full rounded-xl pl-3 pr-10 py-2 ${fieldClass}`}
                 placeholder="Leave blank if not translated yet"
               />
               <button
@@ -181,9 +185,7 @@ export function EditPhraseModal({
                     key={i}
                     type="button"
                     onClick={() => setText(alt)}
-                    className={`rounded-full border px-3 py-1.5 text-sm text-left transition-colors ${
-                      alt === text ? 'border-fabpink text-fabpink' : 'border-hairline text-ink hover:border-fabpink'
-                    }`}
+                    className={`${pillClass(alt === text)} text-left`}
                   >
                     {alt}
                   </button>
@@ -191,7 +193,7 @@ export function EditPhraseModal({
               </div>
             )}
 
-            <label className="block text-sm font-medium mb-1 text-ink">Category</label>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Category</label>
             <PopoutSelect
               className="mb-3 w-full"
               align="left"
@@ -209,7 +211,7 @@ export function EditPhraseModal({
                 autoFocus
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                className="w-full mb-4 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+                className={`w-full mb-4 rounded-xl px-3 py-2 ${fieldClass}`}
                 placeholder="New category name"
               />
             )}

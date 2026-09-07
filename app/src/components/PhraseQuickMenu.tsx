@@ -54,7 +54,7 @@ export function PhraseQuickMenu({ anchorRef, learned, favorite, onToggleLearned,
       <div
         ref={menuRef}
         style={{ top: position?.top ?? 0, left: position?.left ?? 0, visibility: position ? 'visible' : 'hidden' }}
-        className="fixed z-50 w-40 rounded-2xl border border-fabpink bg-surface/95 backdrop-blur-md p-1.5 shadow-xl"
+        className="fixed z-50 w-40 rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl"
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >

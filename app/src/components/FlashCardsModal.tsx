@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeftRight, Check, ChevronLeft, ChevronRight, Layers, Shuffle, Star, Volume2, X } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
+import { pillClass as sharedPillClass } from '../lib/pillStyles'
 import { speak } from '../lib/tts'
 import { useSpeakRate } from '../lib/useSpeakRate'
 import { EditPhraseModal } from './EditPhraseModal'
@@ -39,9 +40,7 @@ function shuffled<T>(items: T[]): T[] {
 }
 
 function pillClass(active: boolean) {
-  return `rounded-full border px-3 py-1.5 text-sm font-medium transition-all active:scale-95 ${
-    active ? 'border-fabpink bg-fabpink/15 text-fabpink' : 'border-hairline text-ink hover:bg-surfacehover'
-  }`
+  return `${sharedPillClass(active)} font-medium active:scale-95`
 }
 
 export function FlashCardsModal({

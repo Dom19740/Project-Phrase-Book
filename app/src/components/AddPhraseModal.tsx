@@ -2,18 +2,15 @@ import { useState } from 'react'
 import { ChevronDown, Mic, RefreshCw, X } from 'lucide-react'
 import type { Category, Language } from '../db/types'
 import { getLanguageFlag, getSpeechLocale } from '../lib/languageFlags'
+import { pillClass } from '../lib/pillStyles'
 import { translateAlternatives, translatePhrase } from '../lib/translateApi'
 import { useSpeechToText } from '../lib/useSpeechToText'
 import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
 
-/** Shared look for every toggle/chip control in this modal (language pills, alternate-translation pills). */
-function pillClass(selected: boolean) {
-  return `rounded-full border px-3 py-1.5 text-sm transition-colors ${
-    selected ? 'border-fabpink text-fabpink' : 'border-hairline bg-surfacehover text-ink hover:border-fabpink'
-  }`
-}
+/** Soft grey at rest, thicker accent border when focused — same treatment as every other field in the app. */
+const fieldClass = 'border border-hairline bg-transparent text-ink outline-none focus:border-2 focus:border-fabpink transition-all'
 
 interface Props {
   categories: Category[]
@@ -136,16 +133,16 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
-      <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add phrase</h2>
 
-        <label className="block text-sm font-medium mb-1 text-ink">English</label>
+        <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">English</label>
         <div className="relative mb-4">
           <input
             autoFocus
             value={english}
             onChange={(e) => setEnglish(e.target.value)}
-            className={`w-full rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-shadow ${speech.supported ? 'pr-10' : ''}`}
+            className={`w-full rounded-xl px-3 py-2 ${fieldClass} ${speech.supported ? 'pr-10' : ''}`}
             placeholder={speech.activeId === 'english' ? 'Listening…' : 'e.g. Where is the bathroom?'}
           />
           {speech.supported && (
@@ -163,22 +160,24 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
           )}
         </div>
 
-        <label className="block text-sm font-medium mb-1 text-ink">Translate into</label>
+        <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Translate into</label>
         <div className="relative mb-4">
           <button
             type="button"
             onClick={() => setLanguagesOpen((v) => !v)}
             title={languagesLabel}
-            className="flex w-full items-center gap-1.5 rounded-xl border border-hairline bg-surface px-3 py-2 text-sm text-ink hover:border-fabpink/40 transition-colors"
+            className={`flex w-full items-center gap-1.5 rounded-full bg-surface px-3 py-2 text-sm text-ink transition-all ${
+              languagesOpen ? 'border-2 border-fabpink' : 'border border-hairline hover:border-fabpink/40'
+            }`}
           >
-            <span className="flex-1 text-left truncate">{languagesLabel}</span>
+            <span className="flex-1 min-w-0 text-left truncate">{languagesLabel}</span>
             <ChevronDown size={14} strokeWidth={2} className="shrink-0 text-muted" />
           </button>
 
           {languagesOpen && (
             <>
               <button className="fixed inset-0 z-40 cursor-default" onClick={() => setLanguagesOpen(false)} aria-label="Close language selector" />
-              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-fabpink bg-surface/95 backdrop-blur-md p-3 pr-9 shadow-xl">
+              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface p-3 pr-9 shadow-xl">
                 <button
                   type="button"
                   onClick={() => setLanguagesOpen(false)}
@@ -242,7 +241,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
                     <input
                       value={translationText[lang.id] ?? ''}
                       onChange={(e) => setTranslationText((prev) => ({ ...prev, [lang.id]: e.target.value }))}
-                      className={`w-full rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-shadow ${speech.supported ? 'pr-9' : ''}`}
+                      className={`w-full rounded-xl px-3 py-2 text-sm ${fieldClass} ${speech.supported ? 'pr-9' : ''}`}
                       placeholder={speech.activeId === micId ? 'Listening…' : 'Type or record translation'}
                     />
                     {speech.supported && (
@@ -283,7 +282,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
             })}
         </div>
 
-        <label className="block text-sm font-medium mb-1 text-ink">Category</label>
+        <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Category</label>
         <PopoutSelect className="mb-3 w-full" align="left" value={categoryChoice} onChange={setCategoryChoice} options={categoryOptions} />
 
         {categoryChoice === NEW_CATEGORY && (
@@ -291,7 +290,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
             autoFocus
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            className="w-full mb-3 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-shadow"
+            className={`w-full mb-3 rounded-xl px-3 py-2 ${fieldClass}`}
             placeholder="New category name"
           />
         )}

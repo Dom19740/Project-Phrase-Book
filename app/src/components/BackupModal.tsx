@@ -194,7 +194,7 @@ export function BackupModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
-      <div className="w-full sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Backup</h2>
         <p className="text-xs text-muted mb-4">
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}
@@ -281,13 +281,13 @@ export function BackupModal({
                         value={manualName}
                         onChange={(e) => setManualName(e.target.value)}
                         placeholder="Name, e.g. Vietnamese"
-                        className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+                        className="flex-1 min-w-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
                       />
                       <input
                         value={manualCode}
                         onChange={(e) => setManualCode(e.target.value)}
                         placeholder="Code, e.g. vi"
-                        className="w-24 shrink-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+                        className="w-24 shrink-0 rounded-xl border border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
                       />
                     </div>
                     <div className="flex items-center justify-between gap-2">

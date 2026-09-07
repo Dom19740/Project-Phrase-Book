@@ -34,7 +34,7 @@ export function LanguageSearchList({ disabledCodes, onChoose, highlightCode, dis
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search languages"
-          className="w-full rounded-full border border-hairline bg-transparent text-ink pl-8 pr-8 py-2 text-sm outline-none focus:ring-2 focus:ring-fabpink/40 focus:border-fabpink transition-shadow"
+          className="w-full rounded-full border border-hairline bg-transparent text-ink pl-8 pr-8 py-2 text-sm outline-none focus:border-2 focus:border-fabpink transition-all"
         />
         {search && (
           <button
