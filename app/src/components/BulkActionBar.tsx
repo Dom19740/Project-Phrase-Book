@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Copy, Star, StarOff, Tag, Trash2, X, XCircle } from 'lucide-react'
+import { Check, Copy, Star, StarOff, Tag, Trash2, XCircle } from 'lucide-react'
 import type { Category, Language } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { PopoutSelect } from './PopoutSelect'
@@ -18,7 +18,7 @@ interface Props {
   onCopyToLanguages: (targetLanguageIds: number[]) => Promise<void>
   onDeleteOneLanguage: () => Promise<void>
   onDeleteAllLanguages: () => Promise<void>
-  onCancel: () => void
+  onDone: () => void
 }
 
 type Panel = null | 'category' | 'copy' | 'delete'
@@ -35,13 +35,19 @@ export function BulkActionBar({
   onCopyToLanguages,
   onDeleteOneLanguage,
   onDeleteAllLanguages,
-  onCancel,
+  onDone,
 }: Props) {
   const [panel, setPanel] = useState<Panel>(null)
   const [categoryChoice, setCategoryChoice] = useState('')
   const [newCategory, setNewCategory] = useState('')
   const [copyTargetIds, setCopyTargetIds] = useState<Set<number>>(new Set())
+  const [deleteScope, setDeleteScope] = useState<'language' | 'all' | null>(null)
   const [busy, setBusy] = useState(false)
+
+  function toggleDeletePanel() {
+    setPanel((p) => (p === 'delete' ? null : 'delete'))
+    setDeleteScope(null)
+  }
 
   const otherLanguages = languages.filter((l) => l.id !== currentLanguageId)
 
@@ -148,45 +154,67 @@ export function BulkActionBar({
         </div>
       )}
 
-      {panel === 'delete' && (
-        <div className="flex flex-col gap-2 px-4 py-2 border-b border-hairline">
-          <p className="text-sm text-muted">
-            Delete {selectedCount} phrase(s) from {languageName} only, or from every language?
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={async () => {
-                setBusy(true)
-                await onDeleteOneLanguage()
-                setBusy(false)
-                setPanel(null)
-              }}
-              disabled={busy}
-              className="flex-1 rounded-full border border-hairline px-3 py-1.5 text-sm font-medium text-muted hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
-            >
-              {languageName} only
-            </button>
-            <button
-              onClick={async () => {
-                setBusy(true)
-                await onDeleteAllLanguages()
-                setBusy(false)
-                setPanel(null)
-              }}
-              disabled={busy}
-              className="flex-1 rounded-full bg-fabpink px-3 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-            >
-              All languages
-            </button>
+      {panel === 'delete' &&
+        (deleteScope == null ? (
+          <div className="flex flex-col gap-2 px-4 py-2 border-b border-hairline">
+            <p className="text-sm text-muted">
+              Delete {selectedCount} phrase(s) from {languageName} only, or from every language?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeleteScope('language')}
+                className="flex-1 rounded-full border border-hairline px-3 py-1.5 text-sm font-medium text-muted hover:bg-surfacehover active:scale-95 transition-all"
+              >
+                {languageName} only
+              </button>
+              <button
+                onClick={() => setDeleteScope('all')}
+                className="flex-1 rounded-full bg-fabpink px-3 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
+              >
+                All languages
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex flex-col gap-2 px-4 py-2 border-b border-hairline">
+            <p className="text-sm text-muted">
+              Permanently delete {selectedCount} phrase(s) {deleteScope === 'language' ? `from ${languageName}` : 'from every language'}? This
+              can't be undone.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeleteScope(null)}
+                disabled={busy}
+                className="flex-1 rounded-full border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
+              >
+                Back
+              </button>
+              <button
+                onClick={async () => {
+                  setBusy(true)
+                  if (deleteScope === 'language') await onDeleteOneLanguage()
+                  else await onDeleteAllLanguages()
+                  setBusy(false)
+                  setDeleteScope(null)
+                  setPanel(null)
+                }}
+                disabled={busy}
+                className="flex-1 rounded-full bg-fabpink px-3 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
 
       <div className="flex flex-col gap-2 px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium text-ink">{selectedCount} selected</span>
-          <button onClick={onCancel} className="rounded-lg p-1.5 text-muted hover:text-ink" aria-label="Cancel selection">
-            <X size={16} strokeWidth={2} />
+          <button
+            onClick={onDone}
+            className="rounded-full bg-fabpink px-3.5 py-1.5 text-xs font-semibold text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
+          >
+            Done
           </button>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -239,7 +267,7 @@ export function BulkActionBar({
             Copy to...
           </button>
           <button
-            onClick={() => setPanel(panel === 'delete' ? null : 'delete')}
+            onClick={toggleDeletePanel}
             disabled={selectedCount === 0}
             aria-label="Delete"
             title="Delete"
