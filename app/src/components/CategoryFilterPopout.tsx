@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Settings2, Star, Tag } from 'lucide-react'
+import { pillClass } from '../lib/pillStyles'
 
 interface Props {
   allCategoryNames: string[]
@@ -83,9 +84,7 @@ export function CategoryFilterPopout({
                     type="button"
                     onClick={() => onToggleCategoryVisible(name, !visible)}
                     aria-pressed={visible}
-                    className={`rounded-full border border-fabpink px-3 py-1 text-xs font-medium active:scale-95 transition-all ${
-                      visible ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'text-ink hover:bg-surfacehover'
-                    }`}
+                    className={`${pillClass(visible)} active:scale-95`}
                   >
                     {name}
                   </button>

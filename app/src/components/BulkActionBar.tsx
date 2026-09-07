@@ -167,16 +167,11 @@ export function BulkActionBar({
               disabled={selectedCount === 0}
               aria-label="Delete"
               title="Delete"
-              className={
-                panel === 'delete' ? pillClass(true) : `${PILL_BASE} border-fabpink text-fabpink hover:bg-surfacehover`
-              }
+              className={panel === 'delete' ? pillClass(true) : `${PILL_BASE} border-hairline text-muted hover:bg-surfacehover`}
             >
               <Trash2 size={13} strokeWidth={2} />
             </button>
-            <button
-              onClick={onDone}
-              className="rounded-full bg-fabpink px-3.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
-            >
+            <button onClick={onDone} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
               Done
             </button>
           </div>

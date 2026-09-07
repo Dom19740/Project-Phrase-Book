@@ -296,7 +296,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
         )}
 
         <div className="flex justify-end gap-2 mt-3">
-          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
+          <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
             Cancel
           </button>
           <button

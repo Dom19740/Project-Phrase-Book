@@ -122,10 +122,7 @@ export function EditPhraseModal({
       <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
         {confirmingDelete ? (
           <>
-            <h2 className="text-lg font-bold tracking-tight mb-2 text-ink">Delete phrase</h2>
-            <p className="text-sm text-muted mb-4">
-              "{phrase.english}" - delete just the {languageName} translation, or remove this phrase from every language?
-            </p>
+            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Delete phrase</h2>
             <div className="flex flex-col gap-2">
               <button
                 onClick={() => handleDelete('language')}
@@ -322,19 +319,18 @@ export function EditPhraseModal({
                   onClick={() => setConfirmingDelete(true)}
                   aria-label="Delete phrase"
                   title="Delete phrase"
-                  className="rounded-full border border-fabpink p-2 text-fabpink hover:bg-surfacehover active:scale-90 transition-all"
+                  className="rounded-full border border-hairline p-2 text-muted hover:bg-surfacehover active:scale-90 transition-all"
                 >
                   <Trash2 size={16} strokeWidth={2} />
                 </button>
                 <button
                   onClick={() => setCopyPanelOpen((v) => !v)}
-                  aria-label="Copy phrase to other languages"
-                  title="Copy to..."
-                  className={`rounded-full border p-2 transition-all active:scale-90 ${
+                  className={`flex items-center gap-1 rounded-full border px-3 py-2 text-sm font-medium transition-all active:scale-95 ${
                     copyPanelOpen ? 'border-fabpink bg-fabpink text-onaccent' : 'border-hairline text-muted hover:bg-surfacehover'
                   }`}
                 >
                   <Copy size={16} strokeWidth={2} />
+                  Copy to...
                 </button>
               </div>
               <div className="flex gap-2">

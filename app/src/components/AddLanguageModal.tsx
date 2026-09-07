@@ -100,7 +100,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               to copy from, then uncheck any phrases you don't want carried over.
             </p>
 
-            <label className="block text-sm font-medium mb-1 text-ink">Copy phrases from</label>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Copy phrases from</label>
             <PopoutSelect
               className="mb-3 w-full"
               align="left"
@@ -119,7 +119,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             />
 
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-ink">Phrases to include</span>
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Phrases to include</span>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -191,7 +191,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
           <>
             <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add language manually</h2>
 
-            <label className="block text-sm font-medium mb-1 text-ink">Name</label>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Name</label>
             <input
               autoFocus
               value={manualName}
@@ -199,7 +199,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               className="w-full mb-3 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-all"
               placeholder="e.g. Klingon"
             />
-            <label className="block text-sm font-medium mb-1 text-ink">Language code</label>
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Language code</label>
             <input
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}

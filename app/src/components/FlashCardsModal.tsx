@@ -296,7 +296,7 @@ export function FlashCardsModal({
             ) : (
               <>
                 <section>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">Language</h2>
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Language</h2>
                   <div className="flex flex-wrap gap-2">
                     {languages.map((lang) => (
                       <button key={lang.id} onClick={() => setLanguageId(lang.id)} className={pillClass(languageId === lang.id)}>
@@ -310,7 +310,7 @@ export function FlashCardsModal({
                 </section>
 
                 <section>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">Phrases</h2>
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Phrases</h2>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => setFilterFlags(new Set())} className={pillClass(filterFlags.size === 0)}>
                       All
@@ -325,7 +325,7 @@ export function FlashCardsModal({
 
                 {availableCategories.length > 0 && (
                   <section>
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">Category</h2>
+                    <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Category</h2>
                     <div className="flex flex-wrap gap-2">
                       <button onClick={() => setCategoryIds(new Set())} className={pillClass(categoryIds.size === 0)}>
                         All categories
@@ -340,7 +340,7 @@ export function FlashCardsModal({
                 )}
 
                 <section>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">Guess via</h2>
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Guess via</h2>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => setDirection('english')} className={pillClass(direction === 'english')}>
                       English
@@ -352,7 +352,7 @@ export function FlashCardsModal({
                 </section>
 
                 <section>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">Order</h2>
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Order</h2>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => setShuffle((s) => !s)} className={pillClass(shuffle) + ' flex items-center gap-1.5'}>
                       <Shuffle size={15} strokeWidth={2.5} />
@@ -503,7 +503,7 @@ export function FlashCardsModal({
             >
               Change settings
             </button>
-            <button onClick={onClose} className="rounded-full px-5 py-3 text-sm font-medium text-muted hover:text-ink transition-colors">
+            <button onClick={onClose} className="rounded-full border border-hairline px-5 py-3 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
               Close
             </button>
           </div>

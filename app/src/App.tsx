@@ -25,9 +25,22 @@ const LIGHT_MODE_ACCENT_OVERRIDES: Record<string, string> = {
   '#c6ff3d': '#3D8B40',
 }
 
-/** Used only the very first time the app opens, before the user has ever picked a theme themselves. */
 function getSystemTheme(): Theme {
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+/** Tracks the OS-level light/dark preference live, so the app keeps following it for anyone who
+ * hasn't picked a theme of their own — including when the device's setting changes after launch
+ * (e.g. an evening auto dark-mode schedule), not just at first open. */
+function useSystemTheme(): Theme {
+  const [systemTheme, setSystemTheme] = useState<Theme>(getSystemTheme)
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = () => setSystemTheme(getSystemTheme())
+    mql.addEventListener('change', handleChange)
+    return () => mql.removeEventListener('change', handleChange)
+  }, [])
+  return systemTheme
 }
 
 /** Picks black or white text so it stays legible on a solid-fill button/badge in this accent color. */
@@ -83,7 +96,9 @@ function Shell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
-  const [theme, setTheme] = usePersistedState<Theme>('phrasebook-theme', getSystemTheme())
+  const [themeOverride, setThemeOverride] = usePersistedState<Theme | null>('phrasebook-theme', null)
+  const systemTheme = useSystemTheme()
+  const theme = themeOverride ?? systemTheme
   const [accent, setAccent] = usePersistedState<string>('phrasebook-accent', DEFAULT_ACCENT)
   const [search, setSearch] = useState('')
   const [startupPhrasesLanguageId, setStartupPhrasesLanguageId] = useState<number | null>(null)
@@ -194,7 +209,7 @@ function Shell() {
                     <p className="mb-1.5 text-xs font-medium text-muted">Theme</p>
                     <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => setTheme('dark')}
+                        onClick={() => setThemeOverride('dark')}
                         aria-label="Dark theme"
                         aria-pressed={theme === 'dark'}
                         className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
@@ -203,7 +218,7 @@ function Shell() {
                         <Moon size={13} strokeWidth={2} />
                       </button>
                       <button
-                        onClick={() => setTheme('light')}
+                        onClick={() => setThemeOverride('light')}
                         aria-label="Light theme"
                         aria-pressed={theme === 'light'}
                         className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"

@@ -206,7 +206,7 @@ export function BackupModal({
               Replace <strong>everything</strong> currently in the app with <strong>{pendingRestore.name}</strong>? This can't be undone.
             </p>
             <div className="flex gap-2">
-              <button onClick={() => setPendingRestore(null)} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
+              <button onClick={() => setPendingRestore(null)} disabled={busy} className="flex-1 rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40">
                 Cancel
               </button>
               <button
@@ -244,7 +244,7 @@ export function BackupModal({
             </button>
 
             <div className="flex gap-2">
-              <button onClick={resetImportState} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
+              <button onClick={resetImportState} disabled={busy} className="flex-1 rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40">
                 Cancel
               </button>
               <button
@@ -270,7 +270,7 @@ export function BackupModal({
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-ink">Import into</label>
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Import into</label>
 
               {showLanguagePicker ? (
                 manualEntry ? (
@@ -361,7 +361,7 @@ export function BackupModal({
             </div>
 
             <div className="flex gap-2">
-              <button onClick={resetImportState} disabled={busy} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
+              <button onClick={resetImportState} disabled={busy} className="flex-1 rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40">
                 Cancel
               </button>
               <button
@@ -392,7 +392,7 @@ export function BackupModal({
 
             {languages.length > 0 && (
               <div className="mt-2 border-t border-hairline pt-3">
-                <label className="block text-sm font-medium mb-1 text-ink">Export phrases</label>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Export phrases</label>
                 <div className="flex gap-2">
                   <PopoutSelect
                     className="flex-1 min-w-0"
@@ -413,7 +413,7 @@ export function BackupModal({
             )}
 
             <div className="mt-2 border-t border-hairline pt-3">
-              <label className="block text-sm font-medium mb-1 text-ink">Import phrases</label>
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Import phrases</label>
               <button
                 onClick={handleChooseCsv}
                 disabled={busy}
@@ -430,7 +430,7 @@ export function BackupModal({
 
         {!pendingRestore && !pendingImport && (
           <div className="flex justify-end mt-4">
-            <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
+            <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
               Close
             </button>
           </div>

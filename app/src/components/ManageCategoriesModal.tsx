@@ -48,8 +48,14 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
-      <div className="w-full min-w-0 sm:max-w-md max-h-[75vh] overflow-y-auto rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
+      onClick={onClose}
+    >
+      <div
+        className="w-full min-w-0 sm:max-w-md max-h-[75vh] overflow-y-auto rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Manage categories</h2>
 
         <DragReorderList
@@ -115,7 +121,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                       onClick={() => setConfirmingDeleteId(c.id)}
                       aria-label="Delete"
                       title="Delete"
-                      className="rounded-full p-1.5 text-fabpink hover:bg-surfacehover active:scale-90 transition-all"
+                      className="rounded-full border border-hairline p-1.5 text-muted hover:bg-surfacehover active:scale-90 transition-all"
                     >
                       <Trash2 size={13} strokeWidth={2} />
                     </button>
@@ -127,7 +133,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
         />
         {categories.length === 0 && <p className="text-sm text-muted mb-4">No categories yet.</p>}
 
-        <label className="block text-sm font-medium mb-1 text-ink">Add category</label>
+        <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Add category</label>
         <div className="flex gap-2 mb-4">
           <input
             value={newName}
@@ -146,8 +152,8 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
         </div>
 
         <div className="flex justify-end">
-          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-medium text-muted hover:text-ink active:scale-95 transition-all">
-            Done
+          <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
+            Close
           </button>
         </div>
       </div>

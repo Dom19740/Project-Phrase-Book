@@ -57,7 +57,7 @@ export function LanguageTabs({
           {open && (
             <>
               <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close language menu" />
-              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface p-2 shadow-xl">
+              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl">
                 <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                   {languages.map((lang) => (
                     <div key={lang.id} className="flex items-center gap-1 rounded-lg hover:bg-surfacehover transition-colors">
@@ -70,7 +70,7 @@ export function LanguageTabs({
                             }}
                             className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-onaccent active:scale-95 transition-transform"
                           >
-                            Remove
+                            Delete
                           </button>
                           <button onClick={() => setConfirmingRemoveId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
                             Cancel
@@ -92,8 +92,8 @@ export function LanguageTabs({
                           </button>
                           <button
                             onClick={() => setConfirmingRemoveId(lang.id)}
-                            className="shrink-0 rounded-lg p-2 text-muted hover:text-fabpink transition-colors"
-                            aria-label={`Remove ${lang.name}`}
+                            className="shrink-0 rounded-full border border-hairline p-2 text-muted hover:bg-surfacehover transition-colors"
+                            aria-label={`Delete ${lang.name}`}
                           >
                             <Trash2 size={14} strokeWidth={2} />
                           </button>

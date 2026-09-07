@@ -31,7 +31,7 @@ export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
         <h2 className="text-lg font-bold tracking-tight mb-3 text-ink">Add starter phrases?</h2>
 
         <div className="flex items-center justify-between mb-1">
-          <span className="text-sm font-medium text-ink">Phrases to include</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Phrases to include</span>
           <div className="flex gap-2">
             <button
               type="button"
