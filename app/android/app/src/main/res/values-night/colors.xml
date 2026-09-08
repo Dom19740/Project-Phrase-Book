@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mirrors app/src/index.css dark-theme tokens (:root, the default) — keep in sync. -->
+<resources>
+    <color name="widget_surface">#1E1E1E</color>
+    <color name="widget_surfacehover">#292929</color>
+    <color name="widget_hairline">#333333</color>
+    <color name="widget_ink">#D1D5DB</color>
+    <color name="widget_muted">#9CA3AF</color>
+    <color name="widget_fabpink">#EC1D8B</color>
+    <color name="widget_onaccent">#FFFFFF</color>
+</resources>

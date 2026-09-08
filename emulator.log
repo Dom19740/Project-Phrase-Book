@@ -1,0 +1,191 @@
+INFO         | Android emulator version 36.3.10.0 (build_id 14472402) (CL:N/A)
+INFO         | Graphics backend: gfxstream
+INFO         | Found systemPath C:\Users\dbuzu\AppData\Local\Android\Sdk\system-images\android-36.1\google_apis_playstore\x86_64\
+WARNING      | Please update the emulator to one that supports the feature(s): VulkanVirtualQueue
+INFO         | IPv4 server found: 192.168.1.1
+INFO         | Ignore IPv6 address: 50c3:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 50c3:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 50c3:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: f8c9:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: f8c9:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: f8c9:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 10d0:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 10d0:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 10d0:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 78de:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 78de:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 78de:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 60e4:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 60e4:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Ignore IPv6 address: 60e4:6c57:3201:0:e0bf:6c57:3201:0
+INFO         | Guest GLES Driver: Auto (ext controls)
+library_mode host gpu mode host
+INFO         | emuglConfig_get_vulkan_hardware_gpu_support_info: Found physical GPU 'NVIDIA GeForce RTX 2070', type: VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU, apiVersion: 1.4.341, driverVersion: 610.62
+
+INFO         | emuglConfig_get_vulkan_hardware_gpu_support_info: Found physical GPU 'Intel(R) UHD Graphics 630', type: VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU, apiVersion: 1.3.215, driverVersion: 0.404.2141
+
+INFO         | GPU device local memory = 8220MB
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasCompatibleHypervisor
+INFO         |      Ok: Hypervisor compatibility to run avd: `Medium_Phone_API_36.1` are met
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Ok: System requirements to run avd: `Medium_Phone_API_36.1` are met
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU requirements to run avd: `Medium_Phone_API_36.1` are passed
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Ok: Disk space requirements to run avd: `Medium_Phone_API_36.1` are met
+INFO         | Critical: Failed to load opengl32sw (The specified module could not be found.) (:0, )
+INFO         | Warning: Software OpenGL failed. Falling back to system OpenGL. (:0, )
+INFO         | Storing crashdata in: D:\Users\dbuzu\AppData\Local\Temp\\AndroidEmulator\emu-crash-36.3.10.db, detection is enabled for process: 31832
+INFO         | Initializing gfxstream backend
+INFO         | android_startOpenglesRenderer: gpu info
+INFO         | GPU #1
+  Make: 10de
+  Model: NVIDIA GeForce RTX 2070
+  Device ID: 1f10
+
+INFO         | SharedLibrary::open for [vulkan-1.dll]
+INFO         | SharedLibrary::open for [vulkan-1.dll]: not found in map, open for the first time
+INFO         | SharedLibrary::open for [vulkan-1.dll] (win32): call LoadLibrary
+INFO         | SharedLibrary::open succeeded for [vulkan-1.dll]. File name: [C:\WINDOWS\SYSTEM32\vulkan-1.dll]
+INFO         | Added library: vulkan-1.dll
+INFO         | Selecting Vulkan device: NVIDIA GeForce RTX 2070, Version: 1.4.341
+INFO         | Disabling sparse binding feature support
+INFO         | SharedLibrary::open for [opengl32.dll]: not found in map, open for the first time
+INFO         | SharedLibrary::open for [opengl32.dll] (win32): call LoadLibrary
+INFO         | SharedLibrary::open succeeded for [opengl32.dll]. File name: [C:\WINDOWS\SYSTEM32\opengl32.DLL]
+INFO         | SharedLibrary::open for [libshadertranslator.dll]: not found in map, open for the first time
+INFO         | SharedLibrary::open for [libshadertranslator.dll] (win32): call LoadLibrary
+INFO         | SharedLibrary::open succeeded for [libshadertranslator.dll]. File name: [C:\Users\dbuzu\AppData\Local\Android\Sdk\emulator\lib64\libshadertranslator.dll]
+INFO         | Initializing VkEmulation features:
+INFO         |     glInteropSupported: true
+INFO         |     useDeferredCommands: true
+INFO         |     createResourceWithRequirements: true
+INFO         |     useVulkanComposition: false
+INFO         |     useVulkanNativeSwapchain: false
+INFO         |     enable guestRenderDoc: false
+INFO         |     ASTC LDR emulation mode: Gpu
+INFO         |     enable ETC2 emulation: true
+INFO         |     enable Ycbcr emulation: false
+INFO         |     guestVulkanOnly: false
+INFO         |     useDedicatedAllocations: false
+INFO         | Graphics Adapter Vendor Google (NVIDIA Corporation)
+INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (NVIDIA GeForce RTX 2070/PCIe/SSE2)
+INFO         | Graphics API Version OpenGL ES 3.0 (4.5.0 NVIDIA 610.62)
+INFO         | Graphics API Extensions GL_OES_EGL_sync GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_depth24 GL_OES_depth32 GL_OES_element_index_uint GL_OES_texture_float GL_OES_texture_float_linear GL_OES_compressed_paletted_texture GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth_texture GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_packed_depth_stencil GL_OES_vertex_half_float GL_OES_texture_npot GL_OES_rgb8_rgba8 GL_OVR_multiview2 GL_EXT_multiview_texture_multisample GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_texture_format_BGRA8888 GL_APPLE_texture_format_BGRA8888 GL_EXT_texture_buffer 
+INFO         | Graphics Device Extensions N/A
+INFO         | Sending adb public key [QAAAAMPB18IVyXlYqpui2vM8UZ7ZvbWzH/F6uEz6/CIH3HyyKOaHubslrxfDYB6+J6j0flTdHEU8jT34OsZ8sjpmov00LPnj2sPKJH0VnAtw5EBAS85xYSm7+IO6EvXlEcRQ5lt68vRgG5NjlWwE76etu2T6N3m7f39I4dJaKLSBpqwWjPxCIyoMttW8cixVP2ajCWEDPMZKzBEQF7hQ2UgdMkjhgsPiRg+5kE6C/pIDK8pe2zO8PIUMgA/SJFbPHW0a/VgcluUh22c282JteSHZ5Xzj3pIbarH3uQ3EWmuKb9kdW5UOxH5R+QetIBzYkvxo27K7CKBs5AllC+R183/1h9tRTkPLBN3pVnPAqVa/vAC2fKXqruwWdzsjshSPd5Icq/L4N5J3sk/STItXZFiNQlqy5JYd8CCbi59+wg7kZ/jjdGyBAsW4HEyff3O6HHpqc1Uk4zS400jnuumLrCjQyge50TA7aqTxiWLcgFQRVbW4yxkyWaTIA6hg/91waETl6hGUtL9ArD3cPR5L2uorxZueVEtZ9OKu9FQfTXXcRDUdp3SUR1FAAH8E6Hdcvzusv/tHVF1z+Fv/5U4rJELBE2YvJ93riHvq8glHjuNT3apgbo0xsPdxCufhHagvzAtlvJV7jhJMTsyswT50H0kyU1xsYzWnFyijgTECg8ulYxMwOIiZtAEAAQA= @unknown]
+INFO         | Userspace boot properties:
+INFO         |   androidboot.boot_devices=pci0000:00/0000:00:03.0 pci0000:00/0000:00:06.0
+INFO         |   androidboot.dalvik.vm.heapsize=512m
+INFO         |   androidboot.debug.hwui.renderer=skiagl
+INFO         |   androidboot.hardware=ranchu
+INFO         |   androidboot.hardware.gltransport=pipe
+INFO         |   androidboot.hardware.vulkan=ranchu
+INFO         |   androidboot.logcat=*:V
+INFO         |   androidboot.opengles.version=196609
+INFO         |   androidboot.qemu=1
+INFO         |   androidboot.qemu.adb.pubkey=QAAAAMPB18IVyXlYqpui2vM8UZ7ZvbWzH/F6uEz6/CIH3HyyKOaHubslrxfDYB6+J6j0flTdHEU8jT34OsZ8sjpmov00LPnj2sPKJH0VnAtw5EBAS85xYSm7+IO6EvXlEcRQ5lt68vRgG5NjlWwE76etu2T6N3m7f39I4dJaKLSBpqwWjPxCIyoMttW8cixVP2ajCWEDPMZKzBEQF7hQ2UgdMkjhgsPiRg+5kE6C/pIDK8pe2zO8PIUMgA/SJFbPHW0a/VgcluUh22c282JteSHZ5Xzj3pIbarH3uQ3EWmuKb9kdW5UOxH5R+QetIBzYkvxo27K7CKBs5AllC+R183/1h9tRTkPLBN3pVnPAqVa/vAC2fKXqruwWdzsjshSPd5Icq/L4N5J3sk/STItXZFiNQlqy5JYd8CCbi59+wg7kZ/jjdGyBAsW4HEyff3O6HHpqc1Uk4zS400jnuumLrCjQyge50TA7aqTxiWLcgFQRVbW4yxkyWaTIA6hg/91waETl6hGUtL9ArD3cPR5L2uorxZueVEtZ9OKu9FQfTXXcRDUdp3SUR1FAAH8E6Hdcvzusv/tHVF1z+Fv/5U4rJELBE2YvJ93riHvq8glHjuNT3apgbo0xsPdxCufhHagvzAtlvJV7jhJMTsyswT50H0kyU1xsYzWnFyijgTECg8ulYxMwOIiZtAEAAQA= @unknown
+INFO         |   androidboot.qemu.avd_name=Medium_Phone_API_36.1
+INFO         |   androidboot.qemu.camera_hq_edge_processing=0
+INFO         |   androidboot.qemu.camera_protocol_ver=1
+INFO         |   androidboot.qemu.cpuvulkan.version=4202496
+INFO         |   androidboot.qemu.gltransport.drawFlushInterval=800
+INFO         |   androidboot.qemu.gltransport.name=pipe
+INFO         |   androidboot.qemu.hwcodec.avcdec=2
+INFO         |   androidboot.qemu.hwcodec.hevcdec=2
+INFO         |   androidboot.qemu.hwcodec.vpxdec=2
+INFO         |   androidboot.qemu.settings.system.screen_off_timeout=2147483647
+INFO         |   androidboot.qemu.virtiowifi=1
+INFO         |   androidboot.qemu.vsync=60
+INFO         |   androidboot.serialno=EMULATOR36X3X10X0
+INFO         |   androidboot.vbmeta.digest=985534687e7068fe518baf7329565a3d751ac7eefcd99a2439c5c663b465aa72
+INFO         |   androidboot.vbmeta.hash_alg=sha256
+INFO         |   androidboot.vbmeta.size=6784
+INFO         |   androidboot.veritymode=enforcing
+WHPX on Windows 10.0.26200 detected.
+Windows Hypervisor Platform accelerator is operational
+netsimd I 09-08 02:42:50.803 daemon\src\rust_main.rs:100 - netsim artifacts path: "D:\\Users\\dbuzu\\AppData\\Local\\Temp\\netsimd"
+netsimd I 09-08 02:42:50.804 daemon\src\rust_main.rs:103 - NetsimdArgs {
+    fd_startup_str: None,
+    no_cli_ui: true,
+    no_web_ui: true,
+    pcap: false,
+    disable_address_reuse: false,
+    hci_port: None,
+    connector_instance: None,
+    instance: None,
+    logtostderr: false,
+    dev: false,
+    forward_host_mdns: false,
+    vsock: None,
+    config: None,
+    host_dns: Some(
+        "192.168.1.1",
+    ),
+    http_proxy: None,
+    wifi_tap: None,
+    wifi: None,
+    test_beacons: false,
+    no_test_beacons: false,
+    no_shutdown: false,
+    verbose: false,
+    version: false,
+    debug: DebugArgs {
+        debug_no_traffic: false,
+        debug_no_network: false,
+        debug_no_wmedium: false,
+        debug_no_mdns_wmedium: false,
+        debug_no_guest_to_host_mdns: false,
+    },
+    rssi: None,
+}
+INFO         | Monitoring duration of emulator setup.
+WARNING      | The emulator now requires a signed jwt token for gRPC access! Use the -grpc flag if you really want an open unprotected grpc port
+INFO         | Using security allow list from: C:\Users\dbuzu\AppData\Local\Android\Sdk\emulator\lib\emulator_access.json
+WARNING      | *** Basic token auth should only be used by android-studio ***
+INFO         | The active JSON Web Key Sets can be found here: C:\Users\dbuzu\AppData\Local\Temp\avd\running\31832\jwks\287ea146-aaaa-4c19-9fdd-1d6ed19488f5\active.jwk
+INFO         | Scanning C:\Users\dbuzu\AppData\Local\Temp\avd\running\31832\jwks\287ea146-aaaa-4c19-9fdd-1d6ed19488f5 for jwk keys.
+INFO         | Started GRPC server at 127.0.0.1:8554, security: Local, auth: +token
+INFO         | Advertising in: C:\Users\dbuzu\AppData\Local\Temp\avd\running\pid_31832.ini
+INFO         | Setting display: 0 configuration to: 1080x2400, dpi: 420x420 
+INFO         | setDisplayActiveConfig 0
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasCompatibleHypervisor
+INFO         |      Ok: Hypervisor compatibility to run avd: `Medium_Phone_API_36.1` are met
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Ok: System requirements to run avd: `Medium_Phone_API_36.1` are met
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU requirements to run avd: `Medium_Phone_API_36.1` are passed
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Ok: Disk space requirements to run avd: `Medium_Phone_API_36.1` are met
+INFO         | Loading snapshot 'default_boot'...
+WARNING      | Client not connected yet. Ignoring message!
+WARNING      | Client not connected yet. Ignoring message!
+WARNING      | Client not connected yet. Ignoring message!
+WARNING      | Unknown XR viewport mode requested: 0, ignored.
+
+WARNING      | Client not connected yet. Ignoring message!
+WARNING      | Client not connected yet. Ignoring message!
+WARNING      | Client not connected yet. Ignoring message!
+WARNING      | Client not connected yet. Ignoring message!
+WARNING      | Client not connected yet. Ignoring message!
+WARNING      | Client not connected yet. Ignoring message!
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_rgbcSensorValueWidget_valueChanged() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_posture_valueChanged(int) (:0, )
+INFO         | Successfully loaded snapshot 'default_boot' using 1254 ms
+INFO         | AVD supportsNativeGLES=1, supportsGuestAngle=1
+INFO         | Guest Angle is still unstable for API > 35.
+INFO         | Created extended window in 1.43643s
+INFO         | Activated packet streamer for uwb emulation
+WARNING      | adb command 'C:\Users\dbuzu\AppData\Local\Android\Sdk\platform-tools\adb.exe -s emulator-5554 shell am start-foreground-service -e meter on com.android.emulator.radio.config/.MeterService ' failed: 'adb.exe: device offline'
+INFO         | Activated packet streamer for bluetooth emulation
+ERROR        | Failed to find EmulatedEglImage:2192
+ERROR        | Failed to find EmulatedEglImage:2189
+ERROR        | Failed to find EmulatedEglImage:2198
+INFO         | Created VkInstance:00000133655E6B80 for application:'' engine:''.
+INFO         | Destroyed VkInstance:00000133655E6B80 for application:'' engine:''.
+WARNING      | Not saving state: RAM not mapped as shared
+INFO         | Wait for emulator (pid 31832) 20 seconds to shutdown gracefully before kill;you can set environment variable ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL(in seconds) to change the default value (20 seconds)
+
+INFO         | Saving snapshot 'default_boot' using 35 ms

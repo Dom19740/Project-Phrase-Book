@@ -32,14 +32,18 @@ final class PhraseWidgetDb {
     }
 
     static final class PhraseRow {
+        final long id;
         final String english;
         final String text;
         final boolean favorite;
+        final boolean learned;
 
-        PhraseRow(String english, String text, boolean favorite) {
+        PhraseRow(long id, String english, String text, boolean favorite, boolean learned) {
+            this.id = id;
             this.english = english;
             this.text = text;
             this.favorite = favorite;
+            this.learned = learned;
         }
     }
 
@@ -65,14 +69,14 @@ final class PhraseWidgetDb {
     static List<PhraseRow> getPhrases(Context context, int languageId, String filter) {
         List<PhraseRow> result = new ArrayList<>();
         String condition = "favorites".equals(filter) ? "t.favorite = 1" : "t.learned = 0";
-        String sql = "SELECT pc.english, t.text, t.favorite FROM translations t "
+        String sql = "SELECT t.id, pc.english, t.text, t.favorite, t.learned FROM translations t "
                 + "JOIN phrase_concepts pc ON pc.id = t.phrase_concept_id "
                 + "WHERE t.language_id = ? AND " + condition + " "
                 + "ORDER BY t.sort_order, t.id";
         try (SQLiteDatabase db = openReadOnly(context);
              Cursor c = db.rawQuery(sql, new String[] { String.valueOf(languageId) })) {
             while (c.moveToNext()) {
-                result.add(new PhraseRow(c.getString(0), c.getString(1), c.getInt(2) != 0));
+                result.add(new PhraseRow(c.getLong(0), c.getString(1), c.getString(2), c.getInt(3) != 0, c.getInt(4) != 0));
             }
         } catch (Exception e) {
             // Same fallback as above.

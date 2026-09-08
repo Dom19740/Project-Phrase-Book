@@ -3,8 +3,8 @@
     android:id="@+id/item_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layoutDirection="ltr"
     android:orientation="horizontal"
-    android:background="@drawable/widget_item_background"
     android:paddingStart="12dp"
     android:paddingEnd="12dp"
     android:paddingTop="8dp"
@@ -17,14 +17,17 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
+        <!-- Forced ltr/left regardless of script (e.g. Arabic) so phrase text always reads like the
+             app does, instead of the RTL paragraph direction Android auto-detects from the content. -->
         <TextView
             android:id="@+id/english_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="11sp"
-            android:textColor="#8A8A8A"
             android:maxLines="1"
-            android:ellipsize="end" />
+            android:ellipsize="end"
+            android:textDirection="ltr"
+            android:gravity="left" />
 
         <TextView
             android:id="@+id/translation_text"
@@ -32,17 +35,26 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#1A1A1A"
             android:maxLines="1"
-            android:ellipsize="end" />
+            android:ellipsize="end"
+            android:textDirection="ltr"
+            android:gravity="left" />
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/favorite_icon"
+        android:id="@+id/speaking_icon"
         android:layout_width="16dp"
         android:layout_height="16dp"
         android:layout_marginStart="8dp"
-        android:src="@android:drawable/btn_star_big_on"
+        android:src="@drawable/ic_widget_speaking"
+        android:visibility="gone"
+        android:contentDescription="@null" />
+
+    <ImageView
+        android:id="@+id/status_icon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginStart="8dp"
         android:visibility="gone"
         android:contentDescription="@null" />
 </LinearLayout>

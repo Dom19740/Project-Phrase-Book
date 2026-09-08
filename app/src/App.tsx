@@ -11,6 +11,7 @@ import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
 import { usePersistedState } from './lib/usePersistedState'
+import { syncWidgetTheme } from './lib/widgetRefresh'
 import type { PhraseListItem } from './db/types'
 
 type Theme = 'dark' | 'light'
@@ -125,6 +126,10 @@ function Shell() {
     document.documentElement.style.setProperty('--color-fabpink', appliedAccent)
     document.documentElement.style.setProperty('--color-onaccent', readableTextOn(appliedAccent))
   }, [appliedAccent])
+
+  useEffect(() => {
+    syncWidgetTheme(theme, accent)
+  }, [theme, accent])
 
   if (loading) {
     return (

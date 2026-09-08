@@ -32,6 +32,13 @@ final class PhraseWidgetPrefs {
         prefs(context).edit().putString("filter_" + appWidgetId, filter).apply();
     }
 
+    /** Flips the single filter pill between its two states and returns the new value. */
+    static String toggleFilter(Context context, int appWidgetId) {
+        String next = FILTER_FAVORITES.equals(getFilter(context, appWidgetId)) ? FILTER_UNLEARNED : FILTER_FAVORITES;
+        setFilter(context, appWidgetId, next);
+        return next;
+    }
+
     static void clear(Context context, int appWidgetId) {
         prefs(context).edit().remove("lang_" + appWidgetId).remove("filter_" + appWidgetId).apply();
     }
