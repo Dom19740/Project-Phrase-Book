@@ -86,6 +86,7 @@ function Shell() {
     removeLanguage,
     getLanguagePhrases,
     backUpToFile,
+    chooseBackupFolder,
     listBackups,
     loadBackup,
     loadBackupFromFile,
@@ -375,6 +376,7 @@ function Shell() {
           languages={languages}
           onClose={() => setShowBackup(false)}
           onBackUpNow={backUpToFile}
+          onChooseBackupFolder={chooseBackupFolder}
           onListBackups={listBackups}
           onLoadBackup={loadBackup}
           onLoadBackupFromFile={loadBackupFromFile}

@@ -33,7 +33,7 @@ import { onMutation } from '../db/client'
 import { scheduleAutoBackup } from '../lib/autoBackup'
 import { refreshWidget } from '../lib/widgetRefresh'
 import { readBackupFromPickedLocation, readCsvFromPickedLocation } from '../lib/backupFile'
-import { type BackupFileInfo, listBackupFiles, readBackupFile, writeManualBackupFile } from '../lib/backupTarget'
+import { chooseBackupFolder, type BackupFileInfo, listBackupFiles, readBackupFile, writeManualBackupFile } from '../lib/backupTarget'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
 import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
 import { usePersistedState } from '../lib/usePersistedState'
@@ -78,6 +78,7 @@ interface PhraseBookContextValue {
   removeLanguage: (languageId: number) => Promise<void>
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   backUpToFile: () => Promise<string>
+  chooseBackupFolder: () => Promise<string>
   listBackups: () => Promise<BackupFileInfo[]>
   loadBackup: (name: string) => Promise<BackupSnapshot>
   loadBackupFromFile: () => Promise<{ name: string; snapshot: BackupSnapshot }>
@@ -338,6 +339,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     return await writeManualBackupFile(JSON.stringify(snapshot, null, 2))
   }, [])
 
+  const chooseBackupFolderAction = useCallback((): Promise<string> => chooseBackupFolder(), [])
+
   const listBackups = useCallback((): Promise<BackupFileInfo[]> => listBackupFiles(), [])
 
   const loadBackup = useCallback(async (name: string): Promise<BackupSnapshot> => {
@@ -563,6 +566,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       removeLanguage,
       getLanguagePhrases,
       backUpToFile,
+      chooseBackupFolder: chooseBackupFolderAction,
       listBackups,
       loadBackup,
       loadBackupFromFile,
@@ -586,6 +590,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       addPhrase,
       editPhrase,
       backUpToFile,
+      chooseBackupFolderAction,
       listBackups,
       loadBackup,
       loadBackupFromFile,
