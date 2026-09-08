@@ -1,7 +1,7 @@
 Travel Chatter is a travel phrasebook you write yourself. Capture a phrase at any time, in any language, and keep it. No lessons, no streaks — a book that only contains what you choose to put in it.
 
 ONE BOOK, EVERY LANGUAGE
-Most phrasebooks are full of generic phrases you never really need - Where is the bus stop? How much is a train ticket? Travel Chatter doesn't. Every phrase you add is one you want to learn: Nice to meet you. What is your name? One more beer please, translated into whichever languages you're travelling with. Add a new language before your next trip and your whole list comes with you — same phrases, same categories, freshly translated. One book, many places.
+Most phrasebooks are full of generic phrases you never really need - Where is the library? The cat is in the garage. Travel Chatter isn't. Every phrase you add is one you want to learn: Nice to meet you. What is your name? One more beer please - translated into whichever languages you're travelling with. Add a new language before your next trip and your whole phrasebook comes with you — same phrases, same categories, freshly translated. One book, many places.
 
 WRITE IT AS YOU GO
 Hear a useful phrase from a local, a guidebook, or a friend? Add it on the spot. There's no fixed script to follow and no vocabulary you're forced to learn — every phrase you actually need, and nothing you don't.
@@ -22,6 +22,8 @@ YOUR ORDER, YOUR CATEGORIES
 Group phrases into your own categories, mark favourites, track what you've learnt, and drag phrases into whatever order makes sense to you. Nothing here is pre-sorted for you.
 
 YOUR PHRASES STAY YOURS
-Back up your whole phrasebook to a file whenever you like, restore it on a new device, or export any language as a CSV to share with friends. Nobody sells a phrasebook with your words in it. So we didn't.
+Back up your whole phrasebook to a file whenever you like, restore it on a new device, or export any language as a CSV to share with friends
+
+Nobody sells a phrasebook with your words in it. So we didn't.
 
 Free to install, with no account required and support for dozens of languages.

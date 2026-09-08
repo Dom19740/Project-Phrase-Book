@@ -44,6 +44,13 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
+            // The sqlite plugin bundles a prebuilt libsqlcipher.so — without this, the release
+            // bundle ships that native code with no debug symbols, which is what triggered Play
+            // Console's "upload a symbol file" warning. This makes Gradle attach the symbol table
+            // to the .aab automatically instead of requiring a manual upload.
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'
+            }
         }
     }
 }
