@@ -11,6 +11,7 @@ import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
 import { usePersistedState } from './lib/usePersistedState'
+import { syncStatusBarStyle } from './lib/systemBars'
 import { syncWidgetTheme } from './lib/widgetRefresh'
 import type { PhraseListItem } from './db/types'
 
@@ -120,6 +121,7 @@ function Shell() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
+    syncStatusBarStyle(theme)
   }, [theme])
 
   useEffect(() => {
