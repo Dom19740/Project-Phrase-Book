@@ -60,7 +60,7 @@ export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
               >
                 <span
                   aria-hidden="true"
-                  className={`size-4 shrink-0 rounded-full border-2 transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
+                  className={`size-4 shrink-0 rounded-full border transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
                 />
                 <span className="min-w-0 flex-1 truncate text-ink">{p.english}</span>
               </button>

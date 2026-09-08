@@ -291,7 +291,7 @@ export function EditPhraseModal({
                           >
                             <span
                               aria-hidden="true"
-                              className={`size-4 shrink-0 rounded-full border-2 transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
+                              className={`size-4 shrink-0 rounded-full border transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
                             />
                             <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
                             {lang.name}

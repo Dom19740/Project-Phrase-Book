@@ -140,25 +140,24 @@ export function PhraseRow({
         </p>
       </div>
 
-      {selectionMode ? (
-        <div className="shrink-0 flex items-center justify-center gap-0.5 size-9" role="checkbox" aria-checked={selected}>
-          <span
-            aria-hidden="true"
-            className={`size-4 shrink-0 rounded-full border-2 transition-colors ${selected ? 'bg-fabpink border-fabpink' : 'border-fabpink/60'}`}
-          />
-        </div>
-      ) : (
-        <div className="shrink-0 flex items-center justify-end gap-0.5">
-          {phrase.learned && phrase.favorite ? (
-            <Star size={16} strokeWidth={2.5} className="text-fabpink" aria-label="Favorite and learned" />
-          ) : (
-            <>
-              {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learnt" />}
-              {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favorite" />}
-            </>
-          )}
-        </div>
-      )}
+      <div className="shrink-0 flex items-center justify-end gap-0.5">
+        {phrase.learned && phrase.favorite ? (
+          <Star size={16} strokeWidth={2.5} className="text-fabpink" aria-label="Favorite and learned" />
+        ) : (
+          <>
+            {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learnt" />}
+            {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favorite" />}
+          </>
+        )}
+        {selectionMode && (
+          <div className="shrink-0 flex items-center justify-center size-9" role="checkbox" aria-checked={selected}>
+            <span
+              aria-hidden="true"
+              className={`size-4 shrink-0 rounded-full border transition-colors ${selected ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
+            />
+          </div>
+        )}
+      </div>
 
       {dragHandleProps && !selectionMode && (
         <button
