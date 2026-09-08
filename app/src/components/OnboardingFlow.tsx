@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ArrowDown, ArrowRight, Check, ChevronDown, Hand, Layers, Pencil, Plus, Trash2, Volume2 } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, ChevronDown, Hand, Layers, Pencil, Plus, Star, Trash2, Volume2 } from 'lucide-react'
 import { Logo, Wordmark } from './Logo'
 
 interface Props {
@@ -102,6 +102,43 @@ const HOWTO_PAGES: HowToPage[] = [
         <div className="flex w-full max-w-xs flex-col items-center gap-3 rounded-3xl border-2 border-fabpink/40 bg-surface px-6 py-7 shadow-xl text-center">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Tap to reveal</span>
           <span className="text-xl font-bold text-ink">Bonjour</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: 'Add the home screen widget',
+    body: 'Long-press your home screen, tap Widgets, and add Travel Chatter to see your favorites or not-learnt phrases at a glance. Tap the language to cycle it, the filter pill to switch lists, and a phrase to hear it spoken aloud.',
+    illustration: (
+      <div className="flex w-full flex-col items-center gap-3">
+        <div className="w-full max-w-xs rounded-2xl border-2 border-hairline bg-surface p-2.5 shadow-md">
+          <div className="flex items-center gap-1.5 pb-2">
+            <span className="flex items-center gap-1 rounded-full border-2 border-fabpink bg-surface px-2.5 py-1 text-xs font-bold text-ink">
+              <span aria-hidden="true">🇫🇷</span> French
+            </span>
+            <span className="rounded-full bg-fabpink px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-onaccent">
+              Favorites
+            </span>
+            <span className="ml-auto flex size-6 shrink-0 items-center justify-center">
+              <Logo size={16} className="text-fabpink" />
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2 rounded-xl bg-surfacehover px-3 py-2">
+              <div className="min-w-0 flex-1 text-left">
+                <p className="truncate text-[10px] text-muted">Hello</p>
+                <p className="truncate text-sm font-bold text-ink">Bonjour</p>
+              </div>
+              <Star size={14} strokeWidth={2.5} className="shrink-0 text-fabpink" fill="currentColor" />
+            </div>
+            <div className="flex items-center gap-2 rounded-xl bg-surfacehover px-3 py-2">
+              <div className="min-w-0 flex-1 text-left">
+                <p className="truncate text-[10px] text-muted">Thank you</p>
+                <p className="truncate text-sm font-bold text-ink">Merci</p>
+              </div>
+              <Check size={14} strokeWidth={2.5} className="shrink-0 text-fabpink" />
+            </div>
+          </div>
         </div>
       </div>
     ),
