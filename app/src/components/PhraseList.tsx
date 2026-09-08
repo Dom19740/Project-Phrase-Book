@@ -12,7 +12,6 @@ import {
   Languages,
   ListChecks,
   ListFilter,
-  Star,
   X,
 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
@@ -191,7 +190,6 @@ export function PhraseList({
   const [learnedFilter, setLearnedFilter] = usePersistedState<LearnedFilter>('phrasebook-learned-filter', 'unlearned')
   const [primaryExpanded, setPrimaryExpanded] = useState(true)
   const [secondaryExpanded, setSecondaryExpanded] = useState(false)
-  const [favoritesExpanded, setFavoritesExpanded] = useState(true)
   const [favoritesOnly, setFavoritesOnly] = usePersistedState('phrasebook-favorites-only', false)
   const [hiddenCategoryList, setHiddenCategoryList] = usePersistedState<string[]>('phrasebook-hidden-categories', [])
   const hiddenCategories = useMemo(() => new Set(hiddenCategoryList), [hiddenCategoryList])
@@ -243,22 +241,12 @@ export function PhraseList({
 
   const secondarySorted = useMemo(() => sortItems(secondaryItems, sortMode), [secondaryItems, sortMode])
 
-  const favoriteItems = useMemo(() => primaryItems.filter((p) => p.favorite), [primaryItems])
-  const nonFavoritePrimaryItems = useMemo(() => primaryItems.filter((p) => !p.favorite), [primaryItems])
-
-  const favoriteGroups = useMemo<Group[]>(
-    () =>
-      groupByCategoryOn
-        ? groupByCategory(favoriteItems, sortMode, categoryOrderIndex)
-        : [{ categoryName: '', items: sortItems(favoriteItems, sortMode) }],
-    [favoriteItems, groupByCategoryOn, sortMode, categoryOrderIndex],
-  )
   const groups = useMemo<Group[]>(
     () =>
       groupByCategoryOn
-        ? groupByCategory(nonFavoritePrimaryItems, sortMode, categoryOrderIndex)
-        : [{ categoryName: '', items: sortItems(nonFavoritePrimaryItems, sortMode) }],
-    [nonFavoritePrimaryItems, groupByCategoryOn, sortMode, categoryOrderIndex],
+        ? groupByCategory(primaryItems, sortMode, categoryOrderIndex)
+        : [{ categoryName: '', items: sortItems(primaryItems, sortMode) }],
+    [primaryItems, groupByCategoryOn, sortMode, categoryOrderIndex],
   )
 
   function toggleCategoryVisible(categoryName: string, visible: boolean) {
@@ -417,54 +405,14 @@ export function PhraseList({
             </div>
           )}
 
-          {favoriteItems.length > 0 && (
-            <div>
-              <button
-                onClick={() => setFavoritesExpanded((v) => !v)}
-                className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" />
-                  Favorites ({favoriteItems.length})
-                </span>
-                {favoritesExpanded ? (
-                  <ChevronDown size={16} strokeWidth={2} className="text-fabpink" />
-                ) : (
-                  <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
-                )}
-              </button>
-              {favoritesExpanded && (
-                <div className="mt-1.5 flex flex-col gap-3">
-                  {favoriteGroups.map((group) => {
-                    const isCollapsed = groupByCategoryOn && (collapsed[`fav:${group.categoryName}`] ?? false)
-                    return (
-                      <div key={`fav-${group.categoryName || 'all'}`}>
-                        {groupByCategoryOn && (
-                          <button
-                            onClick={() => setCollapsed((c) => ({ ...c, [`fav:${group.categoryName}`]: !isCollapsed }))}
-                            className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
-                          >
-                            <span>{group.categoryName}</span>
-                            {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
-                          </button>
-                        )}
-                        {!isCollapsed && <div className="mt-1.5">{renderDraggableGroup(group.items)}</div>}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {nonFavoritePrimaryItems.length > 0 && (
+          {primaryItems.length > 0 && (
             <div>
               <button
                 onClick={() => setPrimaryExpanded((v) => !v)}
                 className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
               >
                 <span>
-                  {primaryLabel} ({nonFavoritePrimaryItems.length})
+                  {primaryLabel} ({primaryItems.length})
                 </span>
                 {primaryExpanded ? (
                   <ChevronDown size={16} strokeWidth={2} className="text-fabpink" />

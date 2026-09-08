@@ -18,6 +18,7 @@ interface Props {
   onBackUpNow: () => Promise<string>
   onListBackups: () => Promise<BackupFileInfo[]>
   onLoadBackup: (name: string) => Promise<BackupSnapshot>
+  onLoadBackupFromFile: () => Promise<{ name: string; snapshot: BackupSnapshot }>
   onApplyBackup: (snapshot: BackupSnapshot) => Promise<void>
   onExportCsv: (languageId: number) => Promise<string>
   onPickCsv: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
@@ -33,6 +34,7 @@ export function BackupModal({
   onBackUpNow,
   onListBackups,
   onLoadBackup,
+  onLoadBackupFromFile,
   onApplyBackup,
   onExportCsv,
   onPickCsv,
@@ -189,6 +191,21 @@ export function BackupModal({
     setBusy(false)
   }
 
+  // Bypasses the automatic Documents/Travel Chatter listing (which relies on the OS's MediaStore
+  // recognizing the file as this app's own — something a reinstall can break even when the file is
+  // still physically there) by handing the pick off to the system file picker instead.
+  async function handlePickBackupFile() {
+    setBusy(true)
+    setStatus(null)
+    try {
+      const { name, snapshot } = await onLoadBackupFromFile()
+      setPendingRestore({ name, snapshot })
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not read that file.')
+    }
+    setBusy(false)
+  }
+
   async function confirmRestore() {
     if (!pendingRestore || restoringRef.current) return
     restoringRef.current = true
@@ -239,7 +256,10 @@ export function BackupModal({
         ) : backupList ? (
           <div className="flex flex-col gap-3">
             {backupList.length === 0 ? (
-              <p className="text-sm text-muted">No backups found in {BACKUP_DIR_LABEL} yet. Back up now to create one.</p>
+              <p className="text-sm text-muted">
+                No backups found in {BACKUP_DIR_LABEL}. If you know a backup file exists (e.g. after reinstalling the app), use{' '}
+                <strong>Choose file…</strong> below to pick it directly — otherwise, back up now to create one.
+              </p>
             ) : (
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                 {backupList.map((file) => (
@@ -255,6 +275,13 @@ export function BackupModal({
                 ))}
               </div>
             )}
+            <button
+              onClick={handlePickBackupFile}
+              disabled={busy}
+              className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
+            >
+              Choose file…
+            </button>
             <button
               onClick={() => setBackupList(null)}
               disabled={busy}

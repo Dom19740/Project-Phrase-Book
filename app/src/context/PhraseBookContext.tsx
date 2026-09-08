@@ -32,7 +32,7 @@ import { exportSnapshot, importSnapshot, isValidBackupSnapshot, type BackupSnaps
 import { onMutation } from '../db/client'
 import { scheduleAutoBackup } from '../lib/autoBackup'
 import { refreshWidget } from '../lib/widgetRefresh'
-import { readCsvFromPickedLocation } from '../lib/backupFile'
+import { readBackupFromPickedLocation, readCsvFromPickedLocation } from '../lib/backupFile'
 import { type BackupFileInfo, listBackupFiles, readBackupFile, writeManualBackupFile } from '../lib/backupTarget'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
 import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
@@ -80,6 +80,7 @@ interface PhraseBookContextValue {
   backUpToFile: () => Promise<string>
   listBackups: () => Promise<BackupFileInfo[]>
   loadBackup: (name: string) => Promise<BackupSnapshot>
+  loadBackupFromFile: () => Promise<{ name: string; snapshot: BackupSnapshot }>
   applyBackupSnapshot: (snapshot: BackupSnapshot) => Promise<void>
   exportLanguageCsv: (languageId: number) => Promise<string>
   pickCsvFile: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
@@ -346,6 +347,13 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     return snapshot
   }, [])
 
+  const loadBackupFromFile = useCallback(async (): Promise<{ name: string; snapshot: BackupSnapshot }> => {
+    const { name, data } = await readBackupFromPickedLocation()
+    const snapshot = JSON.parse(data)
+    if (!isValidBackupSnapshot(snapshot)) throw new Error('That file is not a recognized backup.')
+    return { name, snapshot }
+  }, [])
+
   const applyBackupSnapshot = useCallback(
     async (snapshot: BackupSnapshot) => {
       await importSnapshot(snapshot)
@@ -557,6 +565,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       backUpToFile,
       listBackups,
       loadBackup,
+      loadBackupFromFile,
       applyBackupSnapshot,
       exportLanguageCsv,
       pickCsvFile,
@@ -579,6 +588,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       backUpToFile,
       listBackups,
       loadBackup,
+      loadBackupFromFile,
       applyBackupSnapshot,
       exportLanguageCsv,
       pickCsvFile,

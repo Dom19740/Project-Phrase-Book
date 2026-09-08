@@ -88,6 +88,7 @@ function Shell() {
     backUpToFile,
     listBackups,
     loadBackup,
+    loadBackupFromFile,
     applyBackupSnapshot,
     exportLanguageCsv,
     pickCsvFile,
@@ -376,6 +377,7 @@ function Shell() {
           onBackUpNow={backUpToFile}
           onListBackups={listBackups}
           onLoadBackup={loadBackup}
+          onLoadBackupFromFile={loadBackupFromFile}
           onApplyBackup={applyBackupSnapshot}
           onExportCsv={exportLanguageCsv}
           onPickCsv={pickCsvFile}
