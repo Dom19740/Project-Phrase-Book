@@ -31,6 +31,7 @@ import type { Category, Language, PhraseListItem } from '../db/types'
 import { exportSnapshot, importSnapshot, isValidBackupSnapshot, type BackupSnapshot } from '../db/backup'
 import { onMutation } from '../db/client'
 import { scheduleAutoBackup } from '../lib/autoBackup'
+import { refreshWidget } from '../lib/widgetRefresh'
 import { readBackupFromPickedLocation, readCsvFromPickedLocation, saveBackupToPickedLocation } from '../lib/backupFile'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
 import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
@@ -133,6 +134,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     onMutation(scheduleAutoBackup)
+    onMutation(refreshWidget)
   }, [])
 
   useEffect(() => {

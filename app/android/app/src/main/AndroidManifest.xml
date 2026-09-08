@@ -33,6 +33,26 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- exported=true is required for widget providers to receive the system's
+             APPWIDGET_UPDATE broadcast — that broadcast is protected (only the system can send
+             it), so this doesn't open the receiver up to arbitrary third-party apps. -->
+        <receiver
+            android:name=".widget.PhraseWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/phrase_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".widget.PhraseWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="false" />
     </application>
 
     <!-- Permissions -->

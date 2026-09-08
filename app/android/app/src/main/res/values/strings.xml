@@ -4,4 +4,13 @@
     <string name="title_activity_main">Travel Chatter</string>
     <string name="package_name">com.dpbcreative.travelchatter</string>
     <string name="custom_url_scheme">com.dpbcreative.travelchatter</string>
+
+    <string name="widget_label">Favorites &amp; Not Learnt</string>
+    <string name="widget_description">Shows your favorite or not-learnt phrases for a language, right on the home screen.</string>
+    <string name="widget_no_language">Add a language</string>
+    <string name="widget_filter_favorites">Favorites</string>
+    <string name="widget_filter_unlearned">Not Learnt</string>
+    <string name="widget_empty">No phrases yet</string>
+    <string name="widget_open_app">Open Travel Chatter</string>
+    <string name="widget_needs_translation">needs translation</string>
 </resources>
