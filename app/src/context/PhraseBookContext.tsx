@@ -32,7 +32,8 @@ import { exportSnapshot, importSnapshot, isValidBackupSnapshot, type BackupSnaps
 import { onMutation } from '../db/client'
 import { scheduleAutoBackup } from '../lib/autoBackup'
 import { refreshWidget } from '../lib/widgetRefresh'
-import { readBackupFromPickedLocation, readCsvFromPickedLocation, saveBackupToPickedLocation } from '../lib/backupFile'
+import { readCsvFromPickedLocation } from '../lib/backupFile'
+import { type BackupFileInfo, listBackupFiles, readBackupFile, writeManualBackupFile } from '../lib/backupTarget'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
 import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
 import { usePersistedState } from '../lib/usePersistedState'
@@ -76,8 +77,9 @@ interface PhraseBookContextValue {
   addStartupPhrases: (languageId: number, englishKeys?: string[]) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
-  backUpToFile: () => Promise<void>
-  pickBackupFile: () => Promise<{ name: string; snapshot: BackupSnapshot }>
+  backUpToFile: () => Promise<string>
+  listBackups: () => Promise<BackupFileInfo[]>
+  loadBackup: (name: string) => Promise<BackupSnapshot>
   applyBackupSnapshot: (snapshot: BackupSnapshot) => Promise<void>
   exportLanguageCsv: (languageId: number) => Promise<string>
   pickCsvFile: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
@@ -330,16 +332,18 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     await reorderCategoriesQuery(orderedCategoryIds)
   }, [])
 
-  const backUpToFile = useCallback(async () => {
+  const backUpToFile = useCallback(async (): Promise<string> => {
     const snapshot = await exportSnapshot()
-    await saveBackupToPickedLocation(JSON.stringify(snapshot, null, 2))
+    return await writeManualBackupFile(JSON.stringify(snapshot, null, 2))
   }, [])
 
-  const pickBackupFile = useCallback(async (): Promise<{ name: string; snapshot: BackupSnapshot }> => {
-    const { name, data } = await readBackupFromPickedLocation()
+  const listBackups = useCallback((): Promise<BackupFileInfo[]> => listBackupFiles(), [])
+
+  const loadBackup = useCallback(async (name: string): Promise<BackupSnapshot> => {
+    const data = await readBackupFile(name)
     const snapshot = JSON.parse(data)
     if (!isValidBackupSnapshot(snapshot)) throw new Error('That file is not a recognized backup.')
-    return { name, snapshot }
+    return snapshot
   }, [])
 
   const applyBackupSnapshot = useCallback(
@@ -551,7 +555,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       removeLanguage,
       getLanguagePhrases,
       backUpToFile,
-      pickBackupFile,
+      listBackups,
+      loadBackup,
       applyBackupSnapshot,
       exportLanguageCsv,
       pickCsvFile,
@@ -572,7 +577,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       addPhrase,
       editPhrase,
       backUpToFile,
-      pickBackupFile,
+      listBackups,
+      loadBackup,
       applyBackupSnapshot,
       exportLanguageCsv,
       pickCsvFile,

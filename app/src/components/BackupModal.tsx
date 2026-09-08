@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { getLastBackupAt } from '../lib/autoBackup'
+import { BACKUP_DIR_LABEL, type BackupFileInfo } from '../lib/backupTarget'
 import { exportFile } from '../lib/exportFile'
 import { detectLanguage, detectLanguageFromFilename } from '../lib/detectLanguage'
 import { getLanguageFlag } from '../lib/languageFlags'
@@ -14,8 +15,9 @@ import { PopoutSelect } from './PopoutSelect'
 interface Props {
   languages: Language[]
   onClose: () => void
-  onBackUpNow: () => Promise<void>
-  onPickBackup: () => Promise<{ name: string; snapshot: BackupSnapshot }>
+  onBackUpNow: () => Promise<string>
+  onListBackups: () => Promise<BackupFileInfo[]>
+  onLoadBackup: (name: string) => Promise<BackupSnapshot>
   onApplyBackup: (snapshot: BackupSnapshot) => Promise<void>
   onExportCsv: (languageId: number) => Promise<string>
   onPickCsv: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
@@ -29,7 +31,8 @@ export function BackupModal({
   languages,
   onClose,
   onBackUpNow,
-  onPickBackup,
+  onListBackups,
+  onLoadBackup,
   onApplyBackup,
   onExportCsv,
   onPickCsv,
@@ -38,6 +41,7 @@ export function BackupModal({
 }: Props) {
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [backupList, setBackupList] = useState<BackupFileInfo[] | null>(null)
   const [pendingRestore, setPendingRestore] = useState<{ name: string; snapshot: BackupSnapshot } | null>(null)
   const [csvLanguageId, setCsvLanguageId] = useState<number | ''>(languages[0]?.id ?? '')
 
@@ -63,8 +67,8 @@ export function BackupModal({
     setBusy(true)
     setStatus(null)
     try {
-      await onBackUpNow()
-      setStatus('Backed up.')
+      const name = await onBackUpNow()
+      setStatus(`Backed up to ${BACKUP_DIR_LABEL}/${name}`)
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Backup failed.')
     }
@@ -166,7 +170,19 @@ export function BackupModal({
     setBusy(true)
     setStatus(null)
     try {
-      setPendingRestore(await onPickBackup())
+      setBackupList(await onListBackups())
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not read the backup folder.')
+    }
+    setBusy(false)
+  }
+
+  async function handlePickBackup(name: string) {
+    setBusy(true)
+    setStatus(null)
+    try {
+      const snapshot = await onLoadBackup(name)
+      setPendingRestore({ name, snapshot })
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Could not read that file.')
     }
@@ -181,6 +197,7 @@ export function BackupModal({
     try {
       await onApplyBackup(pendingRestore.snapshot)
       setStatus('Restored from backup.')
+      setBackupList(null)
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Restore failed.')
     }
@@ -197,7 +214,8 @@ export function BackupModal({
       <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Backup</h2>
         <p className="text-xs text-muted mb-4">
-          {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}
+          {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'} Saved to{' '}
+          {BACKUP_DIR_LABEL}.
         </p>
 
         {pendingRestore ? (
@@ -217,6 +235,33 @@ export function BackupModal({
                 Replace everything
               </button>
             </div>
+          </div>
+        ) : backupList ? (
+          <div className="flex flex-col gap-3">
+            {backupList.length === 0 ? (
+              <p className="text-sm text-muted">No backups found in {BACKUP_DIR_LABEL} yet. Back up now to create one.</p>
+            ) : (
+              <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                {backupList.map((file) => (
+                  <button
+                    key={file.name}
+                    onClick={() => handlePickBackup(file.name)}
+                    disabled={busy}
+                    className="flex flex-col items-start rounded-lg px-2.5 py-2 text-left text-ink hover:bg-surfacehover transition-colors disabled:opacity-40"
+                  >
+                    <span className="text-sm font-medium">{file.name}</span>
+                    <span className="text-xs text-muted">{new Date(file.mtime).toLocaleString()}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              onClick={() => setBackupList(null)}
+              disabled={busy}
+              className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
+            >
+              Back
+            </button>
           </div>
         ) : pendingImport && autoConfirm && importTarget ? (
           <div className="flex flex-col gap-3">
@@ -428,7 +473,7 @@ export function BackupModal({
 
         {status && <p className="mt-3 text-sm text-muted">{status}</p>}
 
-        {!pendingRestore && !pendingImport && (
+        {!pendingRestore && !pendingImport && !backupList && (
           <div className="flex justify-end mt-4">
             <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
               Close

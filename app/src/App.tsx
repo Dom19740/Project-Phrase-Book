@@ -86,7 +86,8 @@ function Shell() {
     removeLanguage,
     getLanguagePhrases,
     backUpToFile,
-    pickBackupFile,
+    listBackups,
+    loadBackup,
     applyBackupSnapshot,
     exportLanguageCsv,
     pickCsvFile,
@@ -373,7 +374,8 @@ function Shell() {
           languages={languages}
           onClose={() => setShowBackup(false)}
           onBackUpNow={backUpToFile}
-          onPickBackup={pickBackupFile}
+          onListBackups={listBackups}
+          onLoadBackup={loadBackup}
           onApplyBackup={applyBackupSnapshot}
           onExportCsv={exportLanguageCsv}
           onPickCsv={pickCsvFile}

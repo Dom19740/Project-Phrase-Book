@@ -1,5 +1,5 @@
 import { exportSnapshot } from '../db/backup'
-import { isNativeBackupSupported, writeBackupFile } from './backupTarget'
+import { writeAutoBackupFile } from './backupTarget'
 
 const DEBOUNCE_MS = 1500
 const LAST_BACKUP_KEY = 'phrasebook-last-backup-at'
@@ -7,11 +7,8 @@ const LAST_BACKUP_KEY = 'phrasebook-last-backup-at'
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 async function runBackup(): Promise<void> {
-  if (!isNativeBackupSupported()) {
-    throw new Error('Automatic backup needs the installed Android app — not available in the web preview.')
-  }
   const snapshot = await exportSnapshot()
-  await writeBackupFile(JSON.stringify(snapshot, null, 2))
+  await writeAutoBackupFile(JSON.stringify(snapshot, null, 2))
   localStorage.setItem(LAST_BACKUP_KEY, new Date().toISOString())
 }
 
