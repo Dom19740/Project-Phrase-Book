@@ -59,6 +59,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Needed for the in-app "Listening" (speech-to-text) mic button. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
     <!-- Needed for the "Documents folder" backup location option (Directory.Documents). -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
