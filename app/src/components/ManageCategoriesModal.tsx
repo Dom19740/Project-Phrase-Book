@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GripVertical, Trash2 } from 'lucide-react'
+import { GripVertical, Save, Trash2 } from 'lucide-react'
 import type { Category } from '../db/types'
 import { DragReorderList } from './DragReorderList'
 
@@ -92,8 +92,14 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
                     onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
                     className="flex-1 min-w-0 rounded-lg border-2 border-hairline bg-transparent text-ink px-2 py-1 text-sm outline-none focus:border-fabpink transition-all"
                   />
-                  <button onClick={saveEdit} disabled={busy} className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-onaccent active:scale-95 transition-transform disabled:opacity-40">
-                    Save
+                  <button
+                    onClick={saveEdit}
+                    disabled={busy}
+                    aria-label="Save"
+                    title="Save"
+                    className="rounded-full p-1.5 bg-fabpink text-onaccent active:scale-95 transition-transform disabled:opacity-40"
+                  >
+                    <Save size={13} strokeWidth={2} />
                   </button>
                   <button onClick={() => setEditingId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted hover:text-ink transition-colors">
                     Cancel

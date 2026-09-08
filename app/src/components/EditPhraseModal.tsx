@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Copy, Mic, RefreshCw, Trash2 } from 'lucide-react'
+import { Check, Copy, Loader2, Mic, RefreshCw, Save, Trash2 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag, getSpeechLocale } from '../lib/languageFlags'
 import { pillClass } from '../lib/pillStyles'
@@ -340,9 +340,11 @@ export function EditPhraseModal({
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || saving}
-                  className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                  aria-label={saving ? 'Saving' : 'Save'}
+                  title={saving ? 'Saving' : 'Save'}
+                  className="rounded-full bg-fabpink p-2.5 text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
                 >
-                  {saving ? 'Saving...' : 'Save'}
+                  {saving ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : <Save size={16} strokeWidth={2} />}
                 </button>
               </div>
             </div>
