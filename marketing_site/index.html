@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Travel Chatter - The Travel Phrasebook You Write Yourself</title>
+<meta name="description" content="Every phrase you actually need. One book, many languages. Capture phrases as you travel, hear them spoken aloud, and use them offline - free, with no account required.">
+<link rel="canonical" href="https://travelchatter.dpbcreative.com/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#EC1D8B">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Travel Chatter">
+<meta property="og:url" content="https://travelchatter.dpbcreative.com/">
+<meta property="og:title" content="Travel Chatter - The Travel Phrasebook You Write Yourself">
+<meta property="og:description" content="Every phrase you actually need. One book, many languages. Capture phrases as you travel, hear them spoken aloud, and use them offline - free, with no account required.">
+<meta property="og:image" content="https://travelchatter.dpbcreative.com/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Travel Chatter - every phrase you actually need">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Travel Chatter - The Travel Phrasebook You Write Yourself">
+<meta name="twitter:description" content="Every phrase you actually need. One book, many languages. Capture phrases as you travel, hear them spoken aloud, and use them offline - free, with no account required.">
+<meta name="twitter:image" content="https://travelchatter.dpbcreative.com/assets/og-image.jpg">
+
+<!-- Icons -->
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="assets/icon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="assets/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="assets/icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "Travel Chatter: Phrasebook",
+  "operatingSystem": "ANDROID",
+  "applicationCategory": "TravelApplication",
+  "url": "https://travelchatter.dpbcreative.com/",
+  "image": "https://travelchatter.dpbcreative.com/assets/og-image.jpg",
+  "description": "Travel Chatter is a travel phrasebook you write yourself. Capture a phrase at any time, in any language, save it to use and learn. No lessons, no streaks - a book that only contains what you choose to put in it.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "installUrl": "https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Travel Chatter free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Travel Chatter is free to install, with no account required and no subscription." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Travel Chatter work without internet?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Once a phrase is translated, it's stored on your device - you can read it, search it, and hear it spoken with no signal and no roaming." }
+    },
+    {
+      "@type": "Question",
+      "name": "How many languages does Travel Chatter support?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Dozens. Add a new language before your next trip and your whole phrasebook comes with you - same phrases, same categories, freshly translated." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to create an account to use Travel Chatter?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No account, no sign-up, and no login. Your phrasebook lives on your device." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I back up or export my phrasebook?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Back up your whole phrasebook to a file whenever you like, restore it on a new device, or export any language as a CSV to share with friends." }
+    }
+  ]
+}
+</script>
+
+<style>
+  :root {
+    --pink: #EC1D8B;
+    --pink-dark: #C4126F;
+    --pink-tint: #FFF0F8;
+    --black: #121212;
+    --ink: #1C1C22;
+    --muted: #5B5B66;
+    --border: #EDE3EB;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display {
+    font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    line-height: 1.08;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+  .eyebrow {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin: 0 0 14px;
+  }
+  p { color: var(--muted); line-height: 1.65; font-size: 17px; }
+
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 76px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand img { width: 36px; height: 36px; border-radius: 9px; }
+  .brand span {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+  }
+  @media (max-width: 420px) {
+    .nav-row { height: 68px; }
+    .brand span { display: none; }
+    .nav-row > .btn { padding: 10px 16px; font-size: 13px; }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--pink);
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 12px 22px;
+    border-radius: 100px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .btn:hover { background: var(--pink-dark); transform: translateY(-1px); }
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--border);
+  }
+  .btn.ghost:hover { background: var(--pink-tint); border-color: var(--pink); color: var(--pink-dark); transform: none; }
+
+  /* Hero */
+  .hero { padding: 76px 0 40px; }
+  .hero .wrap { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+  .hero .wrap > * { min-width: 0; }
+  .hero h1 { font-size: clamp(38px, 5vw, 58px); }
+  .hero h1 mark { background: none; color: var(--pink); }
+  .hero p.lead { font-size: 19px; margin: 22px 0 30px; max-width: 480px; }
+  .cta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .cta-row img.badge { height: 54px; width: auto; }
+  .hero-visual { position: relative; }
+  .hero-visual img {
+    border-radius: 26px;
+    box-shadow: 0 30px 60px -20px rgba(236,29,139,0.35), 0 10px 24px -12px rgba(0,0,0,0.25);
+  }
+  @media (max-width: 860px) {
+    .hero .wrap { grid-template-columns: 1fr; text-align: center; }
+    .hero p.lead { margin-left: auto; margin-right: auto; }
+    .cta-row { justify-content: center; }
+    .hero-visual { max-width: 320px; margin: 0 auto; }
+  }
+
+  /* Feature rows */
+  .feature {
+    padding: 72px 0;
+    border-top: 1px solid var(--border);
+  }
+  .feature.tint { background: var(--pink); }
+  .feature.tint .eyebrow { color: rgba(255,255,255,0.85); }
+  .feature.tint h2 { color: #fff; }
+  .feature.tint p { color: rgba(255,255,255,0.85); }
+  .feature .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .feature .wrap > * { min-width: 0; }
+  .feature.reverse .wrap { direction: rtl; }
+  .feature.reverse .wrap > * { direction: ltr; }
+  .feature h2 { font-size: clamp(26px, 3vw, 34px); margin-bottom: 16px; }
+  .feature .shot { max-width: 280px; margin: 0 auto; }
+  .feature .shot img {
+    border-radius: 20px;
+    box-shadow: 0 24px 48px -20px rgba(0,0,0,0.25);
+  }
+  .feature.tint .shot img {
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.9), 0 24px 48px -16px rgba(0,0,0,0.35);
+  }
+  @media (max-width: 860px) {
+    .feature .wrap, .feature.reverse .wrap { grid-template-columns: 1fr; direction: ltr; text-align: center; }
+    .feature .shot { order: -1; }
+    .feature p { max-width: 480px; margin-left: auto; margin-right: auto; }
+  }
+
+  /* Final CTA */
+  .final-cta {
+    background: #fff;
+    border-top: 1px solid var(--border);
+    padding: 88px 0;
+    text-align: center;
+  }
+  .final-cta h2 { color: var(--ink); font-size: clamp(28px, 4vw, 42px); margin-bottom: 14px; }
+  .final-cta h2 .hl { color: var(--pink); }
+  .final-cta p { color: var(--ink); font-size: 18px; max-width: 520px; margin: 0 auto 34px; }
+  .final-cta .cta-row { justify-content: center; }
+
+  /* FAQ */
+  .faq { padding: 80px 0; }
+  .faq h2 { font-size: clamp(26px, 3vw, 34px); margin-bottom: 8px; }
+  .faq > .wrap > p { margin-bottom: 36px; }
+  .faq-list { max-width: 760px; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-q {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 0;
+  }
+  .faq-icon {
+    font-size: 22px;
+    line-height: 1;
+    color: var(--pink);
+    flex: none;
+    transition: transform 0.3s ease;
+  }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-a {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+  .faq-item.open .faq-a { grid-template-rows: 1fr; }
+  .faq-a-inner { overflow: hidden; }
+  .faq-a p { margin: 0 0 22px; }
+
+  /* Footer */
+  footer { background: var(--black); color: #9A9AA4; padding: 48px 0 32px; }
+  footer .foot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #2A2A30;
+  }
+  footer .brand span { color: #fff; }
+  footer nav.links { display: flex; gap: 24px; }
+  footer nav.links a { text-decoration: none; font-weight: 600; font-size: 15px; color: #C9C9D1; }
+  footer nav.links a:hover { color: var(--pink); }
+  .foot-bottom {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 24px;
+    font-size: 13px;
+  }
+  .foot-bottom a { text-decoration: none; color: #9A9AA4; }
+  .foot-bottom a:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav-row">
+    <a class="brand" href="#top">
+      <img src="assets/icon-192.png" alt="Travel Chatter logo" width="36" height="36">
+      <span>TRAVEL CHATTER</span>
+    </a>
+    <a class="btn" href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Get it on Google Play</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Free · Offline · No account</p>
+        <h1>Every phrase you actually <mark>need</mark>.</h1>
+        <p class="lead">Travel Chatter is a travel phrasebook you write yourself. Capture a phrase at any time, in any language, and keep it - hear it spoken aloud, search it, and use it with no signal at all.</p>
+        <div class="cta-row">
+          <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">
+            <img class="badge" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="182" height="54">
+          </a>
+          <a class="btn ghost" href="#features">See how it works</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <img src="assets/shots/shot-1.jpg" alt="Travel Chatter app screenshot: every phrase you actually need" width="380" height="675" loading="eager">
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="feature">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Write it as you go</p>
+        <h2>Add a phrase in seconds</h2>
+        <p>Type it in English and Travel Chatter translates it, or paste what someone just said to you. Pick a category, pick a suggestion or edit it yourself - no fixed method to follow, no vocabulary you're forced to learn.</p>
+      </div>
+      <div class="shot"><img src="assets/shots/shot-2.jpg" alt="Adding a phrase in Travel Chatter, with translation suggestions" width="380" height="675" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section class="feature reverse tint">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">One book, many places</p>
+        <h2>Add a language the day you land</h2>
+        <p>Most phrasebooks are full of generic phrases you never really need. Travel Chatter isn't - every phrase you add is one you chose. Add a new language before your next trip and your whole phrasebook comes with you, freshly translated.</p>
+      </div>
+      <div class="shot"><img src="assets/shots/shot-3.jpg" alt="Adding a new language to an existing Travel Chatter phrasebook" width="380" height="675" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section class="feature">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Say it right</p>
+        <h2>Hear every phrase before you use it</h2>
+        <p>Every phrase can be spoken aloud with text-to-speech. Tap it again within a few seconds and it repeats more slowly, so you can actually catch the pronunciation before you try it on a local.</p>
+      </div>
+      <div class="shot"><img src="assets/shots/shot-4.jpg" alt="Text-to-speech playback of a Vietnamese phrase in Travel Chatter" width="380" height="675" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section class="feature reverse tint">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">No lessons, no streaks</p>
+        <h2>Practice only the phrases you choose</h2>
+        <p>Switch to flash card mode to test yourself in either direction - English to your phrase, or your phrase to English - filtered by category, favourites, or whatever you haven't learnt yet. No daily reminders, no habit to keep alive.</p>
+      </div>
+      <div class="shot"><img src="assets/shots/shot-5.jpg" alt="Flash card study mode in Travel Chatter" width="380" height="675" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section id="screenshots" class="feature">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Your order, your categories</p>
+        <h2>Organise it like a book, not a feed</h2>
+        <p>Group phrases into your own categories, mark favourites, track what you've learnt, and drag phrases into whatever order makes sense to you. Nothing here is pre-sorted for you.</p>
+      </div>
+      <div class="shot"><img src="assets/shots/shot-6.jpg" alt="Custom categories and filters in Travel Chatter" width="380" height="675" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section class="feature reverse tint">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Yours, not ours</p>
+        <h2>Always on hand. Works with no signal.</h2>
+        <p>Every phrase is stored on your phone - planes, mountains, dead SIMs, it still opens. Back up your whole phrasebook to a file whenever you like, restore it on a new device, or export any language as a CSV to share with friends.</p>
+      </div>
+      <div class="shot"><img src="assets/shots/shot-7.jpg" alt="Offline access, backup, and CSV export in Travel Chatter" width="380" height="675" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section class="feature">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Your words, your homescreen</p>
+        <h2>Add the widget to your homescreen</h2>
+        <p>View your favourites or not-yet-learnt phrases, and listen to the audio, straight from your homescreen - no need to open the app at all.</p>
+      </div>
+      <div class="shot"><img src="assets/shots/shot-8.jpg" alt="Travel Chatter homescreen widget" width="380" height="675" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="wrap">
+      <h2>Nobody sells a phrasebook with <span class="hl">your</span> words in it.<br>So we didn't.</h2>
+      <p>Travel Chatter is free to install, with no account required and support for dozens of languages.</p>
+      <div class="cta-row">
+        <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">
+          <img class="badge" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="182" height="54">
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq">
+    <div class="wrap">
+      <p class="eyebrow">FAQ</p>
+      <h2>Questions, answered</h2>
+      <p style="max-width:600px">If you're wondering whether Travel Chatter fits how you travel, here's the short version.</p>
+      <div class="faq-list">
+        <div class="faq-item open">
+          <button class="faq-q" aria-expanded="true" aria-controls="faq-a-1">
+            <span>Is Travel Chatter free?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-a" id="faq-a-1">
+            <div class="faq-a-inner">
+              <p>Yes. Travel Chatter is free to install, with no account required and no subscription.</p>
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-2">
+            <span>Does it work without internet?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-a" id="faq-a-2">
+            <div class="faq-a-inner">
+              <p>Yes. Once a phrase is translated, it's stored on your device - you can read it, search it, and hear it spoken with no signal and no roaming.</p>
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-3">
+            <span>How many languages does it support?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-a" id="faq-a-3">
+            <div class="faq-a-inner">
+              <p>Dozens. Add a new language before your next trip and your whole phrasebook comes with you - same phrases, same categories, freshly translated.</p>
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-4">
+            <span>Do I need to create an account?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-a" id="faq-a-4">
+            <div class="faq-a-inner">
+              <p>No account, no sign-up, no login. Your phrasebook lives on your device, not in the cloud.</p>
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-5">
+            <span>Can I back up or export my phrasebook?</span>
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-a" id="faq-a-5">
+            <div class="faq-a-inner">
+              <p>Yes. Back up your whole phrasebook to a file whenever you like, restore it on a new device, or export any language as a CSV to share with friends.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="#top">
+        <img src="assets/icon-192.png" alt="Travel Chatter logo" width="36" height="36">
+        <span>TRAVEL CHATTER</span>
+      </a>
+      <nav class="links">
+        <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Google Play</a>
+      </nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 DPB Creative. All rights reserved.</span>
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.faq-item').forEach(function (item) {
+    var btn = item.querySelector('.faq-q');
+    btn.addEventListener('click', function () {
+      var wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function (openItem) {
+        openItem.classList.remove('open');
+        openItem.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+      });
+      if (!wasOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

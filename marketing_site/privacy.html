@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy - Travel Chatter</title>
+<meta name="description" content="Privacy policy for the Travel Chatter Android app: what data is stored on your device, what's sent over the network, and what we don't collect.">
+<link rel="canonical" href="https://travelchatter.dpbcreative.com/privacy.html">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#EC1D8B">
+
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="assets/icon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="assets/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="assets/icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --pink: #EC1D8B;
+    --pink-dark: #C4126F;
+    --pink-tint: #FFF0F8;
+    --black: #121212;
+    --ink: #1C1C22;
+    --muted: #5B5B66;
+    --border: #EDE3EB;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ink);
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, .display {
+    font-family: 'Archivo', 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+  /* Header (shared with index.html) */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-row { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand img { width: 36px; height: 36px; border-radius: 9px; }
+  .brand span { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: 0.06em; color: var(--ink); }
+  @media (max-width: 420px) {
+    .nav-row { height: 68px; }
+    .brand span { display: none; }
+    .nav-row > .btn { padding: 10px 16px; font-size: 13px; }
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--pink);
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 12px 22px;
+    border-radius: 100px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .btn:hover { background: var(--pink-dark); transform: translateY(-1px); }
+
+  /* Policy content */
+  .policy { padding: 56px 0 96px; }
+  .policy .wrap { max-width: 720px; }
+  .policy h1 { font-size: clamp(28px, 4vw, 38px); }
+  .policy .updated { color: var(--muted); font-size: 14px; margin: 10px 0 36px; }
+  .policy > .wrap > p:first-of-type { font-size: 17px; }
+  .policy h2 { font-size: 19px; margin-top: 40px; margin-bottom: 10px; }
+  .policy p, .policy li { color: var(--muted); line-height: 1.7; font-size: 16px; }
+  .policy ul { padding-left: 20px; margin: 10px 0; }
+  .policy li + li { margin-top: 4px; }
+  .policy a { color: var(--pink); font-weight: 600; text-decoration: none; }
+  .policy a:hover { text-decoration: underline; }
+  .policy .contact {
+    margin-top: 44px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Footer (shared with index.html) */
+  footer { background: var(--black); color: #9A9AA4; padding: 48px 0 32px; }
+  footer .foot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #2A2A30;
+  }
+  footer .brand span { color: #fff; }
+  footer nav.links { display: flex; gap: 32px; }
+  footer nav.links a { text-decoration: none; font-weight: 600; font-size: 15px; color: #C9C9D1; }
+  footer nav.links a:hover { color: var(--pink); }
+  .foot-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 24px; font-size: 13px; }
+  .foot-bottom a { text-decoration: none; color: #9A9AA4; }
+  .foot-bottom a:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav-row">
+    <a class="brand" href="index.html">
+      <img src="assets/icon-192.png" alt="Travel Chatter logo" width="36" height="36">
+      <span>TRAVEL CHATTER</span>
+    </a>
+    <a class="btn" href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Get it on Google Play</a>
+  </div>
+</header>
+
+<main class="policy">
+  <div class="wrap">
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: August 11, 2026</p>
+
+    <p>Travel Chatter ("the app") is a travel phrasebook app. This page explains what information the app collects, how it's used, and what it doesn't do.</p>
+
+    <h2>Data stored only on your device</h2>
+    <p>Your phrasebook - languages, phrases, translations, categories, and your favorite/learned markers - is stored entirely in a local database on your device. It is never uploaded anywhere automatically. The app also keeps a private automatic backup copy in its own app storage on your device (not visible to other apps, not uploaded anywhere) purely as a safety net against data loss.</p>
+    <p>You can manually create a backup file or export a CSV file at any time - these are only ever saved to a location <em>you</em> choose (e.g. your device storage, an SD card, or a cloud storage app you pick), and only shared if you explicitly use your device's share function.</p>
+
+    <h2>What's sent over the network</h2>
+    <p>The app works fully offline for browsing, editing, organizing, and backing up your phrasebook. Network access is used only for two optional features:</p>
+    <ul>
+      <li><strong>Auto-translate.</strong> When you add a phrase or a new language and use auto-translate, the English text of that phrase (and the target language) is sent to our translation service, which forwards it to Google's Gemini API to generate a translation. This text is used only to produce that translation and is not stored by our service beyond what's needed to process the request.</li>
+      <li><strong>Text-to-speech.</strong> Playback uses your device's built-in text-to-speech engine; no phrase text is sent to us or to any third party for this feature.</li>
+    </ul>
+
+    <h2>Anonymous device identifier</h2>
+    <p>The app generates a random identifier on first use, stored locally on your device. It is not linked to your name, email, or any account - the app has no accounts or sign-in of any kind. This identifier is sent only with translation requests, solely to apply fair-use rate limits and prevent abuse of the translation service. It is not used to track you across other apps or websites, and no profile is built from it.</p>
+
+    <h2>What we don't collect</h2>
+    <ul>
+      <li>No accounts, no sign-in, no passwords</li>
+      <li>No name, email address, phone number, or contacts</li>
+      <li>No precise location, camera, or microphone access</li>
+      <li>No advertising identifiers - the app shows no ads</li>
+      <li>No analytics or crash-reporting SDKs</li>
+    </ul>
+
+    <h2>Sharing with third parties</h2>
+    <p>The only third party involved is Google, via the Gemini API, and only for the text of phrases you actively choose to translate. We do not sell, rent, or otherwise share your data with anyone else.</p>
+
+    <h2>Your choices</h2>
+    <p>You can use the app entirely offline by not using auto-translate - every other feature works without any network connection. You can delete all app data at any time by clearing the app's storage or uninstalling it from your device settings.</p>
+
+    <h2>Children's privacy</h2>
+    <p>Travel Chatter is not directed at children and does not knowingly collect information from children.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>This policy may be updated occasionally to reflect changes in the app. The "last updated" date above will change whenever it does.</p>
+
+    <div class="contact">
+      <h2>Contact</h2>
+      <p>Questions about this policy? Email <a href="mailto:studio@dpbcreative.com">studio@dpbcreative.com</a>.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="index.html">
+        <img src="assets/icon-192.png" alt="Travel Chatter logo" width="36" height="36">
+        <span>TRAVEL CHATTER</span>
+      </a>
+      <nav class="links">
+        <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Google Play</a>
+      </nav>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 DPB Creative. All rights reserved.</span>
+      <a href="index.html">Back to Travel Chatter</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
