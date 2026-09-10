@@ -143,21 +143,37 @@
   .hero { padding: 76px 0 40px; }
   .hero .wrap { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
   .hero .wrap > * { min-width: 0; }
-  .hero h1 { font-size: clamp(38px, 5vw, 58px); }
+  .hero-brand { display: flex; align-items: center; gap: 14px; margin: 0 0 20px; }
+  .hero-icon { width: 64px; height: 64px; border-radius: 16px; }
+  .hero-wordmark { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--black); position: relative; top: -6px; }
+  .hero h1 { font-size: clamp(38px, 5vw, 58px); margin-top: 20px; }
+  .hero h1 br.mobile-break { display: none; }
   .hero h1 mark { background: none; color: var(--pink); }
   .hero p.lead { font-size: 19px; margin: 22px 0 30px; max-width: 480px; }
   .cta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .cta-row img.badge { height: 54px; width: auto; }
+  .cta-row img.badge { height: 72px; width: auto; }
   .hero-visual { position: relative; }
   .hero-visual img {
     border-radius: 26px;
     box-shadow: 0 30px 60px -20px rgba(236,29,139,0.35), 0 10px 24px -12px rgba(0,0,0,0.25);
   }
   @media (max-width: 860px) {
+    .hero { padding-top: 28px; }
     .hero .wrap { grid-template-columns: 1fr; text-align: center; }
+    /* Fills one screen and centers the copy in it, so the next block (the app
+       screenshot) starts right at the fold instead of peeking in above it. */
+    .hero-copy {
+      min-height: calc(100vh - 68px);
+      min-height: calc(100svh - 68px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .hero-brand { justify-content: center; margin: 0 auto 16px; }
+    .hero h1 br.mobile-break { display: inline; }
     .hero p.lead { margin-left: auto; margin-right: auto; }
     .cta-row { justify-content: center; }
-    .hero-visual { max-width: 320px; margin: 0 auto; }
+    .hero-visual { max-width: 320px; margin: 40px auto 0; }
   }
 
   /* Feature rows */
@@ -274,9 +290,13 @@
 
   <section class="hero">
     <div class="wrap">
-      <div>
+      <div class="hero-copy">
+        <div class="hero-brand">
+          <img class="hero-icon" src="assets/icon-192.png" alt="" width="64" height="64">
+          <span class="hero-wordmark">Travel Chatter</span>
+        </div>
         <p class="eyebrow">Free · Offline · No account</p>
-        <h1>Write it as you <mark>go</mark>.</h1>
+        <h1>Write it as <br class="mobile-break">you <mark>go</mark>.</h1>
         <p class="lead">Travel Chatter is a travel phrasebook you write yourself. Capture a phrase and translate it into any language. Hear it spoken aloud, practice using it the next time you meet someone new and get chatting like a local.</p>
         <div class="cta-row">
           <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">

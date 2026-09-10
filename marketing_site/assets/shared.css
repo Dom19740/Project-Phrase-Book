@@ -7,6 +7,23 @@ header {
   backdrop-filter: saturate(180%) blur(10px);
   border-bottom: 1px solid var(--border);
 }
+/* On pages with their own hero brand mark (added via JS), the header starts hidden
+   and floats in once the page scrolls past that mark, instead of doubling up on load. */
+header.floating {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+header.floating.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
 .nav-row { display: flex; align-items: center; justify-content: space-between; height: 76px; }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .brand img { width: 36px; height: 36px; border-radius: 9px; }
@@ -42,4 +59,7 @@ footer .brand span { color: #fff; }
 .foot-bottom a:hover { color: #fff; }
 @media (max-width: 420px) {
   .nav-row { height: 68px; }
+}
+@media (max-width: 600px) {
+  .header-download { display: none; }
 }
