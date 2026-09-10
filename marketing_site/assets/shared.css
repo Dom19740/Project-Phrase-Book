@@ -10,7 +10,7 @@ header {
 .nav-row { display: flex; align-items: center; justify-content: space-between; height: 76px; }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .brand img { width: 36px; height: 36px; border-radius: 9px; }
-.brand span { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: 0.06em; color: var(--ink); position: relative; top: -2px; }
+.brand span { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: 0.06em; color: var(--ink); position: relative; top: -3px; }
 .btn {
   display: inline-flex;
   align-items: center;
