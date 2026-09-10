@@ -73,7 +73,7 @@ for line in headline_lines:
 sub_font = ImageFont.truetype(FONT_BOLD, 28)
 sub_lines = wrap_text(
     draw,
-    "The travel phrasebook you write yourself. Free, offline, no account.",
+    "The travel phrasebook you write as you go. Free, offline, no account.",
     sub_font,
     640,
 )
