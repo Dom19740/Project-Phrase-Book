@@ -159,7 +159,7 @@
   .hero h1 mark { background: none; color: var(--pink); }
   .hero p.lead { font-size: 19px; margin: 22px 0 30px; max-width: 480px; }
   .cta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .cta-row img.badge { height: 72px; width: auto; }
+  .cta-row img.badge { height: 54px; width: auto; }
   .hero-visual { position: relative; }
   .hero-visual img {
     border-radius: 26px;
@@ -190,9 +190,19 @@
     box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
   }
   @media (max-width: 860px) {
-    .hero { padding: 84px 0 28px; }
-    .hero h1 { margin-top: 20px; }
+    .hero { padding: 0; }
     .hero .wrap { grid-template-columns: 1fr; text-align: center; gap: 28px; }
+    /* The copy alone fills the screen on mobile; the app screenshot sits
+       below the fold and only appears once the visitor scrolls. */
+    .hero-copy {
+      min-height: 100vh;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 84px 0 28px;
+    }
+    .hero h1 { margin-top: 20px; }
     .hero-brand { justify-content: center; margin: 0 auto 16px; }
     .hero h1 br.mobile-break { display: inline; }
     .hero p.lead { margin-left: auto; margin-right: auto; }
@@ -324,7 +334,7 @@
         <p class="lead">Travel Chatter is a travel phrasebook you write as you go. Capture a phrase and translate it into any language. Hear it spoken aloud, practice using it the next time you meet someone new and get chatting like a local.</p>
         <div class="cta-row">
           <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">
-            <img class="badge" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="182" height="54">
+            <img class="badge" src="assets/google-play-badge.svg" alt="Get it on Google Play" width="180" height="53">
           </a>
         </div>
       </div>
@@ -410,7 +420,7 @@
       <p>Travel Chatter is free to install, with no account required and support for dozens of languages.</p>
       <div class="cta-row">
         <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">
-          <img class="badge" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="182" height="54">
+          <img class="badge" src="assets/google-play-badge.svg" alt="Get it on Google Play" width="180" height="53">
         </a>
       </div>
     </div>
