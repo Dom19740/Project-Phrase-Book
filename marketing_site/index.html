@@ -36,6 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shared.css">
 
 <script type="application/ld+json">
 {
@@ -130,51 +131,7 @@
   }
   p { color: var(--muted); line-height: 1.65; font-size: 17px; }
 
-  /* Header */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: saturate(180%) blur(10px);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 76px;
-  }
-  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-  .brand img { width: 36px; height: 36px; border-radius: 9px; }
-  .brand span {
-    font-family: 'Archivo', sans-serif;
-    font-weight: 800;
-    font-size: 17px;
-    letter-spacing: 0.06em;
-    color: var(--ink);
-  }
-  @media (max-width: 420px) {
-    .nav-row { height: 68px; }
-    .brand span { display: none; }
-    .nav-row > .btn { padding: 10px 16px; font-size: 13px; }
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--pink);
-    color: #fff;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 12px 22px;
-    border-radius: 100px;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background 0.15s ease, transform 0.15s ease;
-  }
-  .btn:hover { background: var(--pink-dark); transform: translateY(-1px); }
+  /* Header and footer styles are shared through assets/shared.css. */
   .btn.ghost {
     background: transparent;
     color: var(--ink);
@@ -233,14 +190,15 @@
 
   /* Final CTA */
   .final-cta {
-    background: #fff;
-    border-top: 1px solid var(--border);
+    background: var(--pink);
+    border-top: 1px solid var(--pink);
     padding: 88px 0;
     text-align: center;
   }
-  .final-cta h2 { color: var(--ink); font-size: clamp(28px, 4vw, 42px); margin-bottom: 14px; }
-  .final-cta h2 .hl { color: var(--pink); }
-  .final-cta p { color: var(--ink); font-size: 18px; max-width: 520px; margin: 0 auto 34px; }
+  .final-cta h2 { color: #fff; font-size: clamp(28px, 4vw, 42px); margin-bottom: 14px; }
+  .final-cta h2 .hl { color: #fff; }
+  .final-cta h2 .black { color: var(--black); }
+  .final-cta p { color: rgba(255,255,255,0.85); font-size: 18px; max-width: 520px; margin: 0 auto 34px; }
   .final-cta .cta-row { justify-content: center; }
 
   /* FAQ */
@@ -310,15 +268,7 @@
 </head>
 <body>
 
-<header>
-  <div class="wrap nav-row">
-    <a class="brand" href="#top">
-      <img src="assets/icon-192.png" alt="Travel Chatter logo" width="36" height="36">
-      <span>TRAVEL CHATTER</span>
-    </a>
-    <a class="btn" href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Get it on Google Play</a>
-  </div>
-</header>
+<div data-include="header"></div>
 
 <main id="top">
 
@@ -326,13 +276,12 @@
     <div class="wrap">
       <div>
         <p class="eyebrow">Free · Offline · No account</p>
-        <h1>Every phrase you actually <mark>need</mark>.</h1>
-        <p class="lead">Travel Chatter is a travel phrasebook you write yourself. Capture a phrase at any time, in any language, and keep it - hear it spoken aloud, search it, and use it with no signal at all.</p>
+        <h1>Write it as you <mark>go</mark>.</h1>
+        <p class="lead">Travel Chatter is a travel phrasebook you write yourself. Capture a phrase and translate it into any language. Hear it spoken aloud, practice using it the next time you meet someone new and get chatting like a local.</p>
         <div class="cta-row">
           <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">
             <img class="badge" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="182" height="54">
           </a>
-          <a class="btn ghost" href="#features">See how it works</a>
         </div>
       </div>
       <div class="hero-visual">
@@ -344,9 +293,8 @@
   <section id="features" class="feature">
     <div class="wrap">
       <div>
-        <p class="eyebrow">Write it as you go</p>
-        <h2>Add a phrase in seconds</h2>
-        <p>Type it in English and Travel Chatter translates it, or paste what someone just said to you. Pick a category, pick a suggestion or edit it yourself - no fixed method to follow, no vocabulary you're forced to learn.</p>
+        <p class="eyebrow">Built for travel, not for lessons</p>
+        <p>Type a phrase in English and Travel Chatter translates it, or record the translation driectly. Edit it, pick a category, mark it as a favorite, and have it at hand whenever you need it.</p>
       </div>
       <div class="shot"><img src="assets/shots/shot-2.jpg" alt="Adding a phrase in Travel Chatter, with translation suggestions" width="380" height="675" loading="lazy"></div>
     </div>
@@ -356,7 +304,6 @@
     <div class="wrap">
       <div>
         <p class="eyebrow">One book, many places</p>
-        <h2>Add a language the day you land</h2>
         <p>Most phrasebooks are full of generic phrases you never really need. Travel Chatter isn't - every phrase you add is one you chose. Add a new language before your next trip and your whole phrasebook comes with you, freshly translated.</p>
       </div>
       <div class="shot"><img src="assets/shots/shot-3.jpg" alt="Adding a new language to an existing Travel Chatter phrasebook" width="380" height="675" loading="lazy"></div>
@@ -367,7 +314,6 @@
     <div class="wrap">
       <div>
         <p class="eyebrow">Say it right</p>
-        <h2>Hear every phrase before you use it</h2>
         <p>Every phrase can be spoken aloud with text-to-speech. Tap it again within a few seconds and it repeats more slowly, so you can actually catch the pronunciation before you try it on a local.</p>
       </div>
       <div class="shot"><img src="assets/shots/shot-4.jpg" alt="Text-to-speech playback of a Vietnamese phrase in Travel Chatter" width="380" height="675" loading="lazy"></div>
@@ -378,8 +324,7 @@
     <div class="wrap">
       <div>
         <p class="eyebrow">No lessons, no streaks</p>
-        <h2>Practice only the phrases you choose</h2>
-        <p>Switch to flash card mode to test yourself in either direction - English to your phrase, or your phrase to English - filtered by category, favourites, or whatever you haven't learnt yet. No daily reminders, no habit to keep alive.</p>
+        <p>Switch to flash card mode to test yourself in either direction - English to your phrase, or your phrase to English - filtered by category, favorites, or whatever you haven't learnt yet. No daily reminders, no habit to keep alive.</p>
       </div>
       <div class="shot"><img src="assets/shots/shot-5.jpg" alt="Flash card study mode in Travel Chatter" width="380" height="675" loading="lazy"></div>
     </div>
@@ -389,8 +334,7 @@
     <div class="wrap">
       <div>
         <p class="eyebrow">Your order, your categories</p>
-        <h2>Organise it like a book, not a feed</h2>
-        <p>Group phrases into your own categories, mark favourites, track what you've learnt, and drag phrases into whatever order makes sense to you. Nothing here is pre-sorted for you.</p>
+        <p>Group phrases into your own categories, mark favorites, track what you've learnt, and drag phrases into whatever order makes sense to you. </p>
       </div>
       <div class="shot"><img src="assets/shots/shot-6.jpg" alt="Custom categories and filters in Travel Chatter" width="380" height="675" loading="lazy"></div>
     </div>
@@ -400,8 +344,7 @@
     <div class="wrap">
       <div>
         <p class="eyebrow">Yours, not ours</p>
-        <h2>Always on hand. Works with no signal.</h2>
-        <p>Every phrase is stored on your phone - planes, mountains, dead SIMs, it still opens. Back up your whole phrasebook to a file whenever you like, restore it on a new device, or export any language as a CSV to share with friends.</p>
+        <p>Every phrase is stored on your phone - planes, mountains, dead SIMs, it still opens. Back up your whole phrasebook whenever you like, restore it on a new device, or export any language as a CSV to share with friends.</p>
       </div>
       <div class="shot"><img src="assets/shots/shot-7.jpg" alt="Offline access, backup, and CSV export in Travel Chatter" width="380" height="675" loading="lazy"></div>
     </div>
@@ -411,8 +354,7 @@
     <div class="wrap">
       <div>
         <p class="eyebrow">Your words, your homescreen</p>
-        <h2>Add the widget to your homescreen</h2>
-        <p>View your favourites or not-yet-learnt phrases, and listen to the audio, straight from your homescreen - no need to open the app at all.</p>
+        <p>View your favorites or not learnt phrases, and listen to the audio, straight from your homescreen - no need to open the app at all.</p>
       </div>
       <div class="shot"><img src="assets/shots/shot-8.jpg" alt="Travel Chatter homescreen widget" width="380" height="675" loading="lazy"></div>
     </div>
@@ -420,7 +362,7 @@
 
   <section class="final-cta">
     <div class="wrap">
-      <h2>Nobody sells a phrasebook with <span class="hl">your</span> words in it.<br>So we didn't.</h2>
+      <h2>Nobody sells a phrasebook with <span class="hl">your</span> words in it.<br>So we <span class="black">didn't</span>.</h2>
       <p>Travel Chatter is free to install, with no account required and support for dozens of languages.</p>
       <div class="cta-row">
         <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">
@@ -497,23 +439,7 @@
 
 </main>
 
-<footer>
-  <div class="wrap">
-    <div class="foot-row">
-      <a class="brand" href="#top">
-        <img src="assets/icon-192.png" alt="Travel Chatter logo" width="36" height="36">
-        <span>TRAVEL CHATTER</span>
-      </a>
-      <nav class="links">
-        <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Google Play</a>
-      </nav>
-    </div>
-    <div class="foot-bottom">
-      <span>© 2026 DPB Creative. All rights reserved.</span>
-      <a href="privacy.html">Privacy Policy</a>
-    </div>
-  </div>
-</footer>
+<div data-include="footer"></div>
 
 <script>
   document.querySelectorAll('.faq-item').forEach(function (item) {
@@ -531,6 +457,7 @@
     });
   });
 </script>
+<script src="assets/includes.js"></script>
 
 </body>
 </html>

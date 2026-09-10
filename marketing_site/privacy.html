@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shared.css">
 
 <style>
   :root {
@@ -48,39 +49,7 @@
   a { color: inherit; }
   .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
 
-  /* Header (shared with index.html) */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: saturate(180%) blur(10px);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-row { display: flex; align-items: center; justify-content: space-between; height: 76px; }
-  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-  .brand img { width: 36px; height: 36px; border-radius: 9px; }
-  .brand span { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 17px; letter-spacing: 0.06em; color: var(--ink); }
-  @media (max-width: 420px) {
-    .nav-row { height: 68px; }
-    .brand span { display: none; }
-    .nav-row > .btn { padding: 10px 16px; font-size: 13px; }
-  }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--pink);
-    color: #fff;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 12px 22px;
-    border-radius: 100px;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background 0.15s ease, transform 0.15s ease;
-  }
-  .btn:hover { background: var(--pink-dark); transform: translateY(-1px); }
+  /* Header and footer styles are shared through assets/shared.css. */
 
   /* Policy content */
   .policy { padding: 56px 0 96px; }
@@ -100,37 +69,12 @@
     border-top: 1px solid var(--border);
   }
 
-  /* Footer (shared with index.html) */
-  footer { background: var(--black); color: #9A9AA4; padding: 48px 0 32px; }
-  footer .foot-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 24px;
-    padding-bottom: 32px;
-    border-bottom: 1px solid #2A2A30;
-  }
-  footer .brand span { color: #fff; }
-  footer nav.links { display: flex; gap: 32px; }
-  footer nav.links a { text-decoration: none; font-weight: 600; font-size: 15px; color: #C9C9D1; }
-  footer nav.links a:hover { color: var(--pink); }
-  .foot-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 24px; font-size: 13px; }
-  .foot-bottom a { text-decoration: none; color: #9A9AA4; }
-  .foot-bottom a:hover { color: #fff; }
+  /* Header and footer styles are shared through assets/shared.css. */
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap nav-row">
-    <a class="brand" href="index.html">
-      <img src="assets/icon-192.png" alt="Travel Chatter logo" width="36" height="36">
-      <span>TRAVEL CHATTER</span>
-    </a>
-    <a class="btn" href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Get it on Google Play</a>
-  </div>
-</header>
+<div data-include="header"></div>
 
 <main class="policy">
   <div class="wrap">
@@ -181,23 +125,9 @@
   </div>
 </main>
 
-<footer>
-  <div class="wrap">
-    <div class="foot-row">
-      <a class="brand" href="index.html">
-        <img src="assets/icon-192.png" alt="Travel Chatter logo" width="36" height="36">
-        <span>TRAVEL CHATTER</span>
-      </a>
-      <nav class="links">
-        <a href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Google Play</a>
-      </nav>
-    </div>
-    <div class="foot-bottom">
-      <span>© 2026 DPB Creative. All rights reserved.</span>
-      <a href="index.html">Back to Travel Chatter</a>
-    </div>
-  </div>
-</footer>
+<div data-include="footer"></div>
+
+<script src="assets/includes.js"></script>
 
 </body>
 </html>

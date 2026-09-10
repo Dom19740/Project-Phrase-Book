@@ -3,6 +3,7 @@ import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
 import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { AddLanguageModal } from './AddLanguageModal'
+import { Wordmark } from './Logo'
 
 interface Props {
   languages: Language[]
@@ -42,8 +43,9 @@ export function LanguageTabs({
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
 
   return (
-    <div className="px-4 py-2 border-b border-hairline flex items-center gap-2">
-      <div className="relative flex flex-1 items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 border-b border-hairline px-4 py-2">
+      <Wordmark oneLine className="basis-full text-[10px] text-fabpink sm:basis-auto sm:text-xs" />
+      <div className="relative flex w-full flex-1 items-center gap-2 sm:w-auto">
         <div className="relative flex-1">
           <button
             onClick={() => setOpen((v) => !v)}
