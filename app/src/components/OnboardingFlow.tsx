@@ -239,7 +239,7 @@ export function OnboardingFlow({ onFinish }: Props) {
             </p>
 
             <p className="relative mt-5 text-sm leading-relaxed text-muted">
-              Capture a phrase at any time, in any language, and keep it. No lessons, no streaks. A phrasebook that only
+              Capture a phrase at any time, in any language, save it to use and learn. No lessons, no streaks. A phrasebook that only
               contains what you choose to put in it.
             </p>
           </div>
