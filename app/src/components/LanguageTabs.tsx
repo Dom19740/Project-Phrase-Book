@@ -3,7 +3,6 @@ import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
 import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { AddLanguageModal } from './AddLanguageModal'
-import { Logo, Wordmark } from './Logo'
 
 interface Props {
   languages: Language[]

@@ -6,6 +6,7 @@ import { EditPhraseModal } from './components/EditPhraseModal'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { FlashCardsModal } from './components/FlashCardsModal'
 import { LanguageTabs } from './components/LanguageTabs'
+import { LoadingScreen } from './components/LoadingScreen'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
@@ -137,11 +138,7 @@ function Shell() {
   }, [theme, accent])
 
   if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center bg-appbg text-muted">
-        Loading phrase book...
-      </div>
-    )
+    return <LoadingScreen />
   }
 
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
@@ -191,7 +188,7 @@ function Shell() {
                     className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
                   >
                     <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
-                    How to use
+                    How to Use
                   </button>
                   <button
                     onClick={() => {

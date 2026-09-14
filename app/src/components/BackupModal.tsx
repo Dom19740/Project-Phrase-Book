@@ -12,6 +12,8 @@ import type { Language } from '../db/types'
 import { LanguageSearchList } from './LanguageSearchList'
 import { PopoutSelect } from './PopoutSelect'
 
+const APP_LINK = 'https://travelchatter.dpbcreative.com'
+
 interface Props {
   languages: Language[]
   onClose: () => void
@@ -101,7 +103,10 @@ export function BackupModal({
     try {
       const language = languages.find((l) => l.id === csvLanguageId)
       const csv = await onExportCsv(csvLanguageId)
-      await exportFile(csv, `${(language?.name ?? 'phrases').toLowerCase()}-phrases.csv`, 'text/csv')
+      await exportFile(csv, `${(language?.name ?? 'phrases').toLowerCase()}-phrases.csv`, 'text/csv', {
+        text: `My ${language?.name ?? ''} phrases from Travel Chatter - get the app at ${APP_LINK}`,
+        dialogTitle: 'Share phrases',
+      })
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Export failed.')
     }
