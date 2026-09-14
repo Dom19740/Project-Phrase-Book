@@ -292,7 +292,10 @@ export function FlashCardsModal({
         <>
           <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5">
             {languages.length === 0 ? (
-              <p className="text-center text-muted text-sm py-12">Add a language to get started.</p>
+              <div className="flex flex-col items-center gap-2 py-12 text-center">
+                <p className="font-brand text-xl font-bold tracking-[-0.035em] text-ink">Start your phrasebook.</p>
+                <p className="max-w-xs text-sm leading-relaxed text-muted">Close Flash Cards and add your first language to get started.</p>
+              </div>
             ) : (
               <>
                 <section>

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, Star } from 'lucide-react'
+import { Check, Pencil, Star } from 'lucide-react'
 
 interface Props {
   /** The row this menu was opened from — used to position the menu against it via a portal, so it
@@ -10,12 +10,13 @@ interface Props {
   favorite: boolean
   onToggleLearned: () => void
   onToggleFavorite: () => void
+  onEdit: () => void
   onClose: () => void
 }
 
 const MARGIN = 8
 
-export function PhraseQuickMenu({ anchorRef, learned, favorite, onToggleLearned, onToggleFavorite, onClose }: Props) {
+export function PhraseQuickMenu({ anchorRef, learned, favorite, onToggleLearned, onToggleFavorite, onEdit, onClose }: Props) {
   const menuRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
 
@@ -79,6 +80,17 @@ export function PhraseQuickMenu({ anchorRef, learned, favorite, onToggleLearned,
         >
           <Star size={16} strokeWidth={2.5} fill={favorite ? 'currentColor' : 'none'} className={favorite ? 'text-fabpink' : 'text-muted'} />
           Favorite
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onEdit()
+            onClose()
+          }}
+          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+        >
+          <Pencil size={16} strokeWidth={2.5} className="text-muted" />
+          Edit
         </button>
       </div>
     </>,

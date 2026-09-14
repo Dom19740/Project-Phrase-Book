@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
-  const [includedKeys, setIncludedKeys] = useState<Set<string>>(new Set(startupPhrases.map((p) => p.english)))
+  const [includedKeys, setIncludedKeys] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
 
   function toggle(english: string) {

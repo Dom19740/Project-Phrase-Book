@@ -16,9 +16,6 @@ interface Props {
 export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhrases, onClose, onSubmit }: Props) {
   const [selected, setSelected] = useState<LanguageOption | null>(null)
   const [saving, setSaving] = useState(false)
-  const [manual, setManual] = useState(false)
-  const [manualName, setManualName] = useState('')
-  const [manualCode, setManualCode] = useState('')
 
   const [sourceLanguageId, setSourceLanguageId] = useState<number | null>(activeLanguageId ?? languages[0]?.id ?? null)
   const [sourcePhrases, setSourcePhrases] = useState<PhraseListItem[] | null>(null)
@@ -78,8 +75,6 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
     setSelected(lang)
   }
 
-  const canSubmitManual = manualName.trim().length > 0 && manualCode.trim().length > 0
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
@@ -96,7 +91,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             </h2>
 
             <p className="text-xs text-muted mb-3">
-              Selected phrases get translated into {selected.name} automatically in the background after you add it. Pick which phrase book
+              Selected phrases get translated into {selected.name} automatically. Pick which phrase book
               to copy from, then uncheck any phrases you don't want carried over.
             </p>
 
@@ -187,40 +182,6 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               </button>
             </div>
           </>
-        ) : manual ? (
-          <>
-            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add language manually</h2>
-
-            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Name</label>
-            <input
-              autoFocus
-              value={manualName}
-              onChange={(e) => setManualName(e.target.value)}
-              className="w-full mb-3 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-all"
-              placeholder="e.g. Klingon"
-            />
-            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Language code</label>
-            <input
-              value={manualCode}
-              onChange={(e) => setManualCode(e.target.value)}
-              className="w-full mb-1 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 outline-none focus:border-fabpink transition-all"
-              placeholder="e.g. de or pt-PT"
-            />
-            <p className="text-xs text-muted mb-4">An ISO 639-1 code or BCP-47 locale, e.g. "de" or "pt-PT".</p>
-
-            <div className="flex justify-between gap-2">
-              <button onClick={() => setManual(false)} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
-                Back
-              </button>
-              <button
-                onClick={() => chooseLanguage({ name: manualName.trim(), code: manualCode.trim() })}
-                disabled={!canSubmitManual || saving}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-              >
-                {saving ? 'Adding...' : 'Next'}
-              </button>
-            </div>
-          </>
         ) : (
           <>
             <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add language</h2>
@@ -229,10 +190,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               <LanguageSearchList disabledCodes={existingCodes} disabled={saving} onChoose={chooseLanguage} />
             </div>
 
-            <div className="flex items-center justify-between gap-2">
-              <button onClick={() => setManual(true)} className="text-xs text-muted hover:text-ink underline transition-colors">
-                Can't find it? Add manually
-              </button>
+            <div className="flex items-center justify-end gap-2">
               <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
                 Cancel
               </button>

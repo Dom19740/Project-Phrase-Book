@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ArrowDown, ArrowRight, Check, ChevronDown, Hand, Layers, Pencil, Plus, Star, Trash2, Volume2 } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, ChevronDown, Eye, Layers, ListChecks, ListFilter, Mic, Pencil, Search, Star, Tag, Volume2 } from 'lucide-react'
 import { Logo, Wordmark } from './Logo'
 
 interface Props {
@@ -8,57 +8,118 @@ interface Props {
 
 interface HowToPage {
   title: string
-  body: string
+  body: string | string[]
   illustration: ReactNode
 }
 
 const HOWTO_PAGES: HowToPage[] = [
   {
-    title: 'Add your languages',
-    body: 'Tap the language selector to switch between phrase books, or add a brand-new language whenever you need one.',
+    title: 'Add your language',
+    body: 'Tap the language selector to add one of dozens of languages. Adding your first language offers a curated set of starter phrases to get you started.',
+    illustration: (
+      <div className="flex w-full flex-col items-center gap-2">
+        <div className="w-full max-w-xs rounded-2xl border-2 border-fabpink bg-surface p-3 text-left shadow-lg shadow-fabpink/10">
+          <p className="mb-2 text-sm font-bold text-ink">Add language</p>
+          <div className="mb-2 flex items-center gap-2 rounded-full border-2 border-hairline px-3 py-1.5">
+            <Search size={14} strokeWidth={2} className="shrink-0 text-muted" />
+            <span className="text-xs text-muted">Search languages</span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            {[
+              ['🇪🇸', 'Spanish'],
+              ['🇮🇹', 'Italian'],
+              ['🇩🇪', 'German'],
+            ].map(([flag, name]) => (
+              <div key={name} className="flex items-center gap-2 rounded-lg px-2 py-1">
+                <span className="text-base leading-none" aria-hidden="true">
+                  {flag}
+                </span>
+                <span className="text-xs font-semibold text-ink">{name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <ArrowDown size={14} strokeWidth={2.5} className="text-muted" />
+        <div className="w-full max-w-xs rounded-2xl border-2 border-fabpink bg-surface p-3 text-left shadow-lg shadow-fabpink/10">
+          <p className="mb-2 text-sm font-bold text-ink">Add starter phrases?</p>
+          <div className="flex flex-col gap-0.5">
+            {['My name is...', 'Nice to meet you.', 'Thank you everyone.'].map((phrase) => (
+              <div key={phrase} className="flex items-center gap-2 rounded-lg px-2 py-1 text-xs text-ink">
+                <span aria-hidden="true" className="size-3.5 shrink-0 rounded-full border border-fabpink/40" />
+                <span className="min-w-0 flex-1 truncate">{phrase}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: 'Capture your phrases',
+    body: [
+      'Tap the + button, add a phrase, type or have a local speak the translation, or use Auto translate to show the default translation and alternatives.',
+    ],
     illustration: (
       <div className="flex w-full flex-col items-center gap-4">
-        <div className="flex w-full max-w-xs items-center gap-3 rounded-full border-4 border-fabpink bg-surface px-6 py-4 shadow-lg shadow-fabpink/20">
-          <span className="text-3xl leading-none" aria-hidden="true">
-            🇫🇷
-          </span>
-          <span className="flex-1 text-xl font-bold text-ink">French</span>
-          <ChevronDown size={26} strokeWidth={2.5} className="text-fabpink" />
-        </div>
-        <div className="flex items-center gap-2 rounded-full bg-fabpink px-5 py-2.5 text-base font-bold text-onaccent shadow-lg shadow-fabpink/20">
-          <Plus size={18} strokeWidth={2.5} />
-          Add language
+        <div className="w-full max-w-xs rounded-3xl border-2 border-fabpink bg-surface p-4 text-left shadow-xl shadow-fabpink/10">
+          <p className="mb-3 text-base font-bold text-ink">Add phrase</p>
+          <p className="mb-1 text-[10px] font-extrabold uppercase tracking-wider text-fabpink">English</p>
+          <div className="mb-3 rounded-xl border-2 border-hairline px-3 py-2 text-sm text-ink">Nice to meet you.</div>
+          <p className="mb-1 text-[10px] font-extrabold uppercase tracking-wider text-fabpink">Translate into</p>
+          <div className="mb-3 flex items-center gap-1.5 rounded-full border-2 border-hairline px-3 py-2 text-sm text-ink">
+            <span aria-hidden="true">🇫🇷</span>
+            French
+            <ChevronDown size={14} strokeWidth={2} className="ml-auto shrink-0 text-muted" />
+          </div>
+          <div className="mb-3 flex items-center gap-2 rounded-xl border-2 border-hairline px-3 py-2 text-sm text-muted">
+            <span className="flex-1">Type or record translation</span>
+            <Mic size={16} strokeWidth={2} className="shrink-0 text-muted" />
+          </div>
+          <div className="flex justify-end">
+            <span className="rounded-full bg-fabpink px-4 py-2 text-sm font-bold text-onaccent shadow-lg shadow-fabpink/20">
+              Auto translate
+            </span>
+          </div>
         </div>
       </div>
     ),
   },
   {
-    title: 'Add the phrases you want',
-    body: 'Tap the + button to add a phrase in your own words. Tap a phrase to hear it, mark it learnt, or make it a favorite.',
+    title: 'Filter, sort, and select phrases',
+    body: "Tap Categories to filter or group your list. Cycle through Learnt or Not Learnt phrases, Select bulk actions, and sort or reorder however you like.",
     illustration: (
-      <div className="flex w-full flex-col items-center gap-5">
-        <div className="flex w-full max-w-xs items-center gap-3 rounded-2xl border-2 border-hairline bg-surface px-4 py-3.5 shadow-md">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surfacehover text-fabpink">
-            <Volume2 size={20} strokeWidth={2} />
+      <div className="flex w-full flex-col items-center gap-2">
+        <div className="flex w-full max-w-xs flex-wrap items-center justify-center gap-2">
+          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
+            <Tag size={13} strokeWidth={2.5} />
+            Categories
           </span>
-          <span className="flex-1 text-lg leading-tight">
-            <span className="text-muted">Hello </span>
-            <span className="font-bold text-ink">Bonjour</span>
+          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
+            <Eye size={13} strokeWidth={2.5} />
+            Not Learnt
           </span>
-          <Check size={22} strokeWidth={2.5} className="text-fabpink" />
         </div>
-        <div className="flex size-16 items-center justify-center rounded-full bg-fabpink text-onaccent shadow-lg shadow-black/30">
-          <Plus size={30} strokeWidth={2.5} />
+        <div className="flex w-full max-w-xs flex-wrap items-center justify-center gap-2">
+          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
+            <ListChecks size={13} strokeWidth={2.5} />
+            Select
+          </span>
+          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
+            <ListFilter size={13} strokeWidth={2.5} />
+            Sort
+            <ChevronDown size={12} strokeWidth={2.5} />
+          </span>
         </div>
       </div>
     ),
   },
   {
-    title: 'Edit or delete a phrase',
-    body: 'Long-press a phrase to open it up - fix a typo, change its category, or delete it for good.',
+    title: 'Like, favorite, or edit a phrase',
+    body: ['Tap a phrase to mark it learnt, a favorite, or edit it. Long-press for a shortcut straight to editing.',
+          "Tap the speaker icon to hear a phrase read aloud. Tap it again right after to hear it again, slower.",],
     illustration: (
       <div className="flex w-full flex-col items-center gap-3">
-        <div className="relative flex w-full max-w-xs items-center gap-3 rounded-2xl border-2 border-dashed border-fabpink bg-surface px-4 py-3.5 shadow-md">
+        <div className="flex w-full max-w-xs items-center gap-3 rounded-2xl border-2 border-fabpink bg-surface px-4 py-3.5 shadow-lg shadow-fabpink/20">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surfacehover text-fabpink">
             <Volume2 size={20} strokeWidth={2} />
           </span>
@@ -66,30 +127,50 @@ const HOWTO_PAGES: HowToPage[] = [
             <span className="text-muted">Hello </span>
             <span className="font-bold text-ink">Bonjour</span>
           </span>
-          <Check size={22} strokeWidth={2.5} className="text-fabpink" />
-          <span className="absolute -right-3 -top-3 flex size-8 items-center justify-center rounded-full bg-fabpink text-onaccent shadow-lg shadow-fabpink/30">
-            <Hand size={16} strokeWidth={2.5} />
-          </span>
         </div>
-        <ArrowDown size={20} strokeWidth={2.5} className="text-muted" />
-        <div className="flex items-center gap-6">
-          <div className="flex flex-col items-center gap-1.5">
-            <span className="flex size-12 items-center justify-center rounded-full border-2 border-hairline bg-surface text-ink shadow-sm">
-              <Pencil size={20} strokeWidth={2} />
-            </span>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">Edit</span>
+        <ArrowDown size={18} strokeWidth={2.5} className="text-muted" />
+        <div className="flex w-44 flex-col gap-1 rounded-2xl border-2 border-hairline bg-surface p-1.5 shadow-md">
+          <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-ink">
+            <Check size={16} strokeWidth={2.5} className="text-fabpink" />
+            Learnt
           </div>
-          <div className="flex flex-col items-center gap-1.5">
-            <span className="flex size-12 items-center justify-center rounded-full border-2 border-fabpink bg-surface text-fabpink shadow-sm">
-              <Trash2 size={20} strokeWidth={2} />
-            </span>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">Delete</span>
+          <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-ink">
+            <Star size={16} strokeWidth={2.5} className="text-fabpink" />
+            Favorite
+          </div>
+          <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-ink">
+            <Pencil size={16} strokeWidth={2.5} className="text-muted" />
+            Edit
           </div>
         </div>
       </div>
     ),
   },
+
   {
+    title: 'Add more languages and phrases',
+    body: "Heading somewhere new? Add another language and every phrase you've already built gets translated and added automatically.",
+    illustration: (
+      <div className="flex w-full items-center justify-center gap-3">
+        <div className="flex max-w-[9.5rem] flex-1 items-center justify-center gap-2 rounded-full border-2 border-hairline bg-surface px-4 py-3 shadow-sm">
+          <span className="text-2xl leading-none" aria-hidden="true">
+            🇫🇷
+          </span>
+          <span className="text-base font-bold text-ink">French</span>
+        </div>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-fabpink/15 text-fabpink">
+          <ArrowRight size={18} strokeWidth={2.5} />
+        </span>
+        <div className="flex max-w-[9.5rem] flex-1 items-center justify-center gap-2 rounded-full border-2 border-fabpink bg-surface px-4 py-3 shadow-lg shadow-fabpink/20">
+          <span className="text-2xl leading-none" aria-hidden="true">
+            🇪🇸
+          </span>
+          <span className="text-base font-bold text-ink">Spanish</span>
+        </div>
+      </div>
+    ),
+  },
+   {
     title: 'Practice with flash cards',
     body: 'Open the menu and tap Flash Cards to start a session - pick a language and filter, then tap a card to flip between English and the translation. Long-press a card to edit it.',
     illustration: (
@@ -143,32 +224,13 @@ const HOWTO_PAGES: HowToPage[] = [
       </div>
     ),
   },
-  {
-    title: 'Add more languages and phrases',
-    body: "Heading somewhere new? Add another language and every phrase you've already built gets translated and added automatically - nothing to retype.",
-    illustration: (
-      <div className="flex w-full items-center justify-center gap-3">
-        <div className="flex max-w-[9.5rem] flex-1 items-center justify-center gap-2 rounded-full border-2 border-hairline bg-surface px-4 py-3 shadow-sm">
-          <span className="text-2xl leading-none" aria-hidden="true">
-            🇫🇷
-          </span>
-          <span className="text-base font-bold text-ink">French</span>
-        </div>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-fabpink/15 text-fabpink">
-          <ArrowRight size={18} strokeWidth={2.5} />
-        </span>
-        <div className="flex max-w-[9.5rem] flex-1 items-center justify-center gap-2 rounded-full border-2 border-fabpink bg-surface px-4 py-3 shadow-lg shadow-fabpink/20">
-          <span className="text-2xl leading-none" aria-hidden="true">
-            🇪🇸
-          </span>
-          <span className="text-base font-bold text-ink">Spanish</span>
-        </div>
-      </div>
-    ),
-  },
 ]
 
 const TOTAL_PAGES = HOWTO_PAGES.length + 1
+
+function toParagraphs(body: string | string[]): string[] {
+  return Array.isArray(body) ? body : [body]
+}
 
 export function OnboardingFlow({ onFinish }: Props) {
   const [page, setPage] = useState(0)
@@ -211,7 +273,7 @@ export function OnboardingFlow({ onFinish }: Props) {
       onTouchEnd={handleTouchEnd}
     >
       <div className="flex h-10 shrink-0 justify-end px-4 pt-3">
-        {!isLast && (
+        {page > 0 && !isLast && (
           <button
             onClick={onFinish}
             className="rounded-full px-3 py-1.5 text-sm font-semibold text-muted hover:text-ink active:scale-95 transition-all"
@@ -239,44 +301,72 @@ export function OnboardingFlow({ onFinish }: Props) {
             </p>
 
             <p className="relative mt-5 text-sm leading-relaxed text-muted">
-              Capture a phrase at any time, in any language, save it to use and learn. No lessons, no streaks. A phrasebook that only
-              contains what you choose to put in it.
+              Capture a phrase at any time, translate it into any language, save it to use and learn. No lessons, no streaks. A phrasebook that only
+              contains what you choose to put in{' '}it.
             </p>
           </div>
         ) : (
           <div className="flex w-full max-w-sm flex-col items-center text-center">
             <h2 className="font-brand text-2xl font-bold tracking-[-0.035em] text-ink">{HOWTO_PAGES[page - 1].title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted">{HOWTO_PAGES[page - 1].body}</p>
+            {toParagraphs(HOWTO_PAGES[page - 1].body).map((paragraph, i) => (
+              <p key={i} className="mt-2 text-sm leading-relaxed text-muted">
+                {paragraph}
+              </p>
+            ))}
             <div className="mt-8 w-full">{HOWTO_PAGES[page - 1].illustration}</div>
           </div>
         )}
       </div>
 
-      <div className="flex shrink-0 flex-col items-center gap-4 px-6 pb-6 pt-2">
-        <div className="flex items-center gap-1.5">
-          {Array.from({ length: TOTAL_PAGES }).map((_, i) => (
-            <span
-              key={i}
-              className={`h-1.5 rounded-full transition-all duration-300 ${i === page ? 'w-6 bg-fabpink' : 'w-1.5 bg-hairline'}`}
-            />
-          ))}
-        </div>
+      <div className="flex shrink-0 flex-col items-center gap-2 px-6 pb-6 pt-2">
+        {page > 0 && (
+          <>
+            <p className="text-xs font-semibold text-muted">
+              {page} / {HOWTO_PAGES.length}
+            </p>
+            <div className="flex items-center gap-1.5">
+              {HOWTO_PAGES.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === page - 1 ? 'w-6 bg-fabpink' : 'w-1.5 bg-hairline'}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="flex w-full items-center justify-center gap-2">
-          {page > 0 && (
-            <button
-              onClick={() => goTo(page - 1)}
-              className="h-11 shrink-0 rounded-full border border-hairline px-5 text-sm font-semibold text-ink hover:bg-surfacehover active:scale-95 transition-all"
-            >
-              Back
-            </button>
+          {page === 0 ? (
+            <>
+              <button
+                onClick={onFinish}
+                className="h-11 shrink-0 rounded-full border-2 border-fabpink px-6 text-sm font-bold text-fabpink active:scale-95 transition-all"
+              >
+                Get Started
+              </button>
+              <button
+                onClick={() => goTo(1)}
+                className="h-11 shrink-0 rounded-full bg-fabpink px-6 text-sm font-bold text-onaccent shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all"
+              >
+                How to Use
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => goTo(page - 1)}
+                className="h-11 shrink-0 rounded-full border border-hairline px-5 text-sm font-semibold text-ink hover:bg-surfacehover active:scale-95 transition-all"
+              >
+                Back
+              </button>
+              <button
+                onClick={() => (isLast ? onFinish() : goTo(page + 1))}
+                className="h-11 shrink-0 rounded-full bg-fabpink px-10 text-sm font-bold text-onaccent shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all"
+              >
+                {isLast ? "Let's go" : 'Next'}
+              </button>
+            </>
           )}
-          <button
-            onClick={() => (isLast ? onFinish() : goTo(page + 1))}
-            className="h-11 shrink-0 rounded-full bg-fabpink px-10 text-sm font-bold text-onaccent shadow-lg shadow-fabpink/20 active:scale-[0.98] transition-all"
-          >
-            {isLast ? "Let's go" : page === 0 ? 'Get started' : 'Next'}
-          </button>
         </div>
       </div>
     </div>

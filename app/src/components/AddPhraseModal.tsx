@@ -143,7 +143,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
             value={english}
             onChange={(e) => setEnglish(e.target.value)}
             className={`w-full rounded-xl px-3 py-2 ${fieldClass} ${speech.supported ? 'pr-10' : ''}`}
-            placeholder={speech.activeId === 'english' ? 'Listening…' : 'e.g. Where is the bathroom?'}
+            placeholder={speech.activeId === 'english' ? 'Listening…' : 'e.g. Nice to meet you?'}
           />
           {speech.supported && (
             <button

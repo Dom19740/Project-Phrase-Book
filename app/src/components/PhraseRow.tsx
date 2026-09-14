@@ -85,7 +85,7 @@ export function PhraseRow({
       onPointerLeave={clearPressTimer}
       onPointerCancel={clearPressTimer}
       onClick={handleClick}
-      title={selectionMode ? 'Tap to select' : 'Tap for options, long-press to edit'}
+      title={selectionMode ? 'Tap to select' : 'Tap for options, or long-press to jump straight to edit'}
     >
       <button
         type="button"
@@ -182,6 +182,7 @@ export function PhraseRow({
           favorite={phrase.favorite}
           onToggleLearned={() => onToggleLearned(phrase.translationId, !phrase.learned)}
           onToggleFavorite={() => onToggleFavorite(phrase.translationId, !phrase.favorite)}
+          onEdit={() => onEdit(phrase)}
           onClose={() => setMenuOpen(false)}
         />
       )}
