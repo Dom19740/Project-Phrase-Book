@@ -85,7 +85,7 @@ const HOWTO_PAGES: HowToPage[] = [
     ),
   },
   {
-    title: 'Filter, sort, and select phrases',
+    title: 'Filter, sort, and select',
     body: "Tap Categories to filter or group your list. Cycle through Learnt or Not Learnt phrases, Select bulk actions, and sort or reorder however you like.",
     illustration: (
       <div className="flex w-full flex-col items-center gap-2">
@@ -114,7 +114,7 @@ const HOWTO_PAGES: HowToPage[] = [
     ),
   },
   {
-    title: 'Like, favorite, or edit a phrase',
+    title: 'Learnt, favorite, or edit',
     body: ['Tap a phrase to mark it learnt, a favorite, or edit it. Long-press for a shortcut straight to editing.',
           "Tap the speaker icon to hear a phrase read aloud. Tap it again right after to hear it again, slower.",],
     illustration: (
@@ -272,7 +272,14 @@ export function OnboardingFlow({ onFinish }: Props) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex h-10 shrink-0 justify-end px-4 pt-3">
+      <div className="flex h-10 shrink-0 items-center justify-between px-4 pt-3">
+        {page > 0 ? (
+          <p className="text-xs font-semibold text-muted">
+            {page} / {HOWTO_PAGES.length}
+          </p>
+        ) : (
+          <span />
+        )}
         {page > 0 && !isLast && (
           <button
             onClick={onFinish}
@@ -320,19 +327,14 @@ export function OnboardingFlow({ onFinish }: Props) {
 
       <div className="flex shrink-0 flex-col items-center gap-2 px-6 pb-6 pt-2">
         {page > 0 && (
-          <>
-            <p className="text-xs font-semibold text-muted">
-              {page} / {HOWTO_PAGES.length}
-            </p>
-            <div className="flex items-center gap-1.5">
-              {HOWTO_PAGES.map((_, i) => (
-                <span
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${i === page - 1 ? 'w-6 bg-fabpink' : 'w-1.5 bg-hairline'}`}
-                />
-              ))}
-            </div>
-          </>
+          <div className="flex items-center gap-1.5">
+            {HOWTO_PAGES.map((_, i) => (
+              <span
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-300 ${i === page - 1 ? 'w-6 bg-fabpink' : 'w-1.5 bg-hairline'}`}
+              />
+            ))}
+          </div>
         )}
 
         <div className="flex w-full items-center justify-center gap-2">
