@@ -378,7 +378,7 @@
     <div class="wrap">
       <div>
         <p class="eyebrow">Built for travel, not for lessons</p>
-        <p>Most phrasebooks are full of generic phrases you never really need. Travel Chatter isn't - every phrase you add is one you chose. Type a phrase you want to learn in English and Travel Chatter translates it, or record the translation directly from a local. Edit it, pick a category, mark it as a favorite, and have it at hand whenever you need it.</p>
+        <p>Most phrasebooks are full of generic phrases you never really need. Travel Chatter isn't - every phrase you add is one you choose. Type a phrase you want to learn in English and Travel Chatter translates it, or record the translation directly from a local. Edit it, pick a category, mark it as a favorite, and have it at hand whenever you need it.</p>
       </div>
       <div class="shot"><img src="assets/shots/shot-2.jpg" alt="Adding a phrase in Travel Chatter, with translation suggestions" width="380" height="675" loading="lazy"></div>
     </div>
@@ -465,8 +465,8 @@
       <h2>Questions, answered</h2>
       <p style="max-width:600px">If you're wondering whether Travel Chatter fits how you travel, here's the short version.</p>
       <div class="faq-list">
-        <div class="faq-item open">
-          <button class="faq-q" aria-expanded="true" aria-controls="faq-a-1">
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-1">
             <span>Is Travel Chatter free?</span>
             <span class="faq-icon" aria-hidden="true">+</span>
           </button>
@@ -577,19 +577,6 @@
       else if (e.key === 'ArrowRight') showNext();
       else if (e.key === 'ArrowLeft') showPrev();
     });
-
-    var touchStartX = null;
-    lightbox.addEventListener('touchstart', function (e) {
-      touchStartX = e.changedTouches[0].clientX;
-    }, { passive: true });
-    lightbox.addEventListener('touchend', function (e) {
-      if (touchStartX === null) return;
-      var deltaX = e.changedTouches[0].clientX - touchStartX;
-      touchStartX = null;
-      var SWIPE_THRESHOLD = 40;
-      if (deltaX > SWIPE_THRESHOLD) showPrev();
-      else if (deltaX < -SWIPE_THRESHOLD) showNext();
-    }, { passive: true });
   })();
 
   document.querySelectorAll('.faq-item').forEach(function (item) {

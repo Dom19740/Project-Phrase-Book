@@ -18,7 +18,7 @@ WORKS WHERE YOU ARE
 
 Your phrasebook lives on your device. Once a phrase is translated, you can read it, search it, and hear it spoken with no signal and no roaming - exactly when you need it most. Access your favourite or not learnt phrases directly from the homescreen widget.
 
-LISTEN, AT YOUR OWN PACE
+LISTEN, AT YOUR OWN PACEz
 
 Every phrase can be spoken aloud with text-to-speech. Tap a phrase again within a few seconds and it repeats more slowly, so you can actually catch the pronunciation.
 
