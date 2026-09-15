@@ -142,22 +142,34 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
             autoFocus
             value={english}
             onChange={(e) => setEnglish(e.target.value)}
-            className={`w-full rounded-xl px-3 py-2 ${fieldClass} ${speech.supported ? 'pr-10' : ''}`}
+            className={`w-full rounded-xl px-3 py-2 ${fieldClass} ${english && speech.supported ? 'pr-16' : english || speech.supported ? 'pr-10' : ''}`}
             placeholder={speech.activeId === 'english' ? 'Listening…' : 'e.g. Nice to meet you?'}
           />
-          {speech.supported && (
-            <button
-              type="button"
-              onClick={() => (speech.activeId === 'english' ? speech.stop() : speech.start('english', 'en-US', setEnglish))}
-              aria-label={speech.activeId === 'english' ? 'Stop recording' : 'Record English phrase'}
-              title={speech.activeId === 'english' ? 'Stop recording' : 'Record'}
-              className={`absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-all active:scale-90 ${
-                speech.activeId === 'english' ? 'text-red-500 animate-pulse' : 'text-muted hover:bg-surfacehover'
-              }`}
-            >
-              <Mic size={16} strokeWidth={2} />
-            </button>
-          )}
+          <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+            {english && (
+              <button
+                type="button"
+                onClick={() => setEnglish('')}
+                aria-label="Clear English phrase"
+                className="rounded-full p-1.5 text-muted hover:bg-surfacehover active:scale-90 transition-all"
+              >
+                <X size={16} strokeWidth={2} />
+              </button>
+            )}
+            {speech.supported && (
+              <button
+                type="button"
+                onClick={() => (speech.activeId === 'english' ? speech.stop() : speech.start('english', 'en-US', setEnglish))}
+                aria-label={speech.activeId === 'english' ? 'Stop recording' : 'Record English phrase'}
+                title={speech.activeId === 'english' ? 'Stop recording' : 'Record'}
+                className={`rounded-full p-1.5 transition-all active:scale-90 ${
+                  speech.activeId === 'english' ? 'text-red-500 animate-pulse' : 'text-muted hover:bg-surfacehover'
+                }`}
+              >
+                <Mic size={16} strokeWidth={2} />
+              </button>
+            )}
+          </div>
         </div>
 
         <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Translate into</label>
@@ -241,26 +253,40 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
                     <input
                       value={translationText[lang.id] ?? ''}
                       onChange={(e) => setTranslationText((prev) => ({ ...prev, [lang.id]: e.target.value }))}
-                      className={`w-full rounded-xl px-3 py-2 text-sm ${fieldClass} ${speech.supported ? 'pr-9' : ''}`}
+                      className={`w-full rounded-xl px-3 py-2 text-sm ${fieldClass} ${
+                        translationText[lang.id] && speech.supported ? 'pr-16' : translationText[lang.id] || speech.supported ? 'pr-9' : ''
+                      }`}
                       placeholder={speech.activeId === micId ? 'Listening…' : 'Type or record translation'}
                     />
-                    {speech.supported && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          speech.activeId === micId
-                            ? speech.stop()
-                            : speech.start(micId, getSpeechLocale(lang.code), (text) => setTranslationText((prev) => ({ ...prev, [lang.id]: text })))
-                        }
-                        aria-label={speech.activeId === micId ? 'Stop recording' : `Record ${lang.name} translation`}
-                        title={speech.activeId === micId ? 'Stop recording' : 'Record'}
-                        className={`absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-all active:scale-90 ${
-                          speech.activeId === micId ? 'text-red-500 animate-pulse' : 'text-muted hover:bg-surfacehover'
-                        }`}
-                      >
-                        <Mic size={14} strokeWidth={2} />
-                      </button>
-                    )}
+                    <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+                      {translationText[lang.id] && (
+                        <button
+                          type="button"
+                          onClick={() => setTranslationText((prev) => ({ ...prev, [lang.id]: '' }))}
+                          aria-label={`Clear ${lang.name} translation`}
+                          className="rounded-full p-1.5 text-muted hover:bg-surfacehover active:scale-90 transition-all"
+                        >
+                          <X size={14} strokeWidth={2} />
+                        </button>
+                      )}
+                      {speech.supported && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            speech.activeId === micId
+                              ? speech.stop()
+                              : speech.start(micId, getSpeechLocale(lang.code), (text) => setTranslationText((prev) => ({ ...prev, [lang.id]: text })))
+                          }
+                          aria-label={speech.activeId === micId ? 'Stop recording' : `Record ${lang.name} translation`}
+                          title={speech.activeId === micId ? 'Stop recording' : 'Record'}
+                          className={`rounded-full p-1.5 transition-all active:scale-90 ${
+                            speech.activeId === micId ? 'text-red-500 animate-pulse' : 'text-muted hover:bg-surfacehover'
+                          }`}
+                        >
+                          <Mic size={14} strokeWidth={2} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {alternativesError[lang.id] && <p className="text-xs text-red-400 mt-1">{alternativesError[lang.id]}</p>}
                   {alternatives[lang.id] && alternatives[lang.id].length > 1 && (
