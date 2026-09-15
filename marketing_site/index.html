@@ -190,6 +190,37 @@
     max-height: 100%;
     border-radius: 16px;
     box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .lightbox-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.15s ease, background 0.15s ease;
+    z-index: 1001;
+  }
+  .lightbox-arrow:hover { opacity: 1; background: rgba(0,0,0,0.5); }
+  .lightbox-arrow.prev { left: 16px; }
+  .lightbox-arrow.next { right: 16px; }
+  @media (max-width: 600px) {
+    .lightbox-arrow { width: 36px; height: 36px; font-size: 16px; }
+    .lightbox-arrow.prev { left: 8px; }
+    .lightbox-arrow.next { right: 8px; }
   }
   @media (max-width: 860px) {
     .hero { padding: 0; }
@@ -498,16 +529,31 @@
 <div data-include="footer"></div>
 
 <div class="lightbox" id="lightbox" aria-hidden="true">
+  <button type="button" class="lightbox-arrow prev" id="lightbox-prev" aria-label="Previous screenshot">&#10094;</button>
   <img id="lightbox-img" src="" alt="">
+  <button type="button" class="lightbox-arrow next" id="lightbox-next" aria-label="Next screenshot">&#10095;</button>
 </div>
 
 <script>
   (function () {
     var lightbox = document.getElementById('lightbox');
     var lightboxImg = document.getElementById('lightbox-img');
-    function openLightbox(img) {
+    var prevBtn = document.getElementById('lightbox-prev');
+    var nextBtn = document.getElementById('lightbox-next');
+    var gallery = Array.prototype.slice.call(document.querySelectorAll('.hero-visual img, .feature .shot img'));
+    var currentIndex = 0;
+
+    function showImage(index) {
+      currentIndex = (index + gallery.length) % gallery.length;
+      var img = gallery[currentIndex];
       lightboxImg.src = img.src;
       lightboxImg.alt = img.alt;
+      var showArrows = gallery.length > 1;
+      prevBtn.style.display = showArrows ? 'flex' : 'none';
+      nextBtn.style.display = showArrows ? 'flex' : 'none';
+    }
+    function openLightbox(index) {
+      showImage(index);
       lightbox.classList.add('open');
       lightbox.setAttribute('aria-hidden', 'false');
     }
@@ -515,13 +561,35 @@
       lightbox.classList.remove('open');
       lightbox.setAttribute('aria-hidden', 'true');
     }
-    document.querySelectorAll('.hero-visual img, .feature .shot img').forEach(function (img) {
-      img.addEventListener('click', function () { openLightbox(img); });
+    function showNext() { showImage(currentIndex + 1); }
+    function showPrev() { showImage(currentIndex - 1); }
+
+    gallery.forEach(function (img, index) {
+      img.addEventListener('click', function () { openLightbox(index); });
     });
     lightbox.addEventListener('click', closeLightbox);
+    prevBtn.addEventListener('click', function (e) { e.stopPropagation(); showPrev(); });
+    nextBtn.addEventListener('click', function (e) { e.stopPropagation(); showNext(); });
+    lightboxImg.addEventListener('click', function (e) { e.stopPropagation(); });
     document.addEventListener('keydown', function (e) {
+      if (!lightbox.classList.contains('open')) return;
       if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowRight') showNext();
+      else if (e.key === 'ArrowLeft') showPrev();
     });
+
+    var touchStartX = null;
+    lightbox.addEventListener('touchstart', function (e) {
+      touchStartX = e.changedTouches[0].clientX;
+    }, { passive: true });
+    lightbox.addEventListener('touchend', function (e) {
+      if (touchStartX === null) return;
+      var deltaX = e.changedTouches[0].clientX - touchStartX;
+      touchStartX = null;
+      var SWIPE_THRESHOLD = 40;
+      if (deltaX > SWIPE_THRESHOLD) showPrev();
+      else if (deltaX < -SWIPE_THRESHOLD) showNext();
+    }, { passive: true });
   })();
 
   document.querySelectorAll('.faq-item').forEach(function (item) {
