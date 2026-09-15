@@ -30,7 +30,15 @@ import { backfillSeedCategories } from '../db/seed'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { exportSnapshot, importSnapshot, isValidBackupSnapshot, type BackupSnapshot } from '../db/backup'
 import { onMutation } from '../db/client'
-import { scheduleAutoBackup } from '../lib/autoBackup'
+import {
+  BACKUP_REMINDER_THRESHOLD,
+  getChangesSinceBackup,
+  getLastBackupAt,
+  onBackupStatusChange,
+  recordBackupSuccess,
+  recordChangeSinceBackup,
+  scheduleAutoBackup,
+} from '../lib/autoBackup'
 import { refreshWidget } from '../lib/widgetRefresh'
 import { readBackupFromPickedLocation, readCsvFromPickedLocation } from '../lib/backupFile'
 import { chooseBackupFolder, type BackupFileInfo, listBackupFiles, readBackupFile, writeManualBackupFile } from '../lib/backupTarget'
@@ -77,6 +85,7 @@ interface PhraseBookContextValue {
   addStartupPhrases: (languageId: number, englishKeys?: string[]) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
+  needsBackupReminder: boolean
   backUpToFile: () => Promise<string>
   chooseBackupFolder: () => Promise<string>
   listBackups: () => Promise<BackupFileInfo[]>
@@ -113,6 +122,9 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const [phrases, setPhrases] = useState<PhraseListItem[]>([])
   const [backgroundTranslation, setBackgroundTranslation] = useState<{ languageId: number; languageName: string } | null>(null)
   const [translationIncomplete, setTranslationIncomplete] = useState<{ languageName: string; count: number } | null>(null)
+  const [lastBackupAt, setLastBackupAt] = useState(getLastBackupAt)
+  const [changesSinceBackup, setChangesSinceBackup] = useState(getChangesSinceBackup)
+  const needsBackupReminder = languages.length > 0 && (lastBackupAt == null || changesSinceBackup >= BACKUP_REMINDER_THRESHOLD)
 
   // Background translation runs detached from React's render cycle, so it needs the *current*
   // active language at the time each chunk finishes, not the value closed over when it started.
@@ -138,8 +150,18 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     onMutation(scheduleAutoBackup)
+    onMutation(recordChangeSinceBackup)
     onMutation(refreshWidget)
   }, [])
+
+  useEffect(
+    () =>
+      onBackupStatusChange(() => {
+        setLastBackupAt(getLastBackupAt())
+        setChangesSinceBackup(getChangesSinceBackup())
+      }),
+    [],
+  )
 
   useEffect(() => {
     ;(async () => {
@@ -336,7 +358,9 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   const backUpToFile = useCallback(async (): Promise<string> => {
     const snapshot = await exportSnapshot()
-    return await writeManualBackupFile(JSON.stringify(snapshot, null, 2))
+    const name = await writeManualBackupFile(JSON.stringify(snapshot, null, 2))
+    recordBackupSuccess()
+    return name
   }, [])
 
   const chooseBackupFolderAction = useCallback((): Promise<string> => chooseBackupFolder(), [])
@@ -565,6 +589,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       addStartupPhrases,
       removeLanguage,
       getLanguagePhrases,
+      needsBackupReminder,
       backUpToFile,
       chooseBackupFolder: chooseBackupFolderAction,
       listBackups,
@@ -589,6 +614,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       reorder,
       addPhrase,
       editPhrase,
+      needsBackupReminder,
       backUpToFile,
       chooseBackupFolderAction,
       listBackups,

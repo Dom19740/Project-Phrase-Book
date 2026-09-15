@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BookOpen, Layers, Loader2, Menu, Moon, Plus, Save, Smartphone, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
+import { BackupReminderBanner } from './components/BackupReminderBanner'
 import { EditPhraseModal } from './components/EditPhraseModal'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { FlashCardsModal } from './components/FlashCardsModal'
@@ -88,6 +89,7 @@ function Shell() {
     addStartupPhrases,
     removeLanguage,
     getLanguagePhrases,
+    needsBackupReminder,
     backUpToFile,
     chooseBackupFolder,
     listBackups,
@@ -118,6 +120,23 @@ function Shell() {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const { platform: installPlatform, canPromptNatively, promptInstall } = useInstallPrompt()
   const canOfferInstall = installPlatform === 'ios' || (installPlatform === 'android' && canPromptNatively)
+
+  // Dismissing only snoozes the banner for this session - it comes back next launch if the
+  // phrasebook is still unbacked-up, rather than being silenced forever after one tap.
+  const [backupReminderDismissed, setBackupReminderDismissed] = useState(false)
+  const [backingUp, setBackingUp] = useState(false)
+  const [backupError, setBackupError] = useState<string | null>(null)
+
+  async function handleBackUpNow() {
+    setBackingUp(true)
+    setBackupError(null)
+    try {
+      await backUpToFile()
+    } catch (err) {
+      setBackupError(err instanceof Error ? err.message : 'Backup failed.')
+    }
+    setBackingUp(false)
+  }
 
   function finishOnboarding() {
     const wasFirstOnboarding = !onboardingSeen
@@ -278,6 +297,17 @@ function Shell() {
           </div>
         }
       />
+
+      {needsBackupReminder && !backupReminderDismissed && (
+        <>
+          <BackupReminderBanner
+            onBackUp={handleBackUpNow}
+            onDismiss={() => setBackupReminderDismissed(true)}
+            busy={backingUp}
+          />
+          {backupError && <p className="bg-surface px-4 pb-2 text-xs text-red-500">{backupError}</p>}
+        </>
+      )}
 
       <main className="flex-1 overflow-hidden">
         {languages.length === 0 ? (
