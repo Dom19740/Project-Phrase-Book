@@ -37,8 +37,8 @@ final class PhraseRemoteViewsFactory implements RemoteViewsService.RemoteViewsFa
             return;
         }
         // The RemoteViewsService intent this factory was constructed with carries the language code
-        // as an extra, but Android keys that service binding by Intent.filterEquals() — which ignores
-        // extras and only compares the (constant, per-widget) data URI — so the system reuses this
+        // as an extra, but Android keys that service binding by Intent.filterEquals() - which ignores
+        // extras and only compares the (constant, per-widget) data URI - so the system reuses this
         // same factory instance across language switches and never re-delivers a fresh intent. Reading
         // the language fresh here (same lookup the phrase query below already needs) is what keeps
         // tap-to-speak using the language that's actually on screen instead of whatever was first bound.

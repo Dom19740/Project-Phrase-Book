@@ -4,7 +4,7 @@ export interface LanguageOption {
 }
 
 // Curated list of languages a traveler is likely to want, with BCP-47 region variants
-// for the handful where "the language" alone is ambiguous (e.g. Portuguese, Spanish) —
+// for the handful where "the language" alone is ambiguous (e.g. Portuguese, Spanish) -
 // picking the wrong one silently produces the wrong dialect from the translator.
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: 'af', name: 'Afrikaans' },

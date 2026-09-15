@@ -33,7 +33,7 @@ function getSystemTheme(): Theme {
 }
 
 /** Tracks the OS-level light/dark preference live, so the app keeps following it for anyone who
- * hasn't picked a theme of their own — including when the device's setting changes after launch
+ * hasn't picked a theme of their own - including when the device's setting changes after launch
  * (e.g. an evening auto dark-mode schedule), not just at first open. */
 function useSystemTheme(): Theme {
   const [systemTheme, setSystemTheme] = useState<Theme>(getSystemTheme)
@@ -264,10 +264,10 @@ function Shell() {
             </p>
           </div>
         ) : backgroundTranslation?.languageId === activeLanguageId && phrases.length === 0 ? (
-          // Nothing to show yet for this language at all — block briefly rather than flash an
+          // Nothing to show yet for this language at all - block briefly rather than flash an
           // empty list. Once there's at least one phrase row (even blank, filling in live as
           // translations land), show it straight away instead of hiding it behind a spinner for
-          // however long translation takes — that can now run to several minutes of retries, and
+          // however long translation takes - that can now run to several minutes of retries, and
           // there's no reason to block on it when there's already something real to look at.
           <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
             <Loader2 size={28} strokeWidth={2.5} className="animate-spin text-fabpink" />

@@ -40,7 +40,7 @@ test('translateWithGemini consumes exactly one budget unit for a normal successf
   assert.equal(incrMock.mock.calls.length, 1)
 })
 
-test('a retried call consumes a second budget unit — the retry cannot bypass the budget', async () => {
+test('a retried call consumes a second budget unit - the retry cannot bypass the budget', async () => {
   process.env.DAILY_TRANSLATION_REQUEST_LIMIT = '1000'
   const incrMock = mock.method(redisOps, 'incr', async () => 1)
   mock.method(redisOps, 'expire', async () => 1)
@@ -70,7 +70,7 @@ test('if the budget runs out between the first attempt and the retry, the retry 
   let incrCalls = 0
   mock.method(redisOps, 'incr', async () => {
     incrCalls++
-    return incrCalls // 1st check: 1 (within budget of 1) — 2nd check (the retry): 2 (over budget)
+    return incrCalls // 1st check: 1 (within budget of 1) - 2nd check (the retry): 2 (over budget)
   })
   mock.method(redisOps, 'expire', async () => 1)
 
@@ -85,7 +85,7 @@ test('if the budget runs out between the first attempt and the retry, the retry 
   assert.equal(incrCalls, 2, 'the budget was still checked before the retry, and blocked it')
 })
 
-test('translateBulkWithGemini spanning two batches consumes two budget units — one per actual Gemini call', async () => {
+test('translateBulkWithGemini spanning two batches consumes two budget units - one per actual Gemini call', async () => {
   process.env.DAILY_TRANSLATION_REQUEST_LIMIT = '1000'
   const incrMock = mock.method(redisOps, 'incr', async () => 1)
   mock.method(redisOps, 'expire', async () => 1)
@@ -116,7 +116,7 @@ test('translateBulkWithGemini stops at the batch where the budget runs out, neve
   let incrCalls = 0
   mock.method(redisOps, 'incr', async () => {
     incrCalls++
-    return incrCalls // batch 1: 1 (allowed) — batch 2: 2 (blocked)
+    return incrCalls // batch 1: 1 (allowed) - batch 2: 2 (blocked)
   })
   mock.method(redisOps, 'expire', async () => 1)
 

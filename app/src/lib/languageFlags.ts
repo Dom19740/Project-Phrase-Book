@@ -101,7 +101,7 @@ const LANGUAGE_TO_COUNTRY: Record<string, string> = {
   zh: 'CN',
 }
 
-/** Codes with no sensible single-country flag — shown with a generic globe instead. */
+/** Codes with no sensible single-country flag - shown with a generic globe instead. */
 const NO_FLAG_CODES = new Set(['es-419'])
 
 function countryCodeToFlag(countryCode: string): string {

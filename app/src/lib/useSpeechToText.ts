@@ -58,7 +58,7 @@ export function useSpeechToText() {
       if (transcript) onResult(transcript)
     }
     recognition.onerror = (event) => {
-      setError(event.error === 'not-allowed' ? 'Microphone access denied' : 'Could not hear you — try again')
+      setError(event.error === 'not-allowed' ? 'Microphone access denied' : 'Could not hear you - try again')
     }
     recognition.onend = () => setActiveId((current) => (current === id ? null : current))
 

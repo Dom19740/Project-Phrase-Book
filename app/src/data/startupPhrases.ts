@@ -4,7 +4,7 @@ export interface StartupPhrase {
 }
 
 /**
- * Curated starter pack offered after adding the first language — the phrases the user had
+ * Curated starter pack offered after adding the first language - the phrases the user had
  * favourited in their Vietnamese phrase book. Translated into whichever language is added
  * automatically after being created.
  */

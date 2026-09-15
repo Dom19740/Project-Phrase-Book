@@ -7,7 +7,7 @@ import { getClientIp } from '../lib/clientIp.js'
 import { classifyGeminiError, guardRequest, sendGuardFailure } from '../lib/guard.js'
 import { validateTranslateBody } from '../lib/limits.js'
 
-// Extend as new languages are added to the app — Gemini translates better with a
+// Extend as new languages are added to the app - Gemini translates better with a
 // language name than a bare ISO code.
 const LANGUAGE_NAMES: Record<string, string> = {
   en: 'English',

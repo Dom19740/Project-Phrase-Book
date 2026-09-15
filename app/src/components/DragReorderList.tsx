@@ -14,7 +14,7 @@ interface Props<T> {
 
 const DEFAULT_ROW_HEIGHT = 56
 
-/** A drag-to-reorder list, scoped to exactly the items passed in — nothing can be dragged out of
+/** A drag-to-reorder list, scoped to exactly the items passed in - nothing can be dragged out of
  * it, which is what keeps a phrase inside its category/Learnt/Favourites bucket. Position is
  * tracked as slots moved from the drag's start (not incrementally per-move), so fast drags can't
  * drift out of sync with the pointer. */
@@ -25,7 +25,7 @@ export function DragReorderList<T>({ items, getId, onReorder, renderItem, classN
 
   useEffect(() => {
     setOrder(items.map(getId))
-    // Re-sync whenever the underlying items change (sort mode, filters, edits) — only our own
+    // Re-sync whenever the underlying items change (sort mode, filters, edits) - only our own
     // in-progress drag should override this.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items])
@@ -36,7 +36,7 @@ export function DragReorderList<T>({ items, getId, onReorder, renderItem, classN
   const [draggingId, setDraggingId] = useState<number | null>(null)
   const [dragOffset, setDragOffset] = useState(0)
 
-  /** Distance from one row's top to the next, gap included — the real per-slot distance, not
+  /** Distance from one row's top to the next, gap included - the real per-slot distance, not
    * just the row's own height (which under-measured it and made the drag over-trigger). */
   function measureSlotHeight(id: number): number {
     const rows = orderRef.current
@@ -67,7 +67,7 @@ export function DragReorderList<T>({ items, getId, onReorder, renderItem, classN
     const slots = Math.round(deltaY / drag.rowHeight)
     const targetIndex = Math.min(Math.max(drag.startIndex + slots, 0), orderRef.current.length - 1)
     // Once a slot's worth of movement has been "spent" reordering the row into its new spot,
-    // only the leftover sub-slot distance should still show as a visual offset — otherwise the
+    // only the leftover sub-slot distance should still show as a visual offset - otherwise the
     // row's new position (from the reorder) and the full raw pointer delta both apply, so it
     // overshoots further with every slot crossed.
     const consumedSlots = targetIndex - drag.startIndex

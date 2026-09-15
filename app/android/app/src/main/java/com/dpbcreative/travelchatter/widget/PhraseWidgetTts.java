@@ -17,7 +17,7 @@ import java.util.Queue;
 /**
  * Native counterpart to app/src/lib/tts.ts + useSpeakRate.ts for the widget, which has no access
  * to the WebView/JS layer. Same repeat-within-5s-plays-slower rule, same per-language locale
- * overrides — keep both in sync.
+ * overrides - keep both in sync.
  */
 final class PhraseWidgetTts {
 
@@ -115,7 +115,7 @@ final class PhraseWidgetTts {
         // Matches @capacitor-community/text-to-speech's Android side exactly (same Locale.forLanguageTag
         // + unconditional setLanguage) so the widget reads phrases in the same dialect as the app. The
         // previous isLanguageAvailable() gate silently skipped setLanguage for anything below
-        // LANG_AVAILABLE, leaving whatever locale a prior utterance had set — which is what made the
+        // LANG_AVAILABLE, leaving whatever locale a prior utterance had set - which is what made the
         // widget mispronounce phrases or read them in the wrong dialect.
         Locale locale = localeTag != null ? Locale.forLanguageTag(localeTag) : Locale.getDefault();
         tts.setLanguage(locale);

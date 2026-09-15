@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Home-screen widget: shows one language's favorite or not-learnt phrases, with buttons on the
  * widget itself to cycle the language, flip the favorites/not-learnt filter, and speak a phrase
- * aloud — no need to open the app. State for each placed widget (which language, which filter)
+ * aloud - no need to open the app. State for each placed widget (which language, which filter)
  * lives in PhraseWidgetPrefs, keyed by appWidgetId so multiple widgets can each show something
  * different.
  */
@@ -112,7 +112,7 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
             Intent listIntent = new Intent(context, PhraseWidgetService.class);
             listIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
             // Distinct data URIs per widget so the widget host doesn't reuse one factory/cache for every
-            // instance — but it's still constant across language switches for a given widget, which is
+            // instance - but it's still constant across language switches for a given widget, which is
             // why PhraseRemoteViewsFactory re-resolves the language itself in onDataSetChanged rather
             // than trusting an extra on this intent (the system won't redeliver it on reuse).
             listIntent.setData(Uri.parse("phrasewidget://widget/" + appWidgetId));
@@ -143,7 +143,7 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
         for (PhraseWidgetDb.LanguageRow language : languages) {
             if (language.id == languageId) return language;
         }
-        // The remembered language was deleted since — fall back to the first one and remember that instead.
+        // The remembered language was deleted since - fall back to the first one and remember that instead.
         PhraseWidgetDb.LanguageRow fallback = languages.get(0);
         PhraseWidgetPrefs.setLanguageId(context, appWidgetId, fallback.id);
         return fallback;
@@ -165,7 +165,7 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
                 context, appWidgetId * 10 + 1, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    /** Template for the phrase list's row clicks — each row supplies the phrase-specific extras via its fillInIntent. */
+    /** Template for the phrase list's row clicks - each row supplies the phrase-specific extras via its fillInIntent. */
     private static PendingIntent speakPendingIntentTemplate(Context context, int appWidgetId) {
         Intent intent = new Intent(context, PhraseWidgetProvider.class);
         intent.setAction(ACTION_SPEAK_PHRASE);

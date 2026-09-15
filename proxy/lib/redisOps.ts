@@ -5,7 +5,7 @@ import { redis } from './redis.js'
  * "auto pipelining" by default (`enableAutoPipelining: true`), which wraps the client
  * in an internal Proxy (`createAutoPipelineProxy`) that regenerates each command
  * function on every property access. Directly monkey-patching `redis.get`/`redis.incr`/etc.
- * in tests silently no-ops as a result — the Proxy's `get` trap ignores whatever was
+ * in tests silently no-ops as a result - the Proxy's `get` trap ignores whatever was
  * assigned. Routing all raw Redis calls through this plain object keeps them reliably
  * mockable without changing any production behavior.
  */

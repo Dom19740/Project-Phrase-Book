@@ -2,7 +2,7 @@ import type { VercelRequest } from '@vercel/node'
 
 /**
  * Vercel's edge network sets `x-forwarded-for` itself and does not forward whatever a client
- * claims in that header — "we currently overwrite the X-Forwarded-For header and do not forward
+ * claims in that header - "we currently overwrite the X-Forwarded-For header and do not forward
  * external IPs. This restriction is in place to prevent IP spoofing" (Vercel request-headers docs).
  * `x-real-ip` is documented as identical. Neither can be trusted this way behind a non-Vercel
  * proxy layered in front of Vercel, but this app has none.

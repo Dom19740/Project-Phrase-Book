@@ -10,7 +10,7 @@ interface Props {
   languageCode: string
   /** True while this phrase's translation is still being generated in the background (new-language auto-translate). */
   translating?: boolean
-  /** Show the translation before the English text — used when the list is sorted alphabetically by translation. */
+  /** Show the translation before the English text - used when the list is sorted alphabetically by translation. */
   translationFirst?: boolean
   onToggleLearned: (id: number, learned: boolean) => void
   onToggleFavorite: (id: number, favorite: boolean) => void
@@ -18,7 +18,7 @@ interface Props {
   selectionMode?: boolean
   selected?: boolean
   onToggleSelect?: (translationId: number) => void
-  /** Present when this row can be drag-reordered — wire its onPointerDown to the grip handle. */
+  /** Present when this row can be drag-reordered - wire its onPointerDown to the grip handle. */
   dragHandleProps?: { onPointerDown: (e: React.PointerEvent) => void }
   dragging?: boolean
 }

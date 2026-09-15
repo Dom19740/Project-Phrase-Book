@@ -91,12 +91,12 @@ interface PhraseBookContextValue {
 /** Phrases translated per request when auto-translating a newly added language in the background. */
 const TRANSLATE_CHUNK_SIZE = 20
 
-/** Wait before retrying a failed chunk — a failure is often a rate limit, and retrying instantly just hits it again. */
+/** Wait before retrying a failed chunk - a failure is often a rate limit, and retrying instantly just hits it again. */
 const TRANSLATE_RETRY_DELAY_MS = 5000
 
 /**
  * How many passes to make before giving up on a chunk. A single retry (the old default) isn't
- * enough for a big import — a large batch of phrases routinely trips the proxy's per-device bulk
+ * enough for a big import - a large batch of phrases routinely trips the proxy's per-device bulk
  * rate limit, which doesn't clear in one 5s wait, so most of the list was ending up permanently
  * untranslated after just one retry. translateInChunksWithRetry backs off exponentially (capped)
  * between passes, so this rides out a rate limit lasting a few minutes instead of a few seconds.
@@ -175,7 +175,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   )
 
   const reorder = useCallback(async (orderedTranslationIds: number[]) => {
-    // Apply the new order to local state immediately — waiting on the DB write and a full
+    // Apply the new order to local state immediately - waiting on the DB write and a full
     // refetch would otherwise show a one-frame flash back to the old order right after the drop.
     const indexById = new Map(orderedTranslationIds.map((id, index) => [id, index]))
     setPhrases((prev) => prev.map((p) => (indexById.has(p.translationId) ? { ...p, sortOrder: indexById.get(p.translationId)! } : p)))
@@ -188,7 +188,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       let finalCategory = categoryName
 
       // Languages the user already previewed/edited a translation for (via "Suggest") don't need
-      // another round-trip — only the rest get auto-translated.
+      // another round-trip - only the rest get auto-translated.
       const manualLanguageIds = new Set((manualTranslations ?? []).map((t) => t.languageId))
       const targetLanguages = languages.filter((l) => languageIds.includes(l.id) && !manualLanguageIds.has(l.id))
 
@@ -203,7 +203,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
           )
 
         try {
-          // One retry before giving up — a single transient failure (a slow response, a
+          // One retry before giving up - a single transient failure (a slow response, a
           // one-off network blip) shouldn't leave the phrase untranslated when trying again
           // immediately would likely have worked, same reasoning as the Add Language retry.
           const result = await callTranslate().catch((err) => {
@@ -217,14 +217,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
           )
           if (!categoryName) finalCategory = result.suggestedCategory
         } catch (err) {
-          // Proxy unreachable/not configured yet — still create the phrase (blank
+          // Proxy unreachable/not configured yet - still create the phrase (blank
           // translations to fill in manually) rather than blocking the user.
           console.error('Auto-translate failed twice, adding phrase untranslated:', err)
         }
       }
 
       // Only the chosen languages get a row at all (blank for any that didn't get an automatic
-      // translation) — a language not selected here simply won't have this phrase.
+      // translation) - a language not selected here simply won't have this phrase.
       await addPhraseConcept({ english, categoryName: finalCategory, translations, languageIds })
       await refreshCategories()
       await refreshPhrases()
@@ -325,7 +325,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   )
 
   const reorderCategories = useCallback(async (orderedCategoryIds: number[]) => {
-    // Apply the new order to local state immediately — waiting on the DB write and a full
+    // Apply the new order to local state immediately - waiting on the DB write and a full
     // refetch would otherwise show a one-frame flash back to the old order right after the drop.
     const indexById = new Map(orderedCategoryIds.map((id, index) => [id, index]))
     setCategories((prev) =>
@@ -386,7 +386,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   /**
    * Fills in blank translations for a set of phrase concepts by auto-translating them in the
-   * background, chunked with retry — the same flow whether the concepts came from adding a new
+   * background, chunked with retry - the same flow whether the concepts came from adding a new
    * language, starter phrases, or a CSV import whose Translation column was empty or partial.
    */
   const runBackgroundTranslation = useCallback(
@@ -449,7 +449,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       const added = await copyPhrasesToLanguages(phraseConceptIds, targetLanguageIds)
       await refreshPhrases()
 
-      // Auto-translate just the rows that were actually newly created (blank) — a phrase already
+      // Auto-translate just the rows that were actually newly created (blank) - a phrase already
       // present in a target language is left as-is rather than re-translated over.
       const conceptsByLanguage = new Map<number, { id: number; english: string }[]>()
       for (const entry of added) {
@@ -478,14 +478,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       setPhrases(await getPhraseList(lang.id))
 
       // A caller can restrict which phrases get carried into this language at all (e.g. the ones the
-      // user picked to "copy" from an existing language's phrasebook) — addLanguage() above already
+      // user picked to "copy" from an existing language's phrasebook) - addLanguage() above already
       // only created rows for those, so auto-translation is restricted to the same set.
       let concepts = await getAllPhraseConcepts()
       if (includeConceptIds) {
         const include = new Set(includeConceptIds)
         concepts = concepts.filter((c) => include.has(c.id))
       }
-      // Translating everything can take a while (many phrases, a slow/mobile connection) — run it
+      // Translating everything can take a while (many phrases, a slow/mobile connection) - run it
       // in the background instead of blocking the caller, so the "add language" modal can close
       // right away.
       runBackgroundTranslation(lang.id, lang.code, lang.name, concepts)

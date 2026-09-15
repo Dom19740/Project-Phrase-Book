@@ -7,15 +7,15 @@ import { isTranslationDisabled } from './killSwitch.js'
 export interface GuardFailure {
   status: number
   error: string
-  /** Only set for GeminiRateLimitError — how long Gemini itself says its quota needs to reset. */
+  /** Only set for GeminiRateLimitError - how long Gemini itself says its quota needs to reset. */
   retryAfterMs?: number
 }
 
 /**
- * Kill switch + device/IP(+bulk) rate limits — the checks every translate endpoint needs
+ * Kill switch + device/IP(+bulk) rate limits - the checks every translate endpoint needs
  * before doing any work. Returns null when the request may proceed.
  *
- * Any Redis failure here is caught and turned into a controlled 503 — it must never be
+ * Any Redis failure here is caught and turned into a controlled 503 - it must never be
  * treated as "rate limit passed" (fail-open would silently remove the only cost control
  * standing between a Redis outage and unbounded Gemini spend).
  */
@@ -45,7 +45,7 @@ export async function guardRequest(opts: { deviceId: string; ip: string; bulk?: 
 /**
  * Turns an error thrown out of a translateXWithGemini() call (gemini.ts) into the right HTTP
  * response. The daily budget is now enforced inside gemini.ts itself, once per actual outbound
- * Gemini call rather than once per proxy request (see dailyBudget.ts's ensureBudgetAvailable) —
+ * Gemini call rather than once per proxy request (see dailyBudget.ts's ensureBudgetAvailable) -
  * this is where that distinction resurfaces as the same controlled 503 callers saw before,
  * versus the existing generic 502 for a genuine Gemini/network failure.
  */
@@ -60,7 +60,7 @@ export function classifyGeminiError(err: unknown): GuardFailure {
 }
 
 /**
- * Sends a GuardFailure as the HTTP response — used for both guardRequest's and
+ * Sends a GuardFailure as the HTTP response - used for both guardRequest's and
  * classifyGeminiError's results, so every failure path sets `Retry-After` consistently
  * whenever a delay hint is available, in seconds per the HTTP spec (RFC 9110 §10.2.3).
  */

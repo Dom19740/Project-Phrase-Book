@@ -32,7 +32,7 @@ async function openConnection(): Promise<SQLiteDBConnection> {
   return db
 }
 
-/** One-off column additions for databases created before a schema change — CREATE TABLE IF NOT EXISTS doesn't retrofit existing tables. */
+/** One-off column additions for databases created before a schema change - CREATE TABLE IF NOT EXISTS doesn't retrofit existing tables. */
 async function migrate(db: SQLiteDBConnection): Promise<void> {
   const languageColumns = await db.query('PRAGMA table_info(languages);')
   const hasColor = (languageColumns.values ?? []).some((c) => c.name === 'color')

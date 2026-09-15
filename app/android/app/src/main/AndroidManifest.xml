@@ -35,7 +35,7 @@
         </provider>
 
         <!-- exported=true is required for widget providers to receive the system's
-             APPWIDGET_UPDATE broadcast — that broadcast is protected (only the system can send
+             APPWIDGET_UPDATE broadcast - that broadcast is protected (only the system can send
              it), so this doesn't open the receiver up to arbitrary third-party apps. -->
         <receiver
             android:name=".widget.PhraseWidgetProvider"
@@ -64,7 +64,7 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <!-- No storage permission needed: backups go through a user-picked SAF folder (SafFilePlugin),
-         which grants its own access and works the same on every Android version — the old
+         which grants its own access and works the same on every Android version - the old
          Directory.Documents + legacy-storage approach kept failing with EACCES on API 30+, where
          requestLegacyExternalStorage has no effect. -->
 </manifest>

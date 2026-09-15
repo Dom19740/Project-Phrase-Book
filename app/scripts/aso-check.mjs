@@ -59,7 +59,7 @@ for (const locale of locales) {
 }
 
 if (process.exitCode === 1) {
-  console.error('\naso:check failed — fix the files above before publishing.');
+  console.error('\naso:check failed - fix the files above before publishing.');
 } else {
   console.log('\naso:check passed.');
 }

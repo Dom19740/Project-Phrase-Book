@@ -10,7 +10,7 @@ function csvEscape(value: string): string {
   return safe
 }
 
-/** English, Translation, Category — plain CSV, readable as text and reopenable in Excel/Sheets. */
+/** English, Translation, Category - plain CSV, readable as text and reopenable in Excel/Sheets. */
 export function phrasesToCsv(phrases: PhraseListItem[]): string {
   const header = 'English,Translation,Category'
   const rows = phrases.map((p) => [p.english, p.text, p.categoryName ?? ''].map(csvEscape).join(','))

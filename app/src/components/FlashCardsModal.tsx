@@ -95,14 +95,14 @@ export function FlashCardsModal({
     }
   }, [languageId, getLanguagePhrases])
 
-  // Categories chosen for one language may not exist for another — reset rather than filter
+  // Categories chosen for one language may not exist for another - reset rather than filter
   // against ids that no longer apply once the language changes.
   useEffect(() => {
     setCategoryIds(new Set())
   }, [languageId])
 
   // Deleting the card being studied (via the edit dialog) shrinks the deck out from under the
-  // current index — keep it in range, or end the session if nothing's left.
+  // current index - keep it in range, or end the session if nothing's left.
   useEffect(() => {
     if (step !== 'session') return
     if (deck.length === 0) {
@@ -200,7 +200,7 @@ export function FlashCardsModal({
     longPressFired.current = false
     dragStartRef.current = { x: e.clientX, y: e.clientY }
     // Capture so a fast drag that carries the pointer outside the card's bounds still delivers
-    // move/up here instead of losing the gesture — without this, onPointerLeave firing mid-swipe
+    // move/up here instead of losing the gesture - without this, onPointerLeave firing mid-swipe
     // reset the drag before pointerup could measure it, and the swipe never registered.
     e.currentTarget.setPointerCapture(e.pointerId)
     pressTimer.current = window.setTimeout(() => {
@@ -212,7 +212,7 @@ export function FlashCardsModal({
   function handleCardPointerMove(e: React.PointerEvent) {
     const start = dragStartRef.current
     if (!start) return
-    // A pointer that's already moved is swiping/dragging, not long-pressing — don't let a slow
+    // A pointer that's already moved is swiping/dragging, not long-pressing - don't let a slow
     // drag open Edit.
     if (Math.abs(e.clientX - start.x) > 10 || Math.abs(e.clientY - start.y) > 10) clearPressTimer()
   }
@@ -229,7 +229,7 @@ export function FlashCardsModal({
     if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return
 
     // A drag would otherwise still end in a click a moment later, which would immediately flip
-    // the card that just slid in — flag it so handleCardClick can swallow that click.
+    // the card that just slid in - flag it so handleCardClick can swallow that click.
     swipeFired.current = true
     if (deltaX < 0) goNext()
     else goPrev()

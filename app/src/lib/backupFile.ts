@@ -23,7 +23,7 @@ function pickWebFile(accept: string): Promise<{ name: string; data: string }> {
 
 /**
  * Prompts the user to pick a phrase list file (device storage, Google Drive, ...) and returns its
- * name and contents — a CSV, or a plain .txt list of phrases typed one per line.
+ * name and contents - a CSV, or a plain .txt list of phrases typed one per line.
  */
 export async function readCsvFromPickedLocation(): Promise<{ name: string; data: string }> {
   if (Capacitor.getPlatform() !== 'web') {
@@ -35,7 +35,7 @@ export async function readCsvFromPickedLocation(): Promise<{ name: string; data:
 /**
  * Prompts the user to pick a backup .json file directly, via the system file picker (SAF on
  * Android) rather than this app's own Documents/Travel Chatter folder listing. Reading through the
- * picker goes through the OS's document provider, not this app's MediaStore-scoped storage access —
+ * picker goes through the OS's document provider, not this app's MediaStore-scoped storage access -
  * so it still finds a backup file that's physically present but that a MediaStore-based directory
  * listing can lose track of after a reinstall (e.g. switching from a locally-signed build to the
  * Play Store release).

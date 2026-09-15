@@ -9,7 +9,7 @@ import { PopoutSelect } from './PopoutSelect'
 
 const NEW_CATEGORY = '__new__'
 
-/** Soft grey at rest, thicker accent border when focused — same treatment as every other field in the app. */
+/** Soft grey at rest, thicker accent border when focused - same treatment as every other field in the app. */
 const fieldClass = 'border-2 border-hairline bg-transparent text-ink outline-none focus:border-fabpink transition-all'
 
 interface Props {
@@ -47,7 +47,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
   const anyLoadingAlternatives = Object.values(loadingAlternatives).some(Boolean)
 
   // Once every selected language has text you typed, spoke, or accepted from a translation,
-  // there's nothing left to auto-translate — the button reflects that it's the final step.
+  // there's nothing left to auto-translate - the button reflects that it's the final step.
   const allTranslated =
     selectedLanguageIds.size > 0 && [...selectedLanguageIds].every((id) => (translationText[id] ?? '').trim().length > 0)
 
@@ -109,7 +109,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
         setCategoryChoice((current) => current || result.suggestedCategory!)
       }
     } catch {
-      // Best-effort — leave the category picker on "Uncategorized" if this fails.
+      // Best-effort - leave the category picker on "Uncategorized" if this fails.
     }
   }
 

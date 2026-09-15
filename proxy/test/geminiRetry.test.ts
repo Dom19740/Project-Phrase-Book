@@ -29,7 +29,7 @@ afterEach(() => {
   mock.restoreAll()
 })
 
-test('does not retry on a 429 — fails immediately, exactly one call', async () => {
+test('does not retry on a 429 - fails immediately, exactly one call', async () => {
   let calls = 0
   mock.method(globalThis, 'fetch', async () => {
     calls++
@@ -66,7 +66,7 @@ test('retries once on a timeout (AbortError), then succeeds', async () => {
   assert.equal(result.translations.vi, 'Xin chào')
 })
 
-test('never retries more than once — a persistent 5xx still stops at two total attempts', async () => {
+test('never retries more than once - a persistent 5xx still stops at two total attempts', async () => {
   let calls = 0
   mock.method(globalThis, 'fetch', async () => {
     calls++

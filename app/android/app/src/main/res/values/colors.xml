@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mirrors app/src/index.css light-theme tokens (:root[data-theme='light']) — keep in sync. -->
+<!-- Mirrors app/src/index.css light-theme tokens (:root[data-theme='light']) - keep in sync. -->
 <resources>
     <color name="widget_surface">#FFFFFF</color>
     <color name="widget_surfacehover">#ECECEF</color>

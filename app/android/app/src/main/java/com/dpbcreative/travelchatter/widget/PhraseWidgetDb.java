@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * Read-only access to the same on-device SQLite file the web/JS layer writes through
- * @capacitor-community/sqlite (see app/src/db/client.ts — DB_NAME "phrasebook" becomes
+ * @capacitor-community/sqlite (see app/src/db/client.ts - DB_NAME "phrasebook" becomes
  * "phrasebookSQLite.db" under the app's standard databases directory). The widget runs in the
  * app's own process, so it reads this file directly rather than round-tripping through the
  * WebView/JS bridge, which isn't available while the widget's host process is idle.
@@ -60,7 +60,7 @@ final class PhraseWidgetDb {
                 result.add(new LanguageRow(c.getInt(0), c.getString(1), c.getString(2)));
             }
         } catch (Exception e) {
-            // No languages added yet, or the app is mid-write and briefly holds the file lock —
+            // No languages added yet, or the app is mid-write and briefly holds the file lock -
             // either way the widget just falls back to its empty state rather than crashing.
         }
         return result;

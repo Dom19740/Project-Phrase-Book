@@ -6,12 +6,12 @@ import android.graphics.Color;
 import com.dpbcreative.travelchatter.R;
 
 /**
- * Resolves the widget's colors to match the app's own in-app theme/accent settings — synced from
- * JS into PhraseWidgetThemePrefs (see App.tsx's syncWidgetTheme effect) — falling back to the
+ * Resolves the widget's colors to match the app's own in-app theme/accent settings - synced from
+ * JS into PhraseWidgetThemePrefs (see App.tsx's syncWidgetTheme effect) - falling back to the
  * system light/dark setting and the app's default pink accent before the app has ever synced.
  *
  * App.tsx only ever offers three accent swatches (App.tsx#ACCENT_COLORS), and swaps the lemon one
- * for a darker olive in light theme (App.tsx#LIGHT_MODE_ACCENT_OVERRIDES) — small enough a set that
+ * for a darker olive in light theme (App.tsx#LIGHT_MODE_ACCENT_OVERRIDES) - small enough a set that
  * every reachable (theme, accent) combination gets its own pre-baked drawable rather than trying to
  * tint an arbitrary color into a two-tone shape (fill + differently-colored stroke) at runtime.
  */
@@ -93,7 +93,7 @@ final class PhraseWidgetTheme {
         return nightMode == Configuration.UI_MODE_NIGHT_YES;
     }
 
-    /** Java port of App.tsx#readableTextOn — keep in sync. */
+    /** Java port of App.tsx#readableTextOn - keep in sync. */
     private static int readableTextOn(int color) {
         double yiq = (Color.red(color) * 299 + Color.green(color) * 587 + Color.blue(color) * 114) / 1000.0;
         return yiq >= 128 ? Color.BLACK : Color.WHITE;

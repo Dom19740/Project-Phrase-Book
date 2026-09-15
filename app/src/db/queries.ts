@@ -23,7 +23,7 @@ export async function addLanguage(name: string, code: string, includeConceptIds?
   const res = await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [name, code, sortOrder])
   const languageId = res.changes?.lastId ?? 0
 
-  // A phrase not picked for this language is skipped entirely, not just left blank — it won't show
+  // A phrase not picked for this language is skipped entirely, not just left blank - it won't show
   // up in this language's list at all until the user adds it manually or via a future phrase.
   const concepts = await db.query('SELECT id FROM phrase_concepts;')
   const included = includeConceptIds ? new Set(includeConceptIds) : null
@@ -151,7 +151,7 @@ interface NewPhraseInput {
   /** Text for languages that already have a known translation (e.g. seed data, CSV import). */
   translations?: { languageId: number; text: string }[]
   /**
-   * Which languages this phrase should exist in at all. A language not listed here gets no row —
+   * Which languages this phrase should exist in at all. A language not listed here gets no row -
    * the phrase simply doesn't appear there, rather than showing up blank/untranslated. Defaults to
    * every tracked language when omitted (e.g. seed data, where `translations` already covers them).
    */
@@ -196,7 +196,7 @@ export interface CsvImportRow {
  * Imports CSV rows into one language: a row whose English text matches an existing phrase concept
  * (case-insensitive) fills in/overwrites that concept's translation for this language; an
  * unmatched row creates a new phrase concept with a translation for this language only. A blank
- * Translation cell never erases an existing translation — it only leaves the row queued in
+ * Translation cell never erases an existing translation - it only leaves the row queued in
  * `blank` (concepts with no translation text at all) for the caller to auto-translate.
  */
 export async function importCsvPhrases(
@@ -236,7 +236,7 @@ export async function importCsvPhrases(
         values: [conceptId, languageId, row.text],
       })
       // A second row later in the same import with the same English text (a duplicate line, or
-      // the same phrase under two categories) must see this translation as already present —
+      // the same phrase under two categories) must see this translation as already present -
       // otherwise it inserts a second translations row for the same concept+language pair.
       existingTextByConcept.set(conceptId, row.text)
       created++
@@ -387,8 +387,8 @@ export async function bulkSetCategory(phraseConceptIds: number[], categoryName: 
 
 /**
  * Copies phrase concepts into additional languages, skipping any (concept, language) pair that
- * already has a row there rather than overwriting it. Returns the pairs that were newly created —
- * blank, for the caller to auto-translate — so an already-translated phrase is left untouched.
+ * already has a row there rather than overwriting it. Returns the pairs that were newly created -
+ * blank, for the caller to auto-translate - so an already-translated phrase is left untouched.
  */
 export async function copyPhrasesToLanguages(
   phraseConceptIds: number[],

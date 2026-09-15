@@ -111,7 +111,7 @@ async function lastInsertId(db: Awaited<ReturnType<typeof getDb>>): Promise<numb
  *
  * Runs as a single explicit transaction (every statement passes `transaction: false` so the
  * plugin doesn't wrap each one in its own auto-committing transaction) so a failure partway
- * through — e.g. a translation insert going wrong — rolls back the deletes and inserts that
+ * through - e.g. a translation insert going wrong - rolls back the deletes and inserts that
  * already ran instead of leaving the DB in a half-restored state that then collides with retries.
  */
 export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
@@ -122,7 +122,7 @@ export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
   await db.beginTransaction()
   try {
     // The plugin only splits multi-statement strings on ";\n" (a literal newline after the
-    // semicolon) — "; " on one line is treated as a single statement and Android's execSQL()
+    // semicolon) - "; " on one line is treated as a single statement and Android's execSQL()
     // silently only runs the first clause, so each DELETE must be on its own line.
     await db.execute(
       'DELETE FROM translations;\nDELETE FROM phrase_concepts;\nDELETE FROM categories;\nDELETE FROM languages;',

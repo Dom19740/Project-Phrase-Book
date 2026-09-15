@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Check, Pencil, Star } from 'lucide-react'
 
 interface Props {
-  /** The row this menu was opened from — used to position the menu against it via a portal, so it
+  /** The row this menu was opened from - used to position the menu against it via a portal, so it
    * can render above the scrolling phrase list instead of being clipped by it. */
   anchorRef: RefObject<HTMLElement | null>
   learned: boolean

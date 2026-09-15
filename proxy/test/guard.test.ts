@@ -54,7 +54,7 @@ test('guardRequest rejects (429) once the bulk-specific device limit is exceeded
   assert.equal(result?.status, 429)
 })
 
-test('guardRequest fails closed (503) when Redis throws — never silently lets the request through', async () => {
+test('guardRequest fails closed (503) when Redis throws - never silently lets the request through', async () => {
   mock.method(deviceRateLimit, 'limit', async () => {
     throw new Error('ECONNREFUSED')
   })

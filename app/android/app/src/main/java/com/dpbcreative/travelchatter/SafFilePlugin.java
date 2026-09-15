@@ -150,7 +150,7 @@ public class SafFilePlugin extends Plugin {
 
         Uri treeUri = result.getData().getData();
 
-        // Without this, the grant only lasts for the current process — it would silently stop
+        // Without this, the grant only lasts for the current process - it would silently stop
         // working the next time the app is opened.
         int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
         getContext().getContentResolver().takePersistableUriPermission(treeUri, flags);

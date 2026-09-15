@@ -3,7 +3,7 @@ import { ensureBudgetAvailable } from './dailyBudget.js'
 const GEMINI_MODEL = 'gemini-flash-latest'
 const REQUEST_TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS ?? 20000)
 // Only one retry ever happens, so a single fixed delay (rather than a multi-step exponential
-// curve) is sufficient — it exists to avoid immediately re-hammering a struggling upstream.
+// curve) is sufficient - it exists to avoid immediately re-hammering a struggling upstream.
 const RETRY_BACKOFF_MS = Number(process.env.GEMINI_RETRY_BACKOFF_MS ?? 500)
 
 export interface TargetLanguage {
@@ -39,7 +39,7 @@ export class GeminiRateLimitError extends Error {
   }
 }
 
-// Used only if Gemini returns a 429 without a parseable RetryInfo delay — better to give
+// Used only if Gemini returns a 429 without a parseable RetryInfo delay - better to give
 // callers a sane default wait than no hint at all.
 const DEFAULT_RATE_LIMIT_RETRY_MS = 20000
 
@@ -52,16 +52,16 @@ function parseRetryDelayMs(errorBodyText: string): number {
     const match = retryInfo?.retryDelay?.match(/^([\d.]+)s$/)
     if (match) return Math.ceil(Number.parseFloat(match[1]) * 1000)
   } catch {
-    // Malformed/unexpected error body shape — fall through to the default below.
+    // Malformed/unexpected error body shape - fall through to the default below.
   }
   return DEFAULT_RATE_LIMIT_RETRY_MS
 }
 
 function isRetryable(err: unknown): boolean {
   if (err instanceof GeminiHttpError) return err.status >= 500
-  // Network failures and our own timeout both surface as a plain Error here — retryable.
+  // Network failures and our own timeout both surface as a plain Error here - retryable.
   // A malformed/unparseable Gemini response is not (retrying won't fix a schema mismatch).
-  // Gemini's own rate limit (429, see GeminiRateLimitError) is also not retried inline here —
+  // Gemini's own rate limit (429, see GeminiRateLimitError) is also not retried inline here -
   // its reset delay (seconds) is far longer than this function's fixed backoff is meant for,
   // and retrying inline would hold the serverless function open pointlessly. Callers get the
   // delay via the thrown error and decide whether to wait and retry themselves.
@@ -99,12 +99,12 @@ async function fetchGeminiOnce(requestBody: unknown, apiKey: string): Promise<st
 
 /**
  * Calls Gemini with a request timeout and at most one retry.
- * - No retry on 429 (Gemini's own rate limit) or on 4xx — retrying won't help and only adds load.
- * - No retry on a malformed/unparseable response — a schema mismatch won't fix itself.
- * - Exactly one retry, after a short backoff, for 5xx responses and timeouts — never a loop.
+ * - No retry on 429 (Gemini's own rate limit) or on 4xx - retrying won't help and only adds load.
+ * - No retry on a malformed/unparseable response - a schema mismatch won't fix itself.
+ * - Exactly one retry, after a short backoff, for 5xx responses and timeouts - never a loop.
  *
  * The daily budget is checked immediately before *every* actual outbound call this function
- * makes, including the retry — one unit per real Gemini call, not one per callGemini()
+ * makes, including the retry - one unit per real Gemini call, not one per callGemini()
  * invocation, so a retry can't consume a Gemini call for free, and a caller (translateBulkWithGemini,
  * batching internally) that ends up making several real calls is charged for each of them.
  */
@@ -171,9 +171,9 @@ export async function translateWithGemini(
 
 const ALTERNATIVES_COUNT = 4
 
-/** Generates several distinct phrasings for one phrase in one target language — the "retranslate / alternatives" action on an existing translation. */
+/** Generates several distinct phrasings for one phrase in one target language - the "retranslate / alternatives" action on an existing translation. */
 export async function translateAlternativesWithGemini(english: string, targetLang: TargetLanguage): Promise<string[]> {
-  const prompt = `Give ${ALTERNATIVES_COUNT} different natural ways to translate this English travel-phrasebook entry into ${targetLang.name} (${targetLang.code}). Each should be a phrasing a native speaker would actually say (not stiff or literal), and they should meaningfully differ from each other — e.g. different register (formal/casual), common regional variants, or synonymous wording — rather than trivial rewordings. Order them from most to least commonly used.\n\nPhrase (English): "${english}"\n\nReturn a JSON array of exactly ${ALTERNATIVES_COUNT} strings.`
+  const prompt = `Give ${ALTERNATIVES_COUNT} different natural ways to translate this English travel-phrasebook entry into ${targetLang.name} (${targetLang.code}). Each should be a phrasing a native speaker would actually say (not stiff or literal), and they should meaningfully differ from each other - e.g. different register (formal/casual), common regional variants, or synonymous wording - rather than trivial rewordings. Order them from most to least commonly used.\n\nPhrase (English): "${english}"\n\nReturn a JSON array of exactly ${ALTERNATIVES_COUNT} strings.`
 
   const text = await callGemini({
     contents: [{ parts: [{ text: prompt }] }],

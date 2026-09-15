@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Java port of app/src/lib/languageFlags.ts#getLanguageFlag — keep the two in sync. Duplicated
+ * Java port of app/src/lib/languageFlags.ts#getLanguageFlag - keep the two in sync. Duplicated
  * rather than shared because the widget runs in the native process and has no access to the JS
  * bundle.
  */

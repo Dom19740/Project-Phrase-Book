@@ -5,14 +5,14 @@ export interface TranslateResponse {
   suggestedCategory: string | null
 }
 
-// Must comfortably exceed the proxy's own worst case (one Gemini call plus one retry — see
-// REQUEST_TIMEOUT_MS/RETRY_BACKOFF_MS in proxy/lib/gemini.ts, ~40.5s) — otherwise the client
+// Must comfortably exceed the proxy's own worst case (one Gemini call plus one retry - see
+// REQUEST_TIMEOUT_MS/RETRY_BACKOFF_MS in proxy/lib/gemini.ts, ~40.5s) - otherwise the client
 // aborts and reports "timed out" on requests the proxy would have completed successfully a
 // few seconds later.
 const REQUEST_TIMEOUT_MS = 45000
 
 // Gemini's free-tier quota returns 429/503 under routine load, and the proxy already retries
-// once itself — but a single remaining failure was still always shown straight to the user.
+// once itself - but a single remaining failure was still always shown straight to the user.
 // One bounded client-side retry absorbs the common case (a transient blip) instead of
 // surfacing every one of them as an error.
 const RETRYABLE_STATUSES = new Set([429, 502])
@@ -45,7 +45,7 @@ async function postJson(url: string, body: unknown): Promise<Response> {
  * postJson with one bounded retry for transient upstream failures: Gemini's own rate limit
  * (429, carries a retryAfterMs telling us how long Gemini's quota needs) and a Gemini
  * request/overload failure that survived the proxy's own retry (502). Our *own* per-device/IP
- * rate limit also returns 429 but without retryAfterMs (its window is an hour) — retrying that
+ * rate limit also returns 429 but without retryAfterMs (its window is an hour) - retrying that
  * immediately would just fail again, so it's deliberately left alone.
  */
 async function postJsonWithRetry(url: string, body: unknown): Promise<Response> {
@@ -63,7 +63,7 @@ async function postJsonWithRetry(url: string, body: unknown): Promise<Response> 
   return postJson(url, body)
 }
 
-/** Calls the translate proxy (never Gemini directly — the API key must not ship inside the app). */
+/** Calls the translate proxy (never Gemini directly - the API key must not ship inside the app). */
 export async function translatePhrase(
   english: string,
   targetLangCodes: string[],
@@ -100,7 +100,7 @@ export async function translatePhrasesBulk(englishPhrases: string[], targetLangC
   return data.translations
 }
 
-/** Fetches several distinct phrasings of one phrase in one language — used for the "retranslate / alternatives" action on an existing translation. */
+/** Fetches several distinct phrasings of one phrase in one language - used for the "retranslate / alternatives" action on an existing translation. */
 export async function translateAlternatives(english: string, targetLangCode: string, targetLangName: string): Promise<string[]> {
   const baseUrl = import.meta.env.VITE_TRANSLATE_API_URL
   if (!baseUrl) throw new Error('VITE_TRANSLATE_API_URL is not configured')

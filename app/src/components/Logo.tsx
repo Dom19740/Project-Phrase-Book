@@ -3,7 +3,7 @@ interface Props {
   className?: string
 }
 
-/** The app's brand mark — an inline SVG so it can inherit color via `currentColor` and scale crisply. */
+/** The app's brand mark - an inline SVG so it can inherit color via `currentColor` and scale crisply. */
 export function Logo({ size = 20, className = '' }: Props) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={(size * 110) / 100} viewBox="0 0 100 110" className={className}>
@@ -20,7 +20,7 @@ interface WordmarkProps {
   oneLine?: boolean
 }
 
-/** The Archivo wordmark that pairs with the mark — two lines by default, one line only for short headers. */
+/** The Archivo wordmark that pairs with the mark - two lines by default, one line only for short headers. */
 export function Wordmark({ size, className = '', oneLine = false }: WordmarkProps) {
   const style = size ? { fontSize: size } : undefined
 

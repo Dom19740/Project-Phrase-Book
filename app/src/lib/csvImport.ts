@@ -5,7 +5,7 @@ export interface CsvPhraseRow {
 }
 
 // csvEscape() in csvExport.ts prefixes a leading '=' / '+' / '-' / '@' with a "'" to stop it being
-// read as a formula — undo that here so re-imported text matches what was originally exported.
+// read as a formula - undo that here so re-imported text matches what was originally exported.
 const FORMULA_ESCAPE = /^'([=+\-@])/
 
 function unescapeFormula(value: string): string {
@@ -60,21 +60,21 @@ function parseCsvCells(input: string): string[][] {
 /**
  * Parses phrases out of an imported file, in one of three shapes:
  *
- * - Structured CSV with a header — "English,Translation,Category" (the format phrasesToCsv()
+ * - Structured CSV with a header - "English,Translation,Category" (the format phrasesToCsv()
  *   writes), detected by an "English" header cell. Column order is read from the header rather
  *   than assumed; a missing/blank Category is uncategorized, and the Translation column is
- *   optional — blank cells there (or no such column at all) leave `text` as `''` so the caller can
+ *   optional - blank cells there (or no such column at all) leave `text` as `''` so the caller can
  *   auto-translate it.
- * - Structured CSV with no header — the same shape but with the header row stripped (e.g. someone
+ * - Structured CSV with no header - the same shape but with the header row stripped (e.g. someone
  *   deleted it before sending the file), detected by every line consistently splitting into the
  *   same 2 or 3 CSV fields; taken positionally as English, Translation[, Category].
- * - A plain list — neither of the above, so every non-blank line is taken verbatim as one English
+ * - A plain list - neither of the above, so every non-blank line is taken verbatim as one English
  *   phrase (not comma-split), the way someone would type a list of phrases into Notepad. This is
  *   also the fallback for a headerless file whose lines don't split consistently (a plain list
  *   where only some phrases happen to contain a comma would otherwise be misread as columns).
  */
 export function parseCsvPhrases(csv: string): CsvPhraseRow[] {
-  // A file re-saved by Excel/Sheets — or a .txt saved as "UTF-8" from Notepad — often carries a
+  // A file re-saved by Excel/Sheets - or a .txt saved as "UTF-8" from Notepad - often carries a
   // leading UTF-8 BOM, which would otherwise stop the header's first cell (e.g. "English") from
   // matching, or end up glued onto the first phrase of a plain list.
   const text = csv.replace(/^﻿/, '').trim()

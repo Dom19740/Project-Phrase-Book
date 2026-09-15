@@ -106,7 +106,7 @@ const SORT_OPTION_LABELS: { value: SortMode; label: string }[] = [
 
 const SORT_OPTIONS: { value: SortMode; label: string; shortLabel: ReactNode }[] = SORT_OPTION_LABELS.map((opt) => ({
   ...opt,
-  // Every other option is a self-explanatory icon pair (EN/translation flag + direction arrow) —
+  // Every other option is a self-explanatory icon pair (EN/translation flag + direction arrow) -
   // "custom" has no such shorthand, so it gets a plain text label instead of a lone grip icon.
   shortLabel:
     opt.value === 'custom' ? (
@@ -271,7 +271,7 @@ export function PhraseList({
   const selectedTranslationIds = selectedItems.map((p) => p.translationId)
   const selectedConceptIds = [...new Set(selectedItems.map((p) => p.phraseConceptId))]
 
-  // Dragging always switches to Custom order — any other sort mode would just re-sort the
+  // Dragging always switches to Custom order - any other sort mode would just re-sort the
   // dropped item straight back to where it started.
   function commitReorder(orderedTranslationIds: number[]) {
     setSortMode('custom')
@@ -298,7 +298,7 @@ export function PhraseList({
     )
   }
 
-  /** Renders one draggable bucket — items can be reordered within it, never out of it. */
+  /** Renders one draggable bucket - items can be reordered within it, never out of it. */
   function renderDraggableGroup(items: PhraseListItem[]) {
     return (
       <DragReorderList

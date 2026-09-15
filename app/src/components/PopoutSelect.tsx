@@ -7,7 +7,7 @@ interface Option<T> {
   label: string
   /** Compact content shown on the closed trigger instead of `label` (e.g. an icon). Falls back to `label`. */
   shortLabel?: ReactNode
-  /** Skip the accent-color highlight when this option is active — for action rows (e.g. "+ New category...") that shouldn't be tinted by whatever accent color is selected. */
+  /** Skip the accent-color highlight when this option is active - for action rows (e.g. "+ New category...") that shouldn't be tinted by whatever accent color is selected. */
   neutral?: boolean
 }
 

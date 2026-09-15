@@ -1,4 +1,4 @@
-// Hard, unconditional caps on request size, independent of any identity/rate-limit control —
+// Hard, unconditional caps on request size, independent of any identity/rate-limit control -
 // bounds the worst-case cost of a single request regardless of how it got past everything else.
 export const MAX_PHRASE_LENGTH = 300
 export const MAX_BULK_PHRASES = 50

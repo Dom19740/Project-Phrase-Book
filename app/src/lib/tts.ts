@@ -1,7 +1,7 @@
 import { TextToSpeech } from '@capacitor-community/text-to-speech'
 
 // Two-letter codes stored on `languages.code` don't always resolve to a voice
-// on their own (esp. the web Speech Synthesis backend) — map to a full BCP-47 locale.
+// on their own (esp. the web Speech Synthesis backend) - map to a full BCP-47 locale.
 const LOCALE_MAP: Record<string, string> = {
   en: 'en-US',
   vi: 'vi-VN',

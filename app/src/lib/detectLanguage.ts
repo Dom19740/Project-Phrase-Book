@@ -1,7 +1,7 @@
 import { LANGUAGE_OPTIONS, type LanguageOption } from './languageOptions'
 
 /**
- * Unicode ranges that are, in practice, unique to one language in LANGUAGE_OPTIONS — safe to
+ * Unicode ranges that are, in practice, unique to one language in LANGUAGE_OPTIONS - safe to
  * auto-suggest from. Scripts shared by several unrelated languages (Arabic/Persian/Urdu/Pashto,
  * Hindi/Marathi/Nepali's Devanagari, Cyrillic, Han) are deliberately left out: guessing wrong
  * there is worse than not guessing, so those are left for the user to pick from the list.
@@ -31,7 +31,7 @@ const SCRIPT_RULES: { code: string; test: RegExp }[] = [
 ]
 
 /**
- * Best-effort language guess from a sample of already-translated text, using script alone —
+ * Best-effort language guess from a sample of already-translated text, using script alone -
  * there's no translation-detection API wired up (that would need a new backend endpoint), so this
  * is a local heuristic offered as a pre-filled suggestion, not an authoritative answer. Returns
  * null when the text is empty or its script doesn't uniquely identify a language.
@@ -49,7 +49,7 @@ export function detectLanguage(sampleTexts: string[]): LanguageOption | null {
 }
 
 /**
- * Best-effort language guess from a filename, e.g. "vietnamese-phrases.csv" — matches the exact
+ * Best-effort language guess from a filename, e.g. "vietnamese-phrases.csv" - matches the exact
  * naming this app's own CSV export uses (`${language.name}-phrases.csv`), so re-importing a file
  * exported from another install of the app round-trips without asking. A fallback for scripts
  * detectLanguage() can't safely guess (Cyrillic, Arabic-derived, Devanagari, Han, ...). Picks the

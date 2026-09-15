@@ -24,12 +24,12 @@ final class PhraseWidgetThemePrefs {
         prefs(context).edit().putString(KEY_THEME, theme).putString(KEY_ACCENT, accentHex).apply();
     }
 
-    /** "dark" or "light" — null means nothing has been synced yet, so fall back to the system setting. */
+    /** "dark" or "light" - null means nothing has been synced yet, so fall back to the system setting. */
     static String getTheme(Context context) {
         return prefs(context).getString(KEY_THEME, null);
     }
 
-    /** One of App.tsx's ACCENT_COLORS hex strings, pre light-mode-swap — null means fall back to the default pink. */
+    /** One of App.tsx's ACCENT_COLORS hex strings, pre light-mode-swap - null means fall back to the default pink. */
     static String getAccent(Context context) {
         return prefs(context).getString(KEY_ACCENT, null);
     }

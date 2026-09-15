@@ -32,7 +32,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
     getLanguagePhrases(sourceLanguageId).then((phrases) => {
       if (cancelled) return
       setSourcePhrases(phrases)
-      // Default to the phrases that actually have text in the chosen source phrasebook —
+      // Default to the phrases that actually have text in the chosen source phrasebook -
       // that's what "copy phrases from X" means. Still fully editable below.
       setIncludedIds(new Set(phrases.filter((p) => p.text.trim().length > 0).map((p) => p.phraseConceptId)))
       setLoadingPhrases(false)
@@ -61,7 +61,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
 
   /**
    * There's nothing to configure when there are no existing phrases to copy from, so picking a
-   * language adds it immediately instead of showing an empty confirmation screen — the caller
+   * language adds it immediately instead of showing an empty confirmation screen - the caller
    * follows up with the starter-phrases prompt.
    */
   async function chooseLanguage(lang: LanguageOption) {

@@ -7,7 +7,7 @@ function makeReq(headers: Record<string, string | string[] | undefined>): Vercel
   return { headers } as unknown as VercelRequest
 }
 
-test('getClientIp reads the first entry of x-forwarded-for (the client, per Vercel — closest hop first)', () => {
+test('getClientIp reads the first entry of x-forwarded-for (the client, per Vercel - closest hop first)', () => {
   const req = makeReq({ 'x-forwarded-for': '203.0.113.5, 70.41.3.18' })
   assert.equal(getClientIp(req), '203.0.113.5')
 })

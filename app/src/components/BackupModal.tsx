@@ -56,7 +56,7 @@ export function BackupModal({
   const [importTarget, setImportTarget] = useState<ImportTarget | null>(null)
   const [detectedCode, setDetectedCode] = useState<string | null>(null)
   // Set when the file itself already carries translations and we're confident which language
-  // they're in (matched an existing language, or a strong script/filename guess) — skips straight
+  // they're in (matched an existing language, or a strong script/filename guess) - skips straight
   // to a one-line confirmation instead of making the user pick from the language list.
   const [autoConfirm, setAutoConfirm] = useState(false)
   const [showLanguagePicker, setShowLanguagePicker] = useState(false)
@@ -65,7 +65,7 @@ export function BackupModal({
   const [manualCode, setManualCode] = useState('')
 
   // React's `busy` state only re-renders (and disables the button) on the next frame, which a fast
-  // double-tap can beat — this ref blocks re-entry synchronously so two restores never run at once.
+  // double-tap can beat - this ref blocks re-entry synchronously so two restores never run at once.
   const restoringRef = useRef(false)
 
   const existingCodes = useMemo(() => new Set(languages.map((l) => l.code.toLowerCase())), [languages])
@@ -132,8 +132,8 @@ export function BackupModal({
       const hasTranslations = picked.rows.some((r) => r.text.trim() !== '')
 
       // Best-effort local guess (no detection API is wired up): first from the translation
-      // text's script, then — since scripts like Cyrillic/Arabic/Devanagari/Han can't be safely
-      // guessed that way — from the filename, which matches this app's own CSV export naming
+      // text's script, then - since scripts like Cyrillic/Arabic/Devanagari/Han can't be safely
+      // guessed that way - from the filename, which matches this app's own CSV export naming
       // ("${language}-phrases.csv") so a round-tripped export is recognized without any typing.
       const guess = detectLanguage(picked.rows.map((r) => r.text)) ?? detectLanguageFromFilename(picked.name)
       const matched = guess ? languages.find((l) => l.code.toLowerCase() === guess.code.toLowerCase()) : undefined
@@ -148,7 +148,7 @@ export function BackupModal({
       else setImportTarget(languages[0] ? { kind: 'existing', language: languages[0] } : null)
 
       // Only skip the picker when the file actually has translations in it AND we know which
-      // language they're in — an English-only list always needs a target picked, and a
+      // language they're in - an English-only list always needs a target picked, and a
       // translated file we can't identify still needs the user to say what it is.
       setAutoConfirm(hasTranslations && (matched != null || guess != null))
     } catch (err) {
@@ -170,10 +170,10 @@ export function BackupModal({
     setStatus(null)
     let succeeded = false
     try {
-      // Empty array, not omitted — a CSV-imported language should start with only what the file
+      // Empty array, not omitted - a CSV-imported language should start with only what the file
       // itself supplies, not a blank row for every existing phrase from every other language
       // (which is addLanguage()'s default, meant for the normal "Add Language" flow's "copy my
-      // existing phrasebook over" option — that default silently turned every CSV import of a new
+      // existing phrasebook over" option - that default silently turned every CSV import of a new
       // language into a background-translate job for the user's *entire* phrasebook, not just the
       // rows being imported).
       const language =
@@ -214,7 +214,7 @@ export function BackupModal({
   }
 
   // Bypasses the automatic Documents/Travel Chatter listing (which relies on the OS's MediaStore
-  // recognizing the file as this app's own — something a reinstall can break even when the file is
+  // recognizing the file as this app's own - something a reinstall can break even when the file is
   // still physically there) by handing the pick off to the system file picker instead.
   async function handlePickBackupFile() {
     setBusy(true)
@@ -263,7 +263,7 @@ export function BackupModal({
             </>
           ) : (
             <>
-              Saved to a folder you choose — pick one now, or it's chosen the first time you back up.{' '}
+              Saved to a folder you choose - pick one now, or it's chosen the first time you back up.{' '}
               <button onClick={handleChooseFolder} disabled={busy} className="text-fabpink underline hover:no-underline disabled:opacity-40">
                 Choose folder
               </button>
@@ -294,7 +294,7 @@ export function BackupModal({
             {backupList.length === 0 ? (
               <p className="text-sm text-muted">
                 {folderLabel ? `No backups found in ${folderLabel}.` : 'No backup folder set up on this device yet.'} If you know a backup file exists
-                (e.g. after reinstalling the app), use <strong>Choose file…</strong> below to pick it directly — otherwise, back up now to create one.
+                (e.g. after reinstalling the app), use <strong>Choose file…</strong> below to pick it directly - otherwise, back up now to create one.
               </p>
             ) : (
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
@@ -339,7 +339,7 @@ export function BackupModal({
 
             {blankCount > 0 && (
               <p className="text-xs text-muted">
-                {blankCount} of {pendingImport.rows.length} phrase{blankCount === 1 ? '' : 's'} {blankCount === 1 ? "doesn't" : "don't"} have a translation yet —{' '}
+                {blankCount} of {pendingImport.rows.length} phrase{blankCount === 1 ? '' : 's'} {blankCount === 1 ? "doesn't" : "don't"} have a translation yet -{' '}
                 {blankCount === 1 ? 'it' : 'they'} will be auto-translated after import.
               </p>
             )}
@@ -372,7 +372,7 @@ export function BackupModal({
 
             {blankCount > 0 && (
               <p className="text-xs text-muted">
-                {blankCount} of {pendingImport.rows.length} phrase{blankCount === 1 ? '' : 's'} {blankCount === 1 ? "doesn't" : "don't"} have a translation yet —{' '}
+                {blankCount} of {pendingImport.rows.length} phrase{blankCount === 1 ? '' : 's'} {blankCount === 1 ? "doesn't" : "don't"} have a translation yet -{' '}
                 {blankCount === 1 ? 'it' : 'they'} will be auto-translated after import.
               </p>
             )}

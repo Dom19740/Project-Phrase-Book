@@ -16,7 +16,7 @@ export function refreshWidget(): void {
 }
 
 /** Called whenever the app's resolved theme or (pre-light-mode-swap) accent choice changes, so the
- * widget can mirror it — it applies the same light-mode accent swap itself once it knows the theme. */
+ * widget can mirror it - it applies the same light-mode accent swap itself once it knows the theme. */
 export function syncWidgetTheme(theme: 'dark' | 'light', accent: string): void {
   if (Capacitor.getPlatform() !== 'android') return
   WidgetRefresh.syncTheme({ theme, accent }).catch(() => {})

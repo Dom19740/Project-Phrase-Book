@@ -34,7 +34,7 @@ export function LanguageTabs({
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchExpanded = searchFocused || search.length > 0
 
-  // Prompt to add a language whenever there are none — first launch, or after removing the last one.
+  // Prompt to add a language whenever there are none - first launch, or after removing the last one.
   useEffect(() => {
     if (languages.length === 0) setShowAddLanguage(true)
   }, [languages.length])
@@ -119,7 +119,7 @@ export function LanguageTabs({
         </div>
 
         {/* Reserves the collapsed search control's width in the flex row so nothing has to
-            reflow when the overlay below expands/collapses — it stays absolutely positioned
+            reflow when the overlay below expands/collapses - it stays absolutely positioned
             the whole time instead of switching in and out of flow, which used to make a
             mid-transition frame overlap the menu button next to it. */}
         <div className="h-10 w-11 shrink-0" aria-hidden="true" />

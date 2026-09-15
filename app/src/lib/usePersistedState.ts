@@ -15,7 +15,7 @@ export function usePersistedState<T>(key: string, defaultValue: T): [T, Dispatch
     try {
       localStorage.setItem(key, JSON.stringify(state))
     } catch {
-      // localStorage unavailable (e.g. private browsing quota) — persistence just silently no-ops
+      // localStorage unavailable (e.g. private browsing quota) - persistence just silently no-ops
     }
   }, [key, state])
 

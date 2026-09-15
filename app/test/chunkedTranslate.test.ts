@@ -13,7 +13,7 @@ test('all chunks succeeding on the first try returns no failures and calls trans
   assert.equal(calls, 3) // chunks of 20, 20, 5
 })
 
-test('regression: a chunk that fails once but succeeds on the retry pass ends up fully translated — this was the Add Language bug (some phrases silently staying blank)', async () => {
+test('regression: a chunk that fails once but succeeds on the retry pass ends up fully translated - this was the Add Language bug (some phrases silently staying blank)', async () => {
   const items = Array.from({ length: 45 }, (_, i) => i) // 3 chunks: [0-19], [20-39], [40-44]
   const attemptsByChunk = new Map<number, number>()
 
@@ -22,7 +22,7 @@ test('regression: a chunk that fails once but succeeds on the retry pass ends up
     const attempt = (attemptsByChunk.get(key) ?? 0) + 1
     attemptsByChunk.set(key, attempt)
     // The middle chunk fails its first attempt (simulating one transient proxy/Gemini failure)
-    // and succeeds on the retry — every other chunk succeeds immediately.
+    // and succeeds on the retry - every other chunk succeeds immediately.
     if (key === 20) return attempt > 1
     return true
   })
@@ -32,7 +32,7 @@ test('regression: a chunk that fails once but succeeds on the retry pass ends up
   assert.equal(attemptsByChunk.get(0), 1, 'chunks that succeeded the first time must not be re-sent')
 })
 
-test('a chunk that fails both the first attempt and the retry is reported as failed — everything else is not', async () => {
+test('a chunk that fails both the first attempt and the retry is reported as failed - everything else is not', async () => {
   const items = Array.from({ length: 45 }, (_, i) => i)
   const failed = await translateInChunksWithRetry(items, 20, async (chunk) => chunk[0] !== 20)
 
@@ -44,7 +44,7 @@ test('a chunk with even one missing translation counts as failed and is retried 
   const items = [1, 2, 3]
   const failed = await translateInChunksWithRetry(items, 3, async () => {
     attempt++
-    // Simulates a chunk where the proxy returned translations for only some of the phrases —
+    // Simulates a chunk where the proxy returned translations for only some of the phrases -
     // the caller's translateChunk reports that as a non-fully-successful chunk (false).
     return attempt > 1
   })
@@ -83,7 +83,7 @@ test('multiple chunks failing the first pass are all retried independently, and 
   assert.equal(attemptsByChunk.get(40), 1)
 })
 
-test('regression: a chunk that keeps failing past the old single-retry limit still succeeds once maxAttempts allows more passes — this was the CSV import bug (most phrases left untranslated after one rate-limited retry)', async () => {
+test('regression: a chunk that keeps failing past the old single-retry limit still succeeds once maxAttempts allows more passes - this was the CSV import bug (most phrases left untranslated after one rate-limited retry)', async () => {
   const items = Array.from({ length: 10 }, (_, i) => i)
   let attempt = 0
 
@@ -121,7 +121,7 @@ test('gives up and reports failure only after exhausting maxAttempts', async () 
   assert.equal(attempt, 4)
 })
 
-test('translateInChunksWithRetry does not itself swallow a throwing callback — error handling is the caller\'s job, same as the real translateChunk wrapper in PhraseBookContext', async () => {
+test('translateInChunksWithRetry does not itself swallow a throwing callback - error handling is the caller\'s job, same as the real translateChunk wrapper in PhraseBookContext', async () => {
   const items = [1, 2, 3, 4]
   await assert.rejects(
     () =>
