@@ -1,4 +1,4 @@
-Travel Chatter is a travel phrasebook you write as you go. Capture a phrase at any time, in any language, save it to use and learn. No lessons, no streaks - a book that only contains what you choose to put in it.
+Travel Chatter is a travel phrasebook you write as you go. A lightweight, travel translation and conversation aid, designed specifically to help travelers bridge language barriers quickly during real-world interactions abroad. Capture a phrase and translate it into any language. Hear it read aloud, practice using it the next time you meet someone new and get chatting like a local. Capture a phrase at any time, in any language, save it to use and learn. No lessons, no streaks.
 
 Free to install, with no account required and support for dozens of languages.
 
@@ -8,7 +8,7 @@ Most phrasebooks are full of generic phrases you never really need - Where is th
 
 WRITE IT AS YOU GO
 
-Hear a useful phrase from a local, a guidebook, or a friend? Add it on the spot. There's no fixed method to follow and no vocabulary or grammar you're forced to learn - every phrase you actually need, and nothing you don't.
+Hear a useful phrase from a local, a guidebook, or a friend? Add it on the spot. There's no fixed method to follow and no vocabulary or grammar you're forced to learn - every phrase you actually need, and nothing you don't. A book that only contains what you choose to put in it
 
 BUILT FOR TRAVEL, NOT LESSONS
 
