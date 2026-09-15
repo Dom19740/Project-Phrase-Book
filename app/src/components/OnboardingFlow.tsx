@@ -1,4 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { ArrowDown, ArrowRight, Check, ChevronDown, Eye, Layers, ListChecks, ListFilter, Mic, Pencil, Search, Star, Tag, Volume2 } from 'lucide-react'
 import { Logo, Wordmark } from './Logo'
 
@@ -10,9 +11,10 @@ interface HowToPage {
   title: string
   body: string | string[]
   illustration: ReactNode
+  nativeOnly?: boolean
 }
 
-const HOWTO_PAGES: HowToPage[] = [
+const ALL_HOWTO_PAGES: HowToPage[] = [
   {
     title: 'Add your language',
     body: 'Tap the language selector to add one of dozens of languages. Adding your first language offers a curated set of starter phrases to get you started.',
@@ -189,6 +191,7 @@ const HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Add the home screen widget',
+    nativeOnly: true,
     body: 'Long-press your home screen, tap Widgets, and add Travel Chatter to see your favorites or not-learnt phrases at a glance. Tap the language to cycle it, the filter pill to switch lists, and a phrase to hear it spoken aloud.',
     illustration: (
       <div className="flex w-full flex-col items-center gap-3">
@@ -225,6 +228,9 @@ const HOWTO_PAGES: HowToPage[] = [
     ),
   },
 ]
+
+const HOWTO_PAGES: HowToPage[] =
+  Capacitor.getPlatform() === 'web' ? ALL_HOWTO_PAGES.filter((p) => !p.nativeOnly) : ALL_HOWTO_PAGES
 
 const TOTAL_PAGES = HOWTO_PAGES.length + 1
 
