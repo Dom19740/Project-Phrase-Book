@@ -8,7 +8,7 @@ interface Props {
   languages: Language[]
   activeLanguageId: number | null
   onSelect: (id: number) => void
-  onAddLanguage: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<void>
+  onAddLanguage: (name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) => Promise<void>
   onRemoveLanguage: (id: number) => void
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   search: string
@@ -50,8 +50,14 @@ export function LanguageTabs({
             onClick={() => (languages.length === 0 ? setShowAddLanguage(true) : setOpen((v) => !v))}
             className="h-10 w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 text-sm font-semibold shadow-lg shadow-fabpink/10 active:scale-[0.98] transition-all"
           >
-            <span className="shrink-0 text-base leading-none">{activeLanguage ? getLanguageFlag(activeLanguage.code) : '🌐'}</span>
-            <span className="flex-1 text-left truncate text-ink">{activeLanguage?.name ?? (languages.length === 0 ? 'Add a language' : 'Select a language')}</span>
+            {languages.length === 0 ? (
+              <Plus size={16} strokeWidth={2.5} className="shrink-0 text-fabpink" />
+            ) : (
+              <span className="shrink-0 text-base leading-none">{activeLanguage ? getLanguageFlag(activeLanguage.code) : '🌐'}</span>
+            )}
+            <span className={`flex-1 text-left truncate ${languages.length === 0 ? 'text-fabpink' : 'text-ink'}`}>
+              {activeLanguage?.name ?? (languages.length === 0 ? 'Add a language' : 'Select a language')}
+            </span>
             <ChevronDown size={16} strokeWidth={2.5} className="text-fabpink" />
           </button>
 

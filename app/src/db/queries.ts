@@ -15,13 +15,26 @@ export async function getLanguages(): Promise<Language[]> {
 /**
  * @param includeConceptIds Restricts which existing phrases get carried into the new language (e.g. the
  * user's picks from the "copy phrases from" step). Omit/null to include every existing phrase, as before.
+ * @param sourceLanguageId The phrasebook being copied from, if any - phrases favorited there stay
+ * favorited in the new language too.
  */
-export async function addLanguage(name: string, code: string, includeConceptIds?: number[] | null): Promise<Language> {
+export async function addLanguage(
+  name: string,
+  code: string,
+  includeConceptIds?: number[] | null,
+  sourceLanguageId?: number | null,
+): Promise<Language> {
   const db = await getDb()
   const maxOrder = await db.query('SELECT COALESCE(MAX(sort_order), -1) AS m FROM languages;')
   const sortOrder = (maxOrder.values?.[0]?.m ?? -1) + 1
   const res = await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [name, code, sortOrder])
   const languageId = res.changes?.lastId ?? 0
+
+  let favoriteConceptIds: Set<number> | null = null
+  if (sourceLanguageId != null) {
+    const favRes = await db.query('SELECT phrase_concept_id FROM translations WHERE language_id = ? AND favorite = 1;', [sourceLanguageId])
+    favoriteConceptIds = new Set((favRes.values ?? []).map((r) => r.phrase_concept_id as number))
+  }
 
   // A phrase not picked for this language is skipped entirely, not just left blank - it won't show
   // up in this language's list at all until the user adds it manually or via a future phrase.
@@ -30,8 +43,8 @@ export async function addLanguage(name: string, code: string, includeConceptIds?
   const sets = (concepts.values ?? [])
     .filter((c) => !included || included.has(c.id))
     .map((c) => ({
-      statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, 0);',
-      values: [c.id, languageId, ''],
+      statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order, favorite) VALUES (?, ?, ?, 0, ?);',
+      values: [c.id, languageId, '', favoriteConceptIds?.has(c.id) ? 1 : 0],
     }))
   if (sets.length > 0) await db.executeSet(sets)
 

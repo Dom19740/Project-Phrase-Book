@@ -10,7 +10,7 @@ interface Props {
   activeLanguageId: number | null
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   onClose: () => void
-  onSubmit: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<void>
+  onSubmit: (name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) => Promise<void>
 }
 
 export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhrases, onClose, onSubmit }: Props) {
@@ -54,7 +54,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
   async function handleAdd() {
     if (!selected) return
     setSaving(true)
-    await onSubmit(selected.name, selected.code, hasExistingPhrases ? Array.from(includedIds) : null)
+    await onSubmit(selected.name, selected.code, hasExistingPhrases ? Array.from(includedIds) : null, hasExistingPhrases ? sourceLanguageId : null)
     setSaving(false)
     onClose()
   }
@@ -178,13 +178,13 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                 disabled={saving || loadingPhrases}
                 className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
               >
-                {saving ? 'Adding...' : 'Add language'}
+                {saving ? 'Adding...' : 'Add a language'}
               </button>
             </div>
           </>
         ) : (
           <>
-            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add language</h2>
+            <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add a language</h2>
 
             <div className="mb-3">
               <LanguageSearchList disabledCodes={existingCodes} disabled={saving} onChoose={chooseLanguage} />

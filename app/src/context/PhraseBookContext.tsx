@@ -73,7 +73,7 @@ interface PhraseBookContextValue {
   renameCategory: (categoryId: number, newName: string) => Promise<void>
   deleteCategory: (categoryId: number) => Promise<void>
   reorderCategories: (orderedCategoryIds: number[]) => Promise<void>
-  createLanguage: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<Language>
+  createLanguage: (name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) => Promise<Language>
   addStartupPhrases: (languageId: number, englishKeys?: string[]) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
@@ -468,8 +468,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const getLanguagePhrases = useCallback((languageId: number) => getPhraseList(languageId), [])
 
   const createLanguage = useCallback(
-    async (name: string, code: string, includeConceptIds?: number[] | null) => {
-      const lang = await addLanguage(name, code, includeConceptIds)
+    async (name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) => {
+      const lang = await addLanguage(name, code, includeConceptIds, sourceLanguageId)
       await refreshLanguages()
       setActiveLanguageId(lang.id)
 

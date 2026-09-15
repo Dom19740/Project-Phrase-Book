@@ -117,9 +117,9 @@ function Shell() {
     setShowOnboarding(false)
   }
 
-  async function handleAddLanguage(name: string, code: string, includeConceptIds?: number[] | null) {
+  async function handleAddLanguage(name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) {
     const wasFirstLanguage = languages.length === 0
-    const lang = await createLanguage(name, code, includeConceptIds)
+    const lang = await createLanguage(name, code, includeConceptIds, sourceLanguageId)
     if (wasFirstLanguage) setStartupPhrasesLanguageId(lang.id)
   }
 
