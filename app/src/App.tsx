@@ -216,15 +216,6 @@ function Shell() {
                     <p className="mb-1.5 text-xs font-medium text-muted">Theme</p>
                     <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => setThemeOverride('dark')}
-                        aria-label="Dark theme"
-                        aria-pressed={theme === 'dark'}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
-                        style={theme === 'dark' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
-                      >
-                        <Moon size={13} strokeWidth={2} />
-                      </button>
-                      <button
                         onClick={() => setThemeOverride('light')}
                         aria-label="Light theme"
                         aria-pressed={theme === 'light'}
@@ -232,6 +223,15 @@ function Shell() {
                         style={theme === 'light' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
                       >
                         <Sun size={13} strokeWidth={2} />
+                      </button>
+                      <button
+                        onClick={() => setThemeOverride('dark')}
+                        aria-label="Dark theme"
+                        aria-pressed={theme === 'dark'}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
+                        style={theme === 'dark' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
+                      >
+                        <Moon size={13} strokeWidth={2} />
                       </button>
                       <div className="mx-0.5 h-4 w-px shrink-0 bg-hairline" />
                       {ACCENT_COLORS.map((color) => (
