@@ -43,6 +43,8 @@ header.floating.visible {
   transition: background 0.15s ease, transform 0.15s ease;
 }
 .btn:hover { background: var(--pink-dark); transform: translateY(-1px); }
+footer .foot-row a.foot-link { color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; opacity: 0.8; }
+footer .foot-row a.foot-link:hover { opacity: 1; }
 footer { background: var(--black); color: #9A9AA4; padding: 48px 0 32px; }
 footer .foot-row {
   display: flex;

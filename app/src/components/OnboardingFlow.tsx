@@ -308,7 +308,7 @@ export function OnboardingFlow({ onFinish }: Props) {
             </p>
 
             <p className="relative mt-5 text-sm leading-relaxed text-muted">
-              Capture a phrase and translate it into any language. Save it, learn it and practice using it the next time you meet someone new and get chatting like a local. A phrasebook that only contains {' '}what you choose to put in it.
+              Capture a phrase and translate it into any language. Hear it, learn it and practice using it the next time you meet someone new and get chatting like a local. A phrasebook that only contains {' '}what you choose to put in it.
             </p>
           </div>
         ) : (

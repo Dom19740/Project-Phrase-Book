@@ -260,6 +260,25 @@ test('CORS: echoes back the Capacitor Android WebView origin (https://localhost)
   assert.equal(state.headers['Access-Control-Allow-Origin'], 'https://localhost')
 })
 
+test('CORS: echoes back the hosted web app origin (https://project-travel-chatter.vercel.app)', async () => {
+  mock.method(deviceRateLimit, 'limit', async () => ({ success: true }))
+  mock.method(ipRateLimit, 'limit', async () => ({ success: true }))
+  mock.method(redisOps, 'get', async () => null)
+  mock.method(redisOps, 'set', async () => 'OK')
+  mock.method(globalThis, 'fetch', async () => geminiSuccess({ vi: 'Xin chào' }))
+
+  const { res, state } = makeRes()
+  await translateHandler(
+    makeReq({
+      headers: { 'x-device-id': 'device-1234', origin: 'https://project-travel-chatter.vercel.app' },
+      body: { english: 'Hello', targetLangs: ['vi'] },
+    }),
+    res,
+  )
+
+  assert.equal(state.headers['Access-Control-Allow-Origin'], 'https://project-travel-chatter.vercel.app')
+})
+
 test('CORS: does not echo back an untrusted third-party origin', async () => {
   mock.method(deviceRateLimit, 'limit', async () => ({ success: true }))
   mock.method(ipRateLimit, 'limit', async () => ({ success: true }))

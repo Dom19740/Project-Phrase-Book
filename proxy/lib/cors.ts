@@ -7,7 +7,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 // own machine. This is a browser-enforced allowlist, not an access-control mechanism - curl,
 // scripts, and server-to-server calls ignore CORS entirely. See
 // docs/pre-production-audit/01-h1-translation-proxy-security-options.md, option 11.
-const ALLOWED_ORIGIN_PATTERN = /^https?:\/\/localhost(:\d+)?$/
+//
+// https://project-travel-chatter.vercel.app is the hosted web build of the app (see
+// app/vite.config.ts) - its exact production origin only, not a wildcard over Vercel's
+// per-branch/per-commit preview URLs, since this proxy is meant to serve one deployed web app
+// rather than every preview build.
+const ALLOWED_ORIGIN_PATTERN = /^https?:\/\/localhost(:\d+)?$|^https:\/\/project-travel-chatter\.vercel\.app$/
 
 export function applyCors(req: VercelRequest, res: VercelResponse): void {
   const origin = req.headers.origin
