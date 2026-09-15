@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react'
-import { BookOpen, Layers, Loader2, Menu, Moon, Plus, Save, Sun, TriangleAlert } from 'lucide-react'
+import { BookOpen, Layers, Loader2, Menu, Moon, Plus, Save, Smartphone, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { EditPhraseModal } from './components/EditPhraseModal'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { FlashCardsModal } from './components/FlashCardsModal'
+import { InstallPrompt } from './components/InstallPrompt'
 import { LanguageTabs } from './components/LanguageTabs'
 import { LoadingScreen } from './components/LoadingScreen'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
+import { useInstallPrompt } from './lib/useInstallPrompt'
 import { usePersistedState } from './lib/usePersistedState'
 import { syncStatusBarStyle } from './lib/systemBars'
 import { syncWidgetTheme } from './lib/widgetRefresh'
@@ -112,9 +114,19 @@ function Shell() {
   const [showOnboarding, setShowOnboarding] = useState(() => !onboardingSeen)
   const appliedAccent = theme === 'light' ? (LIGHT_MODE_ACCENT_OVERRIDES[accent] ?? accent) : accent
 
+  const [installPromptOffered, setInstallPromptOffered] = usePersistedState('phrasebook-install-prompt-offered', false)
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false)
+  const { platform: installPlatform, canPromptNatively, promptInstall } = useInstallPrompt()
+  const canOfferInstall = installPlatform === 'ios' || (installPlatform === 'android' && canPromptNatively)
+
   function finishOnboarding() {
+    const wasFirstOnboarding = !onboardingSeen
     setOnboardingSeen(true)
     setShowOnboarding(false)
+    if (wasFirstOnboarding && !installPromptOffered && canOfferInstall) {
+      setShowInstallPrompt(true)
+      setInstallPromptOffered(true)
+    }
   }
 
   async function handleAddLanguage(name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) {
@@ -190,6 +202,18 @@ function Shell() {
                     <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
                     How to Use
                   </button>
+                  {canOfferInstall && (
+                    <button
+                      onClick={() => {
+                        setShowInstallPrompt(true)
+                        setMenuOpen(false)
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                    >
+                      <Smartphone size={16} strokeWidth={2} className="text-fabpink" />
+                      Add to Home Screen
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setShowFlashCards(true)
@@ -391,6 +415,10 @@ function Shell() {
       )}
 
       {showOnboarding && <OnboardingFlow onFinish={finishOnboarding} />}
+
+      {showInstallPrompt && installPlatform && (
+        <InstallPrompt platform={installPlatform} onInstall={promptInstall} onClose={() => setShowInstallPrompt(false)} />
+      )}
 
       {showFlashCards && (
         <FlashCardsModal

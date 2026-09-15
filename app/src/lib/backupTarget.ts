@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core'
 import { SafFile } from './safFile'
+import { saveFileOnWeb } from './webSave'
 
 const AUTO_BACKUP_NAME = 'backup.json'
 const FOLDER_URI_KEY = 'phrasebook-backup-folder-uri'
@@ -12,17 +13,6 @@ export function isNativeBackupSupported(): boolean {
 function manualBackupName(): string {
   const date = new Date().toISOString().slice(0, 10)
   return `travelchatter-backup-${date}.json`
-}
-
-/** Web preview has no real Documents folder - falls back to a normal browser download. */
-function downloadInBrowser(json: string, name: string): void {
-  const blob = new Blob([json], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = name
-  a.click()
-  URL.revokeObjectURL(url)
 }
 
 /** The folder the user previously granted via `chooseBackupFolder`, if any - `null` before first setup. */
@@ -88,7 +78,7 @@ export async function writeAutoBackupFile(json: string): Promise<void> {
 export async function writeManualBackupFile(json: string): Promise<string> {
   const name = manualBackupName()
   if (!isNativeBackupSupported()) {
-    downloadInBrowser(json, name)
+    await saveFileOnWeb(json, name, 'application/json', { title: 'Save backup' })
     return name
   }
   if (!getBackupFolderUri()) await chooseBackupFolder()

@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core'
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
+import { saveFileOnWeb } from './webSave'
 
 export interface ExportFileOptions {
   /** Caption text sent alongside the file - e.g. an invite line pointing back to the app. */
@@ -10,10 +11,11 @@ export interface ExportFileOptions {
 }
 
 /**
- * On the web, an anchor's `download` attribute triggers a save. Android's WebView doesn't honor
- * it - clicking a programmatic `<a download>` silently does nothing, which is why "Export as
- * JSON file" appeared broken on device. There, write to the app's cache dir (no permission
- * needed) and hand the file to the OS share sheet so the user can save it wherever they like.
+ * On the web, hand the file to the OS share sheet (via `saveFileOnWeb`) so the user can pick a
+ * real save location, falling back to a plain `<a download>` only where that's not supported.
+ * Android's WebView doesn't honor `<a download>` at all - clicking a programmatic one silently
+ * does nothing, which is why "Export as JSON file" appeared broken on device - so there, write to
+ * the app's cache dir (no permission needed) and hand the file to the OS share sheet directly.
  *
  * `options.text` rides along as the share's caption (e.g. WhatsApp/Gmail show it next to the
  * attachment). Most apps only unfurl a link's og:image into a rich preview when the share is
@@ -23,13 +25,7 @@ export interface ExportFileOptions {
  */
 export async function exportFile(content: string, filename: string, mimeType: string, options?: ExportFileOptions): Promise<void> {
   if (Capacitor.getPlatform() === 'web') {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
+    await saveFileOnWeb(content, filename, mimeType, { text: options?.text, title: options?.dialogTitle })
     return
   }
 

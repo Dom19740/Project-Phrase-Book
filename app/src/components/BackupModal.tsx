@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Plus, Share2 } from 'lucide-react'
 import { getLastBackupAt } from '../lib/autoBackup'
-import { getBackupFolderLabel, type BackupFileInfo } from '../lib/backupTarget'
+import { getBackupFolderLabel, isNativeBackupSupported, type BackupFileInfo } from '../lib/backupTarget'
 import { exportFile } from '../lib/exportFile'
 import { detectLanguage, detectLanguageFromFilename } from '../lib/detectLanguage'
 import { getLanguageFlag } from '../lib/languageFlags'
@@ -76,7 +76,7 @@ export function BackupModal({
     try {
       const name = await onBackUpNow()
       setFolderLabel(getBackupFolderLabel())
-      setStatus(`Backed up to ${getBackupFolderLabel() ?? 'chosen folder'}/${name}`)
+      setStatus(isNativeBackupSupported() ? `Backed up to ${getBackupFolderLabel() ?? 'chosen folder'}/${name}` : `Backed up as ${name}.`)
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Backup failed.')
     }
@@ -254,20 +254,24 @@ export function BackupModal({
         <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Backup</h2>
         <p className="text-xs text-muted mb-4">
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}{' '}
-          {folderLabel ? (
-            <>
-              Saved to {folderLabel}.{' '}
-              <button onClick={handleChooseFolder} disabled={busy} className="text-fabpink underline hover:no-underline disabled:opacity-40">
-                Change
-              </button>
-            </>
+          {isNativeBackupSupported() ? (
+            folderLabel ? (
+              <>
+                Saved to {folderLabel}.{' '}
+                <button onClick={handleChooseFolder} disabled={busy} className="text-fabpink underline hover:no-underline disabled:opacity-40">
+                  Change
+                </button>
+              </>
+            ) : (
+              <>
+                Saved to a folder you choose - pick one now, or it's chosen the first time you back up.{' '}
+                <button onClick={handleChooseFolder} disabled={busy} className="text-fabpink underline hover:no-underline disabled:opacity-40">
+                  Choose folder
+                </button>
+              </>
+            )
           ) : (
-            <>
-              Saved to a folder you choose - pick one now, or it's chosen the first time you back up.{' '}
-              <button onClick={handleChooseFolder} disabled={busy} className="text-fabpink underline hover:no-underline disabled:opacity-40">
-                Choose folder
-              </button>
-            </>
+            "Back up now opens your device's share sheet, so you can save the file wherever you like (Files, Drive, a specific folder) - a location that's safe even if this browser's storage gets cleared."
           )}
         </p>
 

@@ -15,9 +15,28 @@ export function onMutation(listener: () => void): void {
   mutationListeners.push(listener)
 }
 
+/**
+ * Asks the browser to exempt this origin's storage (IndexedDB, localStorage) from eviction under
+ * storage pressure - iOS in particular will otherwise clear a Safari tab's data to free up disk
+ * space, which is how phrasebooks get silently wiped. Granted automatically for most home-screen
+ * installs; either way this is best-effort and silently no-ops where unsupported or declined.
+ */
+async function requestPersistentStorage(): Promise<void> {
+  try {
+    if (!navigator.storage?.persist) return
+    if (await navigator.storage.persisted()) return
+    await navigator.storage.persist()
+  } catch {
+    // Best-effort - nothing else to do if the browser declines or the API throws.
+  }
+}
+
 async function openConnection(): Promise<SQLiteDBConnection> {
   await setupWebStore()
-  if (isWeb) await sqlite.initWebStore()
+  if (isWeb) {
+    await sqlite.initWebStore()
+    await requestPersistentStorage()
+  }
 
   const isConn = (await sqlite.isConnection(DB_NAME, false)).result
   const db = isConn
