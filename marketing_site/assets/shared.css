@@ -43,8 +43,14 @@ header.floating.visible {
   transition: background 0.15s ease, transform 0.15s ease;
 }
 .btn:hover { background: var(--pink-dark); transform: translateY(-1px); }
-footer .foot-row a.foot-link { color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; opacity: 0.8; }
-footer .foot-row a.foot-link:hover { opacity: 1; }
+.btn.outline {
+  background: #fff;
+  color: var(--pink);
+  border: 1.5px solid var(--pink);
+  padding: 10.5px 20.5px;
+}
+.btn.outline:hover { background: var(--pink-tint); transform: translateY(-1px); }
+.header-ctas, .foot-ctas { display: flex; align-items: center; gap: 16px; }
 footer { background: var(--black); color: #9A9AA4; padding: 48px 0 32px; }
 footer .foot-row {
   display: flex;
@@ -63,5 +69,5 @@ footer .brand span { color: #fff; }
   .nav-row { height: 68px; }
 }
 @media (max-width: 600px) {
-  .header-download { display: none; }
+  .header-ctas { display: none; }
 }

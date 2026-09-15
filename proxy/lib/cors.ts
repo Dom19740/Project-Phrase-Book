@@ -8,11 +8,13 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 // scripts, and server-to-server calls ignore CORS entirely. See
 // docs/pre-production-audit/01-h1-translation-proxy-security-options.md, option 11.
 //
-// https://project-travel-chatter.vercel.app is the hosted web build of the app (see
-// app/vite.config.ts) - its exact production origin only, not a wildcard over Vercel's
+// The hosted web build of the app (see app/vite.config.ts) is reachable at both its custom
+// domain (app.travelchatter.dpbcreative.com) and its underlying Vercel project alias
+// (project-travel-chatter.vercel.app, which Vercel keeps serving even once a custom domain is
+// attached) - both are exact production origins only, not a wildcard over Vercel's
 // per-branch/per-commit preview URLs, since this proxy is meant to serve one deployed web app
 // rather than every preview build.
-const ALLOWED_ORIGIN_PATTERN = /^https?:\/\/localhost(:\d+)?$|^https:\/\/project-travel-chatter\.vercel\.app$/
+const ALLOWED_ORIGIN_PATTERN = /^https?:\/\/localhost(:\d+)?$|^https:\/\/(app\.travelchatter\.dpbcreative\.com|project-travel-chatter\.vercel\.app)$/
 
 export function applyCors(req: VercelRequest, res: VercelResponse): void {
   const origin = req.headers.origin
