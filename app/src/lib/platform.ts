@@ -2,6 +2,11 @@ import { Capacitor } from '@capacitor/core'
 
 export type InstallablePlatform = 'ios' | 'android'
 
+/** The only real Travel Chatter app on Android is the Play Store one - it's what actually gets you
+ * auto-backup and the home-screen widget, neither of which a browser tab (or a bare "Add to Home
+ * Screen" shortcut, which is still just the same browser tab) can provide. */
+export const ANDROID_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter'
+
 function isIosDevice(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
 }

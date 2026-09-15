@@ -13,7 +13,7 @@ import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
-import { useInstallPrompt } from './lib/useInstallPrompt'
+import { detectInstallablePlatform } from './lib/platform'
 import { usePersistedState } from './lib/usePersistedState'
 import { syncStatusBarStyle } from './lib/systemBars'
 import { syncWidgetTheme } from './lib/widgetRefresh'
@@ -118,8 +118,7 @@ function Shell() {
 
   const [installPromptOffered, setInstallPromptOffered] = usePersistedState('phrasebook-install-prompt-offered', false)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
-  const { platform: installPlatform, canPromptNatively, promptInstall } = useInstallPrompt()
-  const canOfferInstall = installPlatform === 'ios' || (installPlatform === 'android' && canPromptNatively)
+  const [installPlatform] = useState(detectInstallablePlatform)
 
   // Dismissing only snoozes the banner for this session - it comes back next launch if the
   // phrasebook is still unbacked-up, rather than being silenced forever after one tap.
@@ -142,7 +141,7 @@ function Shell() {
     const wasFirstOnboarding = !onboardingSeen
     setOnboardingSeen(true)
     setShowOnboarding(false)
-    if (wasFirstOnboarding && !installPromptOffered && canOfferInstall) {
+    if (wasFirstOnboarding && !installPromptOffered && installPlatform) {
       setShowInstallPrompt(true)
       setInstallPromptOffered(true)
     }
@@ -221,7 +220,7 @@ function Shell() {
                     <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
                     How to Use
                   </button>
-                  {canOfferInstall && (
+                  {installPlatform && (
                     <button
                       onClick={() => {
                         setShowInstallPrompt(true)
@@ -230,7 +229,7 @@ function Shell() {
                       className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
                     >
                       <Smartphone size={16} strokeWidth={2} className="text-fabpink" />
-                      Add to Home Screen
+                      {installPlatform === 'ios' ? 'Add to Home Screen' : 'Get the app'}
                     </button>
                   )}
                   <button
@@ -447,7 +446,7 @@ function Shell() {
       {showOnboarding && <OnboardingFlow onFinish={finishOnboarding} />}
 
       {showInstallPrompt && installPlatform && (
-        <InstallPrompt platform={installPlatform} onInstall={promptInstall} onClose={() => setShowInstallPrompt(false)} />
+        <InstallPrompt platform={installPlatform} onClose={() => setShowInstallPrompt(false)} />
       )}
 
       {showFlashCards && (

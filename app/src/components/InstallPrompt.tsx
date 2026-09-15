@@ -1,24 +1,13 @@
-import { useState } from 'react'
-import { Download, Share, SquarePlus, X } from 'lucide-react'
+import { Layers, Save, Share, SquarePlus, X } from 'lucide-react'
 import { Logo } from './Logo'
-import type { InstallablePlatform } from '../lib/platform'
+import { ANDROID_PLAY_STORE_URL, type InstallablePlatform } from '../lib/platform'
 
 interface Props {
   platform: InstallablePlatform
-  onInstall: () => Promise<boolean>
   onClose: () => void
 }
 
-export function InstallPrompt({ platform, onInstall, onClose }: Props) {
-  const [installing, setInstalling] = useState(false)
-
-  async function handleInstall() {
-    setInstalling(true)
-    const accepted = await onInstall()
-    setInstalling(false)
-    if (accepted) onClose()
-  }
-
+export function InstallPrompt({ platform, onClose }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center"
@@ -32,8 +21,14 @@ export function InstallPrompt({ platform, onInstall, onClose }: Props) {
           <div className="flex items-center gap-3">
             <Logo size={36} className="shrink-0 text-fabpink" />
             <div>
-              <h2 className="text-base font-bold tracking-tight text-ink">Add to Home Screen</h2>
-              <p className="text-xs text-muted">Launch it like an app, and keep your phrasebooks safer on this device.</p>
+              <h2 className="text-base font-bold tracking-tight text-ink">
+                {platform === 'ios' ? 'Add to Home Screen' : 'Get the app'}
+              </h2>
+              <p className="text-xs text-muted">
+                {platform === 'ios'
+                  ? 'Launch it like an app, and keep your phrasebooks safer on this device.'
+                  : "You're using the website - the app unlocks more."}
+              </p>
             </div>
           </div>
           <button
@@ -61,9 +56,20 @@ export function InstallPrompt({ platform, onInstall, onClose }: Props) {
             </p>
           </div>
         ) : (
-          <p className="mt-4 text-sm text-muted">
-            Install Travel Chatter for quicker access from your home screen.
-          </p>
+          <div className="mt-4 flex flex-col gap-2.5 rounded-2xl border border-hairline bg-appbg p-3.5">
+            <p className="flex items-center gap-2.5 text-sm text-ink">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-fabpink/15 text-fabpink">
+                <Save size={15} strokeWidth={2} />
+              </span>
+              Automatic backups to a folder you choose
+            </p>
+            <p className="flex items-center gap-2.5 text-sm text-ink">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-fabpink/15 text-fabpink">
+                <Layers size={15} strokeWidth={2} />
+              </span>
+              A home-screen widget for your favorite phrases
+            </p>
+          </div>
         )}
 
         <div className="mt-5 flex justify-end gap-2">
@@ -74,14 +80,15 @@ export function InstallPrompt({ platform, onInstall, onClose }: Props) {
             Not now
           </button>
           {platform === 'android' && (
-            <button
-              onClick={handleInstall}
-              disabled={installing}
-              className="flex items-center gap-1.5 rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+            <a
+              href={ANDROID_PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
+              className="flex items-center gap-1.5 rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
             >
-              <Download size={15} strokeWidth={2} />
-              {installing ? 'Installing...' : 'Install'}
-            </button>
+              Get it on Google Play
+            </a>
           )}
         </div>
       </div>

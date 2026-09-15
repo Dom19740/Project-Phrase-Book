@@ -25,6 +25,16 @@
   --color-fabpink: #EC1D8B;
   --color-onaccent: #ffffff;
   --color-brandink: #201e1d;
+
+  /* Bridges the CSS environment variables (only populated when `viewport-fit=cover` is set, as it
+     is in index.html) to the plain custom properties every fixed/edge-hugging element in this app
+     reads via `var(--safe-area-inset-*, 0px)`. Without this, that fallback is always what's used -
+     0px - which is invisible in a normal browser tab but overlaps real content under the iOS status
+     bar once the app is added to the home screen (standalone mode with a translucent status bar). */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
 }
 
 :root[data-theme='light'] {
