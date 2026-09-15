@@ -260,7 +260,7 @@ function Shell() {
           <div className="flex flex-col items-center gap-2 py-12 text-center">
             <p className="font-brand text-xl font-bold tracking-[-0.035em] text-ink">Start your phrasebook.</p>
             <p className="max-w-xs text-sm leading-relaxed text-muted">
-              Tap <span className="text-fabpink">Select a language</span> above to add your first one.
+              Tap <span className="text-fabpink">Add a language</span> above to add your first one.
             </p>
           </div>
         ) : backgroundTranslation?.languageId === activeLanguageId && phrases.length === 0 ? (
