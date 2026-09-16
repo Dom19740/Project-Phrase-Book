@@ -79,23 +79,28 @@
 <main class="policy">
   <div class="wrap">
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: August 11, 2026</p>
+    <p class="updated">Last updated: September 16, 2026</p>
 
     <p>Travel Chatter ("the app") is a travel phrasebook app. This page explains what information the app collects, how it's used, and what it doesn't do.</p>
 
     <h2>Data stored only on your device</h2>
     <p>Your phrasebook - languages, phrases, translations, categories, and your favorite/learned markers - is stored entirely in a local database on your device. It is never uploaded anywhere automatically. The app also keeps a private automatic backup copy in its own app storage on your device (not visible to other apps, not uploaded anywhere) purely as a safety net against data loss.</p>
     <p>You can manually create a backup file or export a CSV file at any time - these are only ever saved to a location <em>you</em> choose (e.g. your device storage, an SD card, or a cloud storage app you pick), and only shared if you explicitly use your device's share function.</p>
+    <p>You can also share a language's phrases as a link instead of a file. This is a separate, explicit action - it does not happen automatically - and it does upload that language's phrases and translations to our service so the link works for whoever you send it to. See "Share links" below for details.</p>
 
     <h2>What's sent over the network</h2>
-    <p>The app works fully offline for browsing, editing, organizing, and backing up your phrasebook. Network access is used only for two optional features:</p>
+    <p>The app works fully offline for browsing, editing, organizing, and backing up your phrasebook. Network access is used only for these optional features:</p>
     <ul>
       <li><strong>Auto-translate.</strong> When you add a phrase or a new language and use auto-translate, the English text of that phrase (and the target language) is sent to our translation service, which forwards it to Google's Gemini API to generate a translation. This text is used only to produce that translation and is not stored by our service beyond what's needed to process the request.</li>
       <li><strong>Text-to-speech.</strong> Playback uses your device's built-in text-to-speech engine; no phrase text is sent to us or to any third party for this feature.</li>
+      <li><strong>Share links.</strong> When you choose to share a language as a link, that language's phrases and translations are uploaded to our service and stored temporarily so the link works. See "Share links" below.</li>
     </ul>
 
+    <h2>Share links</h2>
+    <p>Sharing as a link is optional and always something you choose to do - it never happens automatically. When you do, that language's phrases and translations are uploaded to our service and stored under a random, unguessable code for 30 days, after which they're automatically deleted. The link itself (e.g. <code>travelchatter.dpbcreative.com/c/&lt;code&gt;</code>) is what grants access - anyone who has the link can open it, not just the person you intended to send it to, so treat it the way you would any link you don't want forwarded on. We don't link a share to your identity beyond the same anonymous device identifier described below, used only to apply fair-use limits on how many links can be created.</p>
+
     <h2>Anonymous device identifier</h2>
-    <p>The app generates a random identifier on first use, stored locally on your device. It is not linked to your name, email, or any account - the app has no accounts or sign-in of any kind. This identifier is sent only with translation requests, solely to apply fair-use rate limits and prevent abuse of the translation service. It is not used to track you across other apps or websites, and no profile is built from it.</p>
+    <p>The app generates a random identifier on first use, stored locally on your device. It is not linked to your name, email, or any account - the app has no accounts or sign-in of any kind. This identifier is sent with translation requests and with share-link creation, solely to apply fair-use rate limits and prevent abuse of those services. It is not used to track you across other apps or websites, and no profile is built from it.</p>
 
     <h2>What we don't collect</h2>
     <ul>

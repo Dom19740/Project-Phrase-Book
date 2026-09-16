@@ -28,7 +28,7 @@ import {
 } from '../db/queries'
 import { backfillSeedCategories } from '../db/seed'
 import type { Category, Language, PhraseListItem } from '../db/types'
-import { exportSnapshot, importSnapshot, isValidBackupSnapshot, type BackupSnapshot } from '../db/backup'
+import { exportSnapshot, exportSnapshotForLanguage, importSnapshot, isValidBackupSnapshot, type BackupSnapshot } from '../db/backup'
 import { onMutation } from '../db/client'
 import {
   BACKUP_REMINDER_THRESHOLD,
@@ -43,6 +43,7 @@ import { refreshWidget } from '../lib/widgetRefresh'
 import { readBackupFromPickedLocation, readCsvFromPickedLocation } from '../lib/backupFile'
 import { chooseBackupFolder, type BackupFileInfo, listBackupFiles, readBackupFile, writeManualBackupFile } from '../lib/backupTarget'
 import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
+import { createShareLink as uploadShareLink, type ShareLinkResult } from '../lib/shareLink'
 import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
 import { usePersistedState } from '../lib/usePersistedState'
 import { phrasesToCsv } from '../lib/csvExport'
@@ -95,6 +96,7 @@ interface PhraseBookContextValue {
   exportLanguageCsv: (languageId: number) => Promise<string>
   pickCsvFile: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
   importLanguageCsv: (rows: CsvPhraseRow[], language: Language) => Promise<{ created: number; updated: number }>
+  createShareLink: (languageId: number) => Promise<ShareLinkResult>
 }
 
 /** Phrases translated per request when auto-translating a newly added language in the background. */
@@ -401,6 +403,11 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     return phrasesToCsv(list)
   }, [])
 
+  const createShareLink = useCallback(async (languageId: number) => {
+    const snapshot = await exportSnapshotForLanguage(languageId)
+    return uploadShareLink(snapshot)
+  }, [])
+
   const pickCsvFile = useCallback(async (): Promise<{ name: string; rows: CsvPhraseRow[] }> => {
     const { name, data } = await readCsvFromPickedLocation()
     const rows = parseCsvPhrases(data)
@@ -599,6 +606,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       exportLanguageCsv,
       pickCsvFile,
       importLanguageCsv,
+      createShareLink,
     }),
     [
       loading,
@@ -624,6 +632,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       exportLanguageCsv,
       pickCsvFile,
       importLanguageCsv,
+      createShareLink,
       deleteOneLanguage,
       deleteAllLanguages,
       bulkMarkLearned,

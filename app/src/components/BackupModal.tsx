@@ -1,8 +1,10 @@
-import { useMemo, useRef, useState } from 'react'
-import { Plus, Share2 } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link2, Plus, Share2 } from 'lucide-react'
 import { getLastBackupAt } from '../lib/autoBackup'
 import { getBackupFolderLabel, isNativeBackupSupported, type BackupFileInfo } from '../lib/backupTarget'
 import { exportFile } from '../lib/exportFile'
+import type { ShareLinkResult } from '../lib/shareLink'
+import { shareUrl } from '../lib/shareUrl'
 import { detectLanguage, detectLanguageFromFilename } from '../lib/detectLanguage'
 import { getLanguageFlag } from '../lib/languageFlags'
 import type { LanguageOption } from '../lib/languageOptions'
@@ -27,6 +29,12 @@ interface Props {
   onPickCsv: () => Promise<{ name: string; rows: CsvPhraseRow[] }>
   onImportCsv: (rows: CsvPhraseRow[], language: Language) => Promise<{ created: number; updated: number }>
   onCreateLanguage: (name: string, code: string, includeConceptIds?: number[] | null) => Promise<Language>
+  onCreateShareLink: (languageId: number) => Promise<ShareLinkResult>
+  /** Set when a share link (opened via Android App Links or the web app's ?share= param) was
+   * already fetched before this modal opened - seeds the import preview the same way a picked
+   * CSV file would, then is consumed (cleared by the parent) so it doesn't re-fire on rerender. */
+  pendingShareImport?: { name: string; rows: CsvPhraseRow[]; languageCode: string | null; languageName: string | null } | null
+  onConsumePendingShareImport?: () => void
 }
 
 type ImportTarget = { kind: 'existing'; language: Language } | { kind: 'new'; option: LanguageOption }
@@ -44,6 +52,9 @@ export function BackupModal({
   onPickCsv,
   onImportCsv,
   onCreateLanguage,
+  onCreateShareLink,
+  pendingShareImport,
+  onConsumePendingShareImport,
 }: Props) {
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -113,6 +124,21 @@ export function BackupModal({
     setBusy(false)
   }
 
+  async function handleShareLink() {
+    if (csvLanguageId === '') return
+    setBusy(true)
+    setStatus(null)
+    try {
+      const language = languages.find((l) => l.id === csvLanguageId)
+      const { url } = await onCreateShareLink(csvLanguageId)
+      const outcome = await shareUrl(url, `My ${language?.name ?? ''} phrases from Travel Chatter`, 'Share phrases')
+      if (outcome === 'copied') setStatus('Link copied to clipboard - it works for 30 days.')
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not create a share link.')
+    }
+    setBusy(false)
+  }
+
   function resetImportState() {
     setPendingImport(null)
     setImportTarget(null)
@@ -124,38 +150,56 @@ export function BackupModal({
     setManualCode('')
   }
 
+  // Shared by a picked CSV file and an incoming share link - populates the import preview from
+  // a set of rows plus a best-effort (or, for a share link, authoritative) language guess.
+  function beginImport(name: string, rows: CsvPhraseRow[], guess: LanguageOption | null) {
+    const hasTranslations = rows.some((r) => r.text.trim() !== '')
+    const matched = guess ? languages.find((l) => l.code.toLowerCase() === guess.code.toLowerCase()) : undefined
+
+    setPendingImport({ name, rows })
+    setDetectedCode(guess?.code ?? null)
+    setShowLanguagePicker(false)
+    setManualEntry(false)
+
+    if (matched) setImportTarget({ kind: 'existing', language: matched })
+    else if (guess) setImportTarget({ kind: 'new', option: guess })
+    else setImportTarget(languages[0] ? { kind: 'existing', language: languages[0] } : null)
+
+    // Only skip the picker when the rows actually have translations in them AND we know which
+    // language they're in - an English-only list always needs a target picked, and a translated
+    // file we can't identify still needs the user to say what it is.
+    setAutoConfirm(hasTranslations && (matched != null || guess != null))
+  }
+
   async function handleChooseCsv() {
     setBusy(true)
     setStatus(null)
     try {
       const picked = await onPickCsv()
-      const hasTranslations = picked.rows.some((r) => r.text.trim() !== '')
 
       // Best-effort local guess (no detection API is wired up): first from the translation
       // text's script, then - since scripts like Cyrillic/Arabic/Devanagari/Han can't be safely
       // guessed that way - from the filename, which matches this app's own CSV export naming
       // ("${language}-phrases.csv") so a round-tripped export is recognized without any typing.
       const guess = detectLanguage(picked.rows.map((r) => r.text)) ?? detectLanguageFromFilename(picked.name)
-      const matched = guess ? languages.find((l) => l.code.toLowerCase() === guess.code.toLowerCase()) : undefined
-
-      setPendingImport(picked)
-      setDetectedCode(guess?.code ?? null)
-      setShowLanguagePicker(false)
-      setManualEntry(false)
-
-      if (matched) setImportTarget({ kind: 'existing', language: matched })
-      else if (guess) setImportTarget({ kind: 'new', option: guess })
-      else setImportTarget(languages[0] ? { kind: 'existing', language: languages[0] } : null)
-
-      // Only skip the picker when the file actually has translations in it AND we know which
-      // language they're in - an English-only list always needs a target picked, and a
-      // translated file we can't identify still needs the user to say what it is.
-      setAutoConfirm(hasTranslations && (matched != null || guess != null))
+      beginImport(picked.name, picked.rows, guess ?? null)
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Could not read that file.')
     }
     setBusy(false)
   }
+
+  // A share link already comes with the sender's authoritative language name/code (no guessing
+  // needed) - fires once per link, then hands back to the parent so it doesn't re-fire on rerender.
+  useEffect(() => {
+    if (!pendingShareImport) return
+    const guess: LanguageOption | null = pendingShareImport.languageCode
+      ? { name: pendingShareImport.languageName ?? pendingShareImport.languageCode, code: pendingShareImport.languageCode }
+      : null
+    beginImport(pendingShareImport.name, pendingShareImport.rows, guess)
+    onConsumePendingShareImport?.()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingShareImport])
 
   function confirmManual() {
     if (!manualName.trim() || !manualCode.trim()) return
@@ -514,12 +558,22 @@ export function BackupModal({
                     options={languages.map((lang) => ({ value: lang.id, label: lang.name }))}
                   />
                   <button
+                    onClick={handleShareLink}
+                    disabled={busy}
+                    title="Share as a link - works over WhatsApp, opens the app directly if the recipient has it"
+                    className="shrink-0 flex items-center gap-1.5 rounded-full border border-hairline text-ink px-3 py-2 text-sm font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
+                  >
+                    <Link2 size={14} strokeWidth={2.5} />
+                    Link
+                  </button>
+                  <button
                     onClick={handleExportCsv}
                     disabled={busy}
+                    title="Share as a CSV file"
                     className="shrink-0 flex items-center gap-1.5 rounded-full border border-hairline text-ink px-3 py-2 text-sm font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
                   >
                     <Share2 size={14} strokeWidth={2.5} />
-                    Share
+                    File
                   </button>
                 </div>
               </div>

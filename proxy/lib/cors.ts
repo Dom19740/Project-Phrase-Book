@@ -13,15 +13,18 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 // (project-travel-chatter.vercel.app, which Vercel keeps serving even once a custom domain is
 // attached) - both are exact production origins only, not a wildcard over Vercel's
 // per-branch/per-commit preview URLs, since this proxy is meant to serve one deployed web app
-// rather than every preview build.
-const ALLOWED_ORIGIN_PATTERN = /^https?:\/\/localhost(:\d+)?$|^https:\/\/(app\.travelchatter\.dpbcreative\.com|project-travel-chatter\.vercel\.app)$/
+// rather than every preview build. travelchatter.dpbcreative.com (no "app." prefix) is the
+// separate marketing/static site - it needs access too, since its share-link teaser page
+// (marketing_site/c.html) fetches GET /api/share/:code client-side.
+const ALLOWED_ORIGIN_PATTERN =
+  /^https?:\/\/localhost(:\d+)?$|^https:\/\/(app\.travelchatter\.dpbcreative\.com|project-travel-chatter\.vercel\.app|travelchatter\.dpbcreative\.com)$/
 
-export function applyCors(req: VercelRequest, res: VercelResponse): void {
+export function applyCors(req: VercelRequest, res: VercelResponse, methods: string = 'POST, OPTIONS'): void {
   const origin = req.headers.origin
   if (typeof origin === 'string' && ALLOWED_ORIGIN_PATTERN.test(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin)
     res.setHeader('Vary', 'Origin')
   }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', methods)
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Device-Id')
 }

@@ -100,6 +100,46 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
   }
 }
 
+/**
+ * Serializes one language's phrases into the same portable snapshot shape as exportSnapshot(),
+ * for the "share as link" flow - the proxy's /api/share endpoints validate against this shape.
+ * Blank translations are kept (not filtered out) to match the existing CSV "Share phrases" flow,
+ * whose recipient-side import already auto-translates any blanks after importing.
+ */
+export async function exportSnapshotForLanguage(languageId: number): Promise<BackupSnapshot> {
+  const db = await getDb()
+
+  const languageRes = await db.query('SELECT name, code FROM languages WHERE id = ?;', [languageId])
+  const language = (languageRes.values ?? [])[0] as { name: string; code: string } | undefined
+  if (!language) throw new Error('Language not found')
+
+  const rowsRes = await db.query(
+    `SELECT pc.english, c.name AS category_name, t.text
+     FROM translations t
+     JOIN phrase_concepts pc ON pc.id = t.phrase_concept_id
+     LEFT JOIN categories c ON c.id = pc.category_id
+     WHERE t.language_id = ?
+     ORDER BY t.sort_order, pc.id;`,
+    [languageId],
+  )
+  const rows = (rowsRes.values ?? []) as { english: string; category_name: string | null; text: string }[]
+
+  // learned/favorite are the sender's own personal tracking, not meaningful to a recipient -
+  // reset to false rather than leaking the sender's progress into someone else's phrasebook.
+  const phrases: BackupPhrase[] = rows.map((r) => ({
+    english: r.english,
+    category: r.category_name,
+    translations: [{ languageCode: language.code, text: r.text, learned: false, favorite: false }],
+  }))
+
+  return {
+    version: BACKUP_VERSION,
+    exportedAt: new Date().toISOString(),
+    languages: [{ name: language.name, code: language.code }],
+    phrases,
+  }
+}
+
 /** Reads the id assigned to the row just inserted on this connection, more reliably than trusting the plugin's own `lastId` reporting. */
 async function lastInsertId(db: Awaited<ReturnType<typeof getDb>>): Promise<number> {
   const res = await db.query('SELECT last_insert_rowid() AS id;')

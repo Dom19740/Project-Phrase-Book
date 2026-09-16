@@ -12,6 +12,7 @@ import { redis } from './redis.js'
 export const redisOps = {
   get: (key: string) => redis.get<string>(key),
   set: (key: string, value: string) => redis.set(key, value),
+  setex: (key: string, value: string, seconds: number) => redis.set(key, value, { ex: seconds }),
   incr: (key: string) => redis.incr(key),
   expire: (key: string, seconds: number) => redis.expire(key, seconds),
 }

@@ -22,6 +22,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- App Links for share links (travelchatter.dpbcreative.com/c/<code>) - autoVerify
+                 triggers Android's Digital Asset Links check against
+                 https://travelchatter.dpbcreative.com/.well-known/assetlinks.json at install
+                 time, so a tapped link opens this app directly instead of a browser. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="travelchatter.dpbcreative.com" android:pathPrefix="/c/" />
+            </intent-filter>
+
         </activity>
 
         <provider

@@ -17,6 +17,9 @@ import { detectInstallablePlatform } from './lib/platform'
 import { usePersistedState } from './lib/usePersistedState'
 import { syncStatusBarStyle } from './lib/systemBars'
 import { syncWidgetTheme } from './lib/widgetRefresh'
+import { onShareLinkOpened } from './lib/deepLink'
+import { fetchSharedCollection } from './lib/shareImport'
+import type { CsvPhraseRow } from './lib/csvImport'
 import type { PhraseListItem } from './db/types'
 
 type Theme = 'dark' | 'light'
@@ -99,9 +102,17 @@ function Shell() {
     exportLanguageCsv,
     pickCsvFile,
     importLanguageCsv,
+    createShareLink,
   } = usePhraseBook()
   const [showAddPhrase, setShowAddPhrase] = useState(false)
   const [showBackup, setShowBackup] = useState(false)
+  const [pendingShareImport, setPendingShareImport] = useState<{
+    name: string
+    rows: CsvPhraseRow[]
+    languageCode: string | null
+    languageName: string | null
+  } | null>(null)
+  const [shareLinkError, setShareLinkError] = useState<string | null>(null)
   const [showFlashCards, setShowFlashCards] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
@@ -166,6 +177,33 @@ function Shell() {
   useEffect(() => {
     syncWidgetTheme(theme, accent)
   }, [theme, accent])
+
+  async function handleShareCode(code: string) {
+    setShareLinkError(null)
+    try {
+      setPendingShareImport(await fetchSharedCollection(code))
+      setShowBackup(true)
+    } catch (err) {
+      setShareLinkError(err instanceof Error ? err.message : 'Could not open that share link.')
+    }
+  }
+
+  // Web entry point for a share link: app.travelchatter.dpbcreative.com/?share=<code>. The
+  // native entry point (Android App Links) is the separate onShareLinkOpened listener below -
+  // browsers have no equivalent OS-level link interception for a plain web page.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('share')
+    if (!code) return
+    handleShareCode(code)
+    params.delete('share')
+    const rest = params.toString()
+    window.history.replaceState(null, '', rest ? `${window.location.pathname}?${rest}` : window.location.pathname)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => onShareLinkOpened(handleShareCode), [])
 
   if (loading) {
     return <LoadingScreen />
@@ -308,6 +346,15 @@ function Shell() {
         </>
       )}
 
+      {shareLinkError && (
+        <p className="bg-surface px-4 pb-2 text-xs text-red-500">
+          {shareLinkError}{' '}
+          <button onClick={() => setShareLinkError(null)} className="underline">
+            Dismiss
+          </button>
+        </p>
+      )}
+
       <main className="flex-1 overflow-hidden">
         {languages.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-12 text-center">
@@ -440,6 +487,9 @@ function Shell() {
           onPickCsv={pickCsvFile}
           onImportCsv={importLanguageCsv}
           onCreateLanguage={createLanguage}
+          onCreateShareLink={createShareLink}
+          pendingShareImport={pendingShareImport}
+          onConsumePendingShareImport={() => setPendingShareImport(null)}
         />
       )}
 

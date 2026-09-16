@@ -32,3 +32,28 @@ export const bulkDeviceRateLimit = new Ratelimit({
 export function cacheKey(languageCode: string, normalizedEnglish: string): string {
   return `translate:${languageCode}:${normalizedEnglish}`
 }
+
+// A created share link is effectively free, TTL-bounded storage, not a metered API call like
+// translate - the cost model is "how much Redis storage can accumulate", not "how much Gemini
+// quota gets burned" - so these are deliberately much stricter than the translate limiters above.
+// Same device+IP dual-gate reasoning as deviceRateLimit/ipRateLimit: a device id is client-chosen
+// and trivially rotated, so the IP bucket catches abuse that rotates it.
+export const shareCreateDeviceRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, '1 d'),
+  prefix: 'ratelimit:share:create-device',
+})
+
+export const shareCreateIpRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, '1 d'),
+  prefix: 'ratelimit:share:create-ip',
+})
+
+// The read side is fully public/unauthenticated (a recipient has no device-id relationship to
+// the creator) - an IP limit is the only guard against enumerating codes or scraping content.
+export const shareReadIpRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(60, '1 h'),
+  prefix: 'ratelimit:share:read-ip',
+})
