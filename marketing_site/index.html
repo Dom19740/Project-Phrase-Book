@@ -232,9 +232,18 @@
     .hero h1 { margin-top: 20px; }
     .hero-brand { justify-content: center; margin: 0 auto 16px; }
     .hero h1 br.mobile-break { display: inline; }
-    .hero p.lead { margin-left: auto; margin-right: auto; }
+    .hero p.lead { margin-left: auto; margin-right: auto; font-size: 16.5px; }
     .cta-row { justify-content: center; }
     .hero-visual { max-width: 240px; margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    p { font-size: 15px; }
+    .final-cta p { font-size: 16px; }
+  }
+  @media (max-width: 600px) {
+    .cta-row { flex-wrap: nowrap; gap: 12px; }
+    .cta-row a { flex: 1 1 0; min-width: 0; }
+    .cta-row img.badge { width: 100%; height: auto; }
   }
 
   /* Feature rows */

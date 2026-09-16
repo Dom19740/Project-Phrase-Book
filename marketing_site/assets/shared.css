@@ -70,4 +70,6 @@ footer .brand span { color: #fff; }
 }
 @media (max-width: 600px) {
   .header-ctas { display: none; }
+  .foot-ctas { flex-direction: column; align-items: stretch; width: 100%; }
+  .foot-ctas .btn { width: 100%; justify-content: center; }
 }

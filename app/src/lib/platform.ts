@@ -7,7 +7,7 @@ export type InstallablePlatform = 'ios' | 'android'
  * Screen" shortcut, which is still just the same browser tab) can provide. */
 export const ANDROID_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter'
 
-function isIosDevice(): boolean {
+export function isIosDevice(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
 }
 

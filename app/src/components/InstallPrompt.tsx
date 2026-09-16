@@ -26,7 +26,7 @@ export function InstallPrompt({ platform, onClose }: Props) {
               </h2>
               <p className="text-xs text-muted">
                 {platform === 'ios'
-                  ? 'Launch it like an app, and keep your phrasebooks safer on this device.'
+                  ? 'To better protect your phrases.'
                   : "You're using the web app - the Android app unlocks more."}
               </p>
             </div>
