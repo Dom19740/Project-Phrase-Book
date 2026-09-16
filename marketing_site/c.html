@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shared Phrases - Travel Chatter</title>
-<meta name="description" content="Someone shared a Travel Chatter phrasebook with you. Open it in the web app instantly, or get the Android app.">
+<meta name="description" content="Someone shared a Travel Chatter phrasebook with you. Open the app and paste this code to import it.">
 <meta name="robots" content="noindex, follow">
 <meta name="theme-color" content="#EC1D8B">
 
@@ -55,12 +55,48 @@
   .share p.lead { color: var(--muted); font-size: 17px; margin: 12px 0 32px; }
   .share .cta-row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 40px; }
 
-  .phrase-list { list-style: none; margin: 0 0 40px; padding: 0; text-align: left; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .phrase-list { list-style: none; margin: 0 0 32px; padding: 0; text-align: left; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
   .phrase-list li { display: flex; justify-content: space-between; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
   .phrase-list li:last-child { border-bottom: none; }
   .phrase-list .en { color: var(--ink); font-weight: 600; }
   .phrase-list .tr { color: var(--muted); }
   .phrase-list .more { justify-content: center; color: var(--muted); font-style: italic; }
+
+  .code-box { background: var(--pink-tint); border: 1.5px solid var(--pink); border-radius: 16px; padding: 20px; margin-bottom: 28px; text-align: left; }
+  .code-box p { color: var(--ink); font-size: 15px; margin: 0 0 12px; }
+  .code-row { display: flex; align-items: center; gap: 10px; }
+  .code-value {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Archivo', monospace;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    color: var(--pink-dark);
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    overflow-x: auto;
+    white-space: nowrap;
+    user-select: all;
+  }
+  .copy-btn {
+    flex: none;
+    border: none;
+    background: var(--pink);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 11px 18px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .copy-btn:hover { background: var(--pink-dark); }
+  .copy-btn.copied { background: #2E9E5B; }
+
+  .or-divider { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
 
   .status { color: var(--muted); font-size: 16px; }
   [hidden] { display: none !important; }
@@ -76,11 +112,20 @@
 
     <div id="found" hidden>
       <h1>Phrases in <span class="lang" id="lang-name"></span></h1>
-      <p class="lead">Someone shared their Travel Chatter phrasebook with you. Open it instantly in the web app, or get the Android app for offline access.</p>
+      <p class="lead">Someone shared their Travel Chatter phrasebook with you.</p>
       <ul class="phrase-list" id="phrase-list"></ul>
+
+      <div class="code-box">
+        <p>Already have Travel Chatter? Open the app, go to <strong>Backup → Import phrases</strong>, and paste this code:</p>
+        <div class="code-row">
+          <span class="code-value" id="code-value"></span>
+          <button type="button" class="copy-btn" id="copy-code">Copy</button>
+        </div>
+      </div>
+
+      <p class="or-divider">Don't have it yet?</p>
       <div class="cta-row">
-        <a class="btn" id="open-web-app" href="https://app.travelchatter.dpbcreative.com">Open in Travel Chatter</a>
-        <a class="btn outline" href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Get it on Google Play</a>
+        <a class="btn" href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Get it on Google Play</a>
       </div>
     </div>
 
@@ -88,8 +133,7 @@
       <h1>This link has expired</h1>
       <p class="lead">Shared links only last 30 days. Ask whoever sent it to share it again, or get Travel Chatter and build your own phrasebook.</p>
       <div class="cta-row">
-        <a class="btn" href="https://app.travelchatter.dpbcreative.com">Open Travel Chatter</a>
-        <a class="btn outline" href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Get it on Google Play</a>
+        <a class="btn" href="https://play.google.com/store/apps/details?id=com.dpbcreative.travelchatter">Get it on Google Play</a>
       </div>
     </div>
   </div>
@@ -106,7 +150,7 @@
   function showTeaser(snapshot) {
     var language = snapshot.languages && snapshot.languages[0];
     document.getElementById('lang-name').textContent = language ? language.name : 'Travel Chatter';
-    if (language) document.getElementById('open-web-app').href = 'https://app.travelchatter.dpbcreative.com/?share=' + code;
+    document.getElementById('code-value').textContent = code;
 
     var list = document.getElementById('phrase-list');
     var phrases = snapshot.phrases || [];
@@ -139,9 +183,6 @@
   }
 
   var code = new URLSearchParams(window.location.search).get('code');
-  document.getElementById('open-web-app').href = code
-    ? 'https://app.travelchatter.dpbcreative.com/?share=' + code
-    : 'https://app.travelchatter.dpbcreative.com';
 
   if (!code) {
     showExpired();
@@ -154,6 +195,43 @@
       .then(showTeaser)
       .catch(showExpired);
   }
+
+  document.getElementById('copy-code').addEventListener('click', function () {
+    var btn = this;
+    var reset = function () {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    };
+    var showCopied = function () {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(reset, 1800);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(showCopied).catch(function () {
+        // Fallback below handles browsers that reject writeText outside a secure/user-gesture context.
+        fallbackCopy();
+      });
+    } else {
+      fallbackCopy();
+    }
+
+    function fallbackCopy() {
+      var span = document.getElementById('code-value');
+      var range = document.createRange();
+      range.selectNodeContents(span);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      try {
+        document.execCommand('copy');
+        showCopied();
+      } catch (err) {
+        // Selection still lands the code highlighted for a manual copy even if this fails.
+      }
+    }
+  });
 </script>
 <script src="assets/includes.js"></script>
 

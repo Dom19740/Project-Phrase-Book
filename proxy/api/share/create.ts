@@ -34,5 +34,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   await redisOps.setex(`share:${code}`, payload, SHARE_TTL_SECONDS)
 
-  return res.status(200).json({ code, url: `https://travelchatter.dpbcreative.com/c/${code}` })
+  // A query-string URL, not a clean /c/<code> path - the marketing site's IONOS hosting serves
+  // 404s for non-existent paths through an edge layer that never reaches Apache's rewrite engine,
+  // so a path-based rewrite (see the now-removed marketing_site/.htaccess) can't be relied on.
+  return res.status(200).json({ code, url: `https://travelchatter.dpbcreative.com/c.html?code=${code}` })
 }

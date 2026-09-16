@@ -1,4 +1,0 @@
-# Clean share-link path (travelchatter.dpbcreative.com/c/<code>) -> the static teaser page,
-# with the code passed through as a query param since there's no server-side app here.
-RewriteEngine On
-RewriteRule ^c/([A-Za-z0-9]+)$ /c.html?code=$1 [L,QSA]

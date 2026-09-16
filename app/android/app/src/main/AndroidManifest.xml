@@ -22,15 +22,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- App Links for share links (travelchatter.dpbcreative.com/c/<code>) - autoVerify
-                 triggers Android's Digital Asset Links check against
+            <!-- App Links for share links (travelchatter.dpbcreative.com/c.html?code=<code>) -
+                 a query-string URL, not a clean /c/<code> path, since the marketing site's IONOS
+                 hosting can't rewrite the latter (see proxy/api/share/create.ts) - android:path
+                 only matches the path portion, so the query string still reaches the app intact.
+                 autoVerify triggers Android's Digital Asset Links check against
                  https://travelchatter.dpbcreative.com/.well-known/assetlinks.json at install
                  time, so a tapped link opens this app directly instead of a browser. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="travelchatter.dpbcreative.com" android:pathPrefix="/c/" />
+                <data android:scheme="https" android:host="travelchatter.dpbcreative.com" android:path="/c.html" />
             </intent-filter>
 
         </activity>

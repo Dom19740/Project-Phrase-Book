@@ -73,7 +73,7 @@ test('share/create: a valid request stores the snapshot and returns a code + url
   assert.equal(state.statusCode, 200)
   const body = state.body as { code: string; url: string }
   assert.match(body.code, /^[A-Za-z0-9]{12}$/)
-  assert.equal(body.url, `https://travelchatter.dpbcreative.com/c/${body.code}`)
+  assert.equal(body.url, `https://travelchatter.dpbcreative.com/c.html?code=${body.code}`)
   assert.equal(setexMock.mock.calls.length, 1)
   assert.equal(setexMock.mock.calls[0].arguments[2], 60 * 60 * 24 * 30)
 })

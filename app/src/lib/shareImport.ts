@@ -9,6 +9,26 @@ export interface FetchedShare {
 }
 
 /**
+ * Pulls a share code out of whatever someone pastes: a bare code, a full share URL
+ * (?code=<code>), or the app's own /c/<code>-shaped legacy links. Used both for a manually
+ * pasted code/link (see BackupModal) and for a URL handed to the app by Android App Links -
+ * pasting is the only reliable path on iOS, where a tapped link opens Safari's storage, not the
+ * installed home-screen app's separate one, so the fetch+import has to run inside whichever
+ * instance the person is actually using.
+ */
+export function extractShareCode(input: string): string | null {
+  const trimmed = input.trim()
+  if (/^[A-Za-z0-9]{6,24}$/.test(trimmed)) return trimmed
+
+  try {
+    const url = new URL(trimmed)
+    return url.searchParams.get('code') ?? url.pathname.match(/\/c\/([A-Za-z0-9]+)$/)?.[1] ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
  * Fetches a shared phrase collection by its code and flattens it into CsvPhraseRow[] - the same
  * shape the existing CSV-import flow (BackupModal) already knows how to preview and merge, so a
  * share link reuses that non-destructive flow instead of a separate import path.

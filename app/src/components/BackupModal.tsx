@@ -5,6 +5,7 @@ import { getBackupFolderLabel, isNativeBackupSupported, type BackupFileInfo } fr
 import { exportFile } from '../lib/exportFile'
 import type { ShareLinkResult } from '../lib/shareLink'
 import { shareUrl } from '../lib/shareUrl'
+import { extractShareCode, fetchSharedCollection } from '../lib/shareImport'
 import { detectLanguage, detectLanguageFromFilename } from '../lib/detectLanguage'
 import { getLanguageFlag } from '../lib/languageFlags'
 import type { LanguageOption } from '../lib/languageOptions'
@@ -74,6 +75,7 @@ export function BackupModal({
   const [manualEntry, setManualEntry] = useState(false)
   const [manualName, setManualName] = useState('')
   const [manualCode, setManualCode] = useState('')
+  const [shareCodeInput, setShareCodeInput] = useState('')
 
   // React's `busy` state only re-renders (and disables the button) on the next frame, which a fast
   // double-tap can beat - this ref blocks re-entry synchronously so two restores never run at once.
@@ -185,6 +187,30 @@ export function BackupModal({
       beginImport(picked.name, picked.rows, guess ?? null)
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Could not read that file.')
+    }
+    setBusy(false)
+  }
+
+  // Pasting a code/link works everywhere App Links can't - notably iOS, where a tapped link
+  // opens Safari's storage rather than the separate storage an installed home-screen web app
+  // uses, so the fetch+import needs to run inside whichever instance is actually open right now.
+  async function handleImportShareCode() {
+    const code = extractShareCode(shareCodeInput)
+    if (!code) {
+      setStatus("Couldn't find a share code in that.")
+      return
+    }
+    setBusy(true)
+    setStatus(null)
+    try {
+      const fetched = await fetchSharedCollection(code)
+      const guess: LanguageOption | null = fetched.languageCode
+        ? { name: fetched.languageName ?? fetched.languageCode, code: fetched.languageCode }
+        : null
+      beginImport(fetched.name, fetched.rows, guess)
+      setShareCodeInput('')
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not import that share link.')
     }
     setBusy(false)
   }
@@ -589,6 +615,26 @@ export function BackupModal({
                 Choose file
               </button>
               <p className="mt-1 text-xs text-muted">A CSV (English, Translation, Category) or a plain list of phrases, one per line.</p>
+
+              <div className="mt-3 flex gap-2">
+                <input
+                  value={shareCodeInput}
+                  onChange={(e) => setShareCodeInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleImportShareCode()}
+                  placeholder="Paste a share link or code"
+                  className="flex-1 min-w-0 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-all"
+                />
+                <button
+                  onClick={handleImportShareCode}
+                  disabled={busy || !shareCodeInput.trim()}
+                  className="shrink-0 rounded-full border border-hairline text-ink px-4 py-2 text-sm font-medium hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
+                >
+                  Import
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-muted">
+                Useful on iOS, where tapping a link can't open an already-installed home-screen app directly - paste it here instead.
+              </p>
             </div>
           </div>
         )}

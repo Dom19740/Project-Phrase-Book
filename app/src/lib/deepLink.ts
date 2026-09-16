@@ -1,16 +1,6 @@
 import { Capacitor } from '@capacitor/core'
 import { App } from '@capacitor/app'
-
-/** Extracts a share code from a full Android App Links URL, e.g. https://travelchatter.dpbcreative.com/c/<code>. */
-export function parseShareCode(url: string): string | null {
-  try {
-    const parsed = new URL(url)
-    const match = parsed.pathname.match(/^\/c\/([A-Za-z0-9]+)$/)
-    return match ? match[1] : null
-  } catch {
-    return null
-  }
-}
+import { extractShareCode } from './shareImport'
 
 /**
  * Registers the Android App Links listener - a share link tapped while the app is installed
@@ -23,7 +13,7 @@ export function onShareLinkOpened(callback: (code: string) => void): () => void 
 
   let removed = false
   const listenerPromise = App.addListener('appUrlOpen', ({ url }) => {
-    const code = parseShareCode(url)
+    const code = extractShareCode(url)
     if (code) callback(code)
   })
 
