@@ -289,7 +289,7 @@ function Shell() {
                     className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
                   >
                     <Save size={16} strokeWidth={2} className="text-fabpink" />
-                    Backup / Import
+                    Backup & Share
                   </button>
 
                   <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">

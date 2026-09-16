@@ -13,7 +13,7 @@ export interface FetchedShare {
  * (?code=<code>), or the app's own /c/<code>-shaped legacy links. Used both for a manually
  * pasted code/link (see BackupModal) and for a URL handed to the app by Android App Links -
  * pasting is the only reliable path on iOS, where a tapped link opens Safari's storage, not the
- * installed home-screen app's separate one, so the fetch+import has to run inside whichever
+ * installed homescreen app's separate one, so the fetch+import has to run inside whichever
  * instance the person is actually using.
  */
 export function extractShareCode(input: string): string | null {

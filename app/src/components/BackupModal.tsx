@@ -134,7 +134,7 @@ export function BackupModal({
       const language = languages.find((l) => l.id === csvLanguageId)
       const { url } = await onCreateShareLink(csvLanguageId)
       const outcome = await shareUrl(url, `My ${language?.name ?? ''} phrases from Travel Chatter`, 'Share phrases')
-      if (outcome === 'copied') setStatus('Link copied to clipboard - it works for 30 days.')
+      if (outcome === 'copied') setStatus('Link copied to clipboard.')
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'Could not create a share link.')
     }
@@ -192,7 +192,7 @@ export function BackupModal({
   }
 
   // Pasting a code/link works everywhere App Links can't - notably iOS, where a tapped link
-  // opens Safari's storage rather than the separate storage an installed home-screen web app
+  // opens Safari's storage rather than the separate storage an installed homescreen web app
   // uses, so the fetch+import needs to run inside whichever instance is actually open right now.
   async function handleImportShareCode() {
     const code = extractShareCode(shareCodeInput)
@@ -321,7 +321,7 @@ export function BackupModal({
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
       <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Backup</h2>
+        <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Backup & Share</h2>
         <p className="text-xs text-muted mb-4">
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}{' '}
           {isNativeBackupSupported() ? (
@@ -340,9 +340,7 @@ export function BackupModal({
                 </button>
               </>
             )
-          ) : (
-            "Back up now opens your device's share sheet, so you can save the file wherever you like (Files, Drive, a specific folder) - a location that's safe even if this browser's storage gets cleared."
-          )}
+          ) : null}
         </p>
 
         {pendingRestore ? (
@@ -621,8 +619,8 @@ export function BackupModal({
                   value={shareCodeInput}
                   onChange={(e) => setShareCodeInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleImportShareCode()}
-                  placeholder="Paste a share link or code"
-                  className="flex-1 min-w-0 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-all"
+                  placeholder="Paste a share code"
+                  className="flex-1 min-w-0 rounded-xl border-2 border-hairline bg-transparent text-ink placeholder:text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-all"
                 />
                 <button
                   onClick={handleImportShareCode}
@@ -632,14 +630,11 @@ export function BackupModal({
                   Import
                 </button>
               </div>
-              <p className="mt-1 text-xs text-muted">
-                Useful on iOS, where tapping a link can't open an already-installed home-screen app directly - paste it here instead.
-              </p>
             </div>
           </div>
         )}
 
-        {status && <p className="mt-3 text-sm text-muted">{status}</p>}
+        {status && <p className="mt-3 rounded-lg bg-fabpink/10 px-3 py-2 text-sm font-semibold text-fabpink">{status}</p>}
 
         {!pendingRestore && !pendingImport && !backupList && (
           <div className="flex justify-end mt-4">

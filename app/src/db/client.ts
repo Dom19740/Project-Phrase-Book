@@ -18,7 +18,7 @@ export function onMutation(listener: () => void): void {
 /**
  * Asks the browser to exempt this origin's storage (IndexedDB, localStorage) from eviction under
  * storage pressure - iOS in particular will otherwise clear a Safari tab's data to free up disk
- * space, which is how phrasebooks get silently wiped. Granted automatically for most home-screen
+ * space, which is how phrasebooks get silently wiped. Granted automatically for most homescreen
  * installs; either way this is best-effort and silently no-ops where unsupported or declined.
  */
 async function requestPersistentStorage(): Promise<void> {

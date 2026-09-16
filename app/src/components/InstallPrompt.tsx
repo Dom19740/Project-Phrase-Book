@@ -27,7 +27,7 @@ export function InstallPrompt({ platform, onClose }: Props) {
               <p className="text-xs text-muted">
                 {platform === 'ios'
                   ? 'Launch it like an app, and keep your phrasebooks safer on this device.'
-                  : "You're using the website - the app unlocks more."}
+                  : "You're using the web app - the Android app unlocks more."}
               </p>
             </div>
           </div>
@@ -67,7 +67,7 @@ export function InstallPrompt({ platform, onClose }: Props) {
               <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-fabpink/15 text-fabpink">
                 <Layers size={15} strokeWidth={2} />
               </span>
-              A home-screen widget for your favorite phrases
+              A homescreen widget for your favorite phrases
             </p>
           </div>
         )}

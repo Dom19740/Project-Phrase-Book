@@ -3,7 +3,7 @@ package com.dpbcreative.travelchatter.widget;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-/** Per-widget-instance state (which language and filter each home-screen widget is showing), keyed by appWidgetId so multiple widgets can each track their own selection independently. */
+/** Per-widget-instance state (which language and filter each homescreen widget is showing), keyed by appWidgetId so multiple widgets can each track their own selection independently. */
 final class PhraseWidgetPrefs {
 
     private static final String PREFS_NAME = "phrase_widget_prefs";

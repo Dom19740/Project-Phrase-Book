@@ -14,7 +14,7 @@ import com.dpbcreative.travelchatter.R;
 import java.util.List;
 
 /**
- * Home-screen widget: shows one language's favorite or not-learnt phrases, with buttons on the
+ * Homescreen widget: shows one language's favorite or not-learnt phrases, with buttons on the
  * widget itself to cycle the language, flip the favorites/not-learnt filter, and speak a phrase
  * aloud - no need to open the app. State for each placed widget (which language, which filter)
  * lives in PhraseWidgetPrefs, keyed by appWidgetId so multiple widgets can each show something
