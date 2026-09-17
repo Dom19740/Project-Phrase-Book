@@ -97,12 +97,17 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.language_chip, context.getString(R.string.widget_no_language));
             views.setViewVisibility(R.id.filter_pill, View.GONE);
             views.setOnClickPendingIntent(R.id.language_chip, null);
+            views.setViewVisibility(R.id.quick_add_button, View.GONE);
+            views.setOnClickPendingIntent(R.id.quick_add_button, null);
         } else {
             views.setViewVisibility(R.id.filter_pill, View.VISIBLE);
 
             PhraseWidgetDb.LanguageRow activeLanguage = resolveActiveLanguage(context, appWidgetId, languages);
             views.setTextViewText(R.id.language_chip, PhraseWidgetFlags.getLanguageFlag(activeLanguage.code));
             views.setOnClickPendingIntent(R.id.language_chip, cycleLanguagePendingIntent(context, appWidgetId));
+
+            views.setViewVisibility(R.id.quick_add_button, View.VISIBLE);
+            views.setOnClickPendingIntent(R.id.quick_add_button, quickAddPendingIntent(context, appWidgetId, activeLanguage.code));
 
             String filter = PhraseWidgetPrefs.getFilter(context, appWidgetId);
             boolean favoritesActive = PhraseWidgetPrefs.FILTER_FAVORITES.equals(filter);
@@ -136,6 +141,7 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
         views.setInt(R.id.filter_pill, "setBackgroundResource", theme.pillRes);
         views.setTextColor(R.id.filter_pill, theme.onAccent);
         views.setTextColor(R.id.empty_view, theme.muted);
+        views.setInt(R.id.quick_add_button, "setColorFilter", theme.accent);
     }
 
     private static PhraseWidgetDb.LanguageRow resolveActiveLanguage(Context context, int appWidgetId, List<PhraseWidgetDb.LanguageRow> languages) {
@@ -155,6 +161,17 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         return PendingIntent.getBroadcast(
                 context, appWidgetId * 10, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    /** Opens the app straight into the add-phrase dialog for the widget's currently selected
+     * language - MainActivity is targeted explicitly, so the custom scheme doesn't need its own
+     * manifest intent-filter, but ACTION_VIEW + a non-null data Uri is still required for
+     * Capacitor's App plugin to surface it as an appUrlOpen event in JS (see deepLink.ts). */
+    private static PendingIntent quickAddPendingIntent(Context context, int appWidgetId, String languageCode) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("phrasewidget://add-phrase?languageCode=" + Uri.encode(languageCode)));
+        intent.setClass(context, MainActivity.class);
+        return PendingIntent.getActivity(
+                context, appWidgetId * 10 + 3, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     private static PendingIntent togglePendingIntent(Context context, int appWidgetId) {

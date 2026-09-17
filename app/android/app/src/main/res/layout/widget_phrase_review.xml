@@ -49,6 +49,16 @@
             android:layout_weight="1" />
 
         <ImageButton
+            android:id="@+id/quick_add_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="4dp"
+            android:background="@android:color/transparent"
+            android:scaleType="center"
+            android:src="@drawable/ic_widget_add"
+            android:contentDescription="@string/widget_quick_add" />
+
+        <ImageButton
             android:id="@+id/open_app_button"
             android:layout_width="32dp"
             android:layout_height="32dp"

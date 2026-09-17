@@ -17,7 +17,7 @@ import { detectInstallablePlatform } from './lib/platform'
 import { usePersistedState } from './lib/usePersistedState'
 import { syncStatusBarStyle } from './lib/systemBars'
 import { syncWidgetTheme } from './lib/widgetRefresh'
-import { onShareLinkOpened } from './lib/deepLink'
+import { onQuickAddRequested, onShareLinkOpened } from './lib/deepLink'
 import { fetchSharedCollection } from './lib/shareImport'
 import type { CsvPhraseRow } from './lib/csvImport'
 import type { PhraseListItem } from './db/types'
@@ -114,6 +114,7 @@ function Shell() {
     languageName: string | null
   } | null>(null)
   const [shareLinkError, setShareLinkError] = useState<string | null>(null)
+  const [pendingQuickAddLanguageCode, setPendingQuickAddLanguageCode] = useState<string | null>(null)
   const [showFlashCards, setShowFlashCards] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
@@ -209,6 +210,19 @@ function Shell() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => onShareLinkOpened(handleShareCode), [])
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => onQuickAddRequested(setPendingQuickAddLanguageCode), [])
+
+  // Deferred until languages have finished loading (a cold start from the widget's + button can
+  // fire this before the DB read resolves) so the language lookup below has something to match.
+  useEffect(() => {
+    if (!pendingQuickAddLanguageCode || loading) return
+    const lang = languages.find((l) => l.code === pendingQuickAddLanguageCode)
+    if (lang) setActiveLanguageId(lang.id)
+    setShowAddPhrase(true)
+    setPendingQuickAddLanguageCode(null)
+  }, [pendingQuickAddLanguageCode, loading, languages, setActiveLanguageId])
 
   if (loading) {
     return <LoadingScreen />
