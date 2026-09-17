@@ -1,5 +1,5 @@
 import { exportSnapshot } from '../db/backup'
-import { writeAutoBackupFile } from './backupTarget'
+import { isNativeBackupSupported, writeAutoBackupFile } from './backupTarget'
 
 const DEBOUNCE_MS = 1500
 const LAST_BACKUP_KEY = 'phrasebook-last-backup-at'
@@ -10,6 +10,12 @@ const CHANGES_SINCE_BACKUP_KEY = 'phrasebook-changes-since-backup'
 export const BACKUP_REMINDER_THRESHOLD = 5
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+// Set when the silent native auto-backup fails on a platform where it's expected to work, so the
+// UI can warn instead of the failure only ever reaching a console nobody reads. Never set on
+// web/iOS, where writeAutoBackupFile always throws by design (no native folder to write into) -
+// those platforms rely on the changes-since-backup reminder counter instead, not a real failure.
+let autoBackupFailing = false
 
 /** Notified whenever the backup/changes-since-backup counters change, so the UI can stay in sync
  * even when the change happens asynchronously (e.g. the debounced native auto-backup below
@@ -35,8 +41,18 @@ async function runBackup(): Promise<void> {
 export function scheduleAutoBackup(): void {
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
-    runBackup().catch((err) => console.error('Auto-backup failed:', err))
+    runBackup().catch((err) => {
+      console.error('Auto-backup failed:', err)
+      if (isNativeBackupSupported()) {
+        autoBackupFailing = true
+        notifyStatusChange()
+      }
+    })
   }, DEBOUNCE_MS)
+}
+
+export function isAutoBackupFailing(): boolean {
+  return autoBackupFailing
 }
 
 export function getLastBackupAt(): string | null {
@@ -48,6 +64,7 @@ export function getLastBackupAt(): string | null {
 export function recordBackupSuccess(): void {
   localStorage.setItem(LAST_BACKUP_KEY, new Date().toISOString())
   localStorage.setItem(CHANGES_SINCE_BACKUP_KEY, '0')
+  autoBackupFailing = false
   notifyStatusChange()
 }
 

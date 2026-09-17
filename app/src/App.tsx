@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BookOpen, Layers, Loader2, Menu, Moon, Plus, Save, Smartphone, Sun, TriangleAlert } from 'lucide-react'
+import { BookOpen, FileText, Layers, Loader2, Menu, Moon, Plus, Save, Shield, Smartphone, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { BackupReminderBanner } from './components/BackupReminderBanner'
@@ -93,6 +93,7 @@ function Shell() {
     removeLanguage,
     getLanguagePhrases,
     needsBackupReminder,
+    autoBackupFailing,
     backUpToFile,
     chooseBackupFolder,
     listBackups,
@@ -136,6 +137,10 @@ function Shell() {
   const [backupReminderDismissed, setBackupReminderDismissed] = useState(false)
   const [backingUp, setBackingUp] = useState(false)
   const [backupError, setBackupError] = useState<string | null>(null)
+
+  // Same "snooze for this session" behavior as backupReminderDismissed - it comes back next
+  // launch if auto-backup is still failing, rather than being silenced forever after one tap.
+  const [autoBackupWarningDismissed, setAutoBackupWarningDismissed] = useState(false)
 
   async function handleBackUpNow() {
     setBackingUp(true)
@@ -328,6 +333,28 @@ function Shell() {
                       ))}
                     </div>
                   </div>
+
+                  <div className="mt-1 border-t border-hairline pt-2">
+                    <p className="mb-1 px-2.5 text-xs font-medium text-muted">Legal</p>
+                    <a
+                      href="https://travelchatter.dpbcreative.com/privacy.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                    >
+                      <Shield size={16} strokeWidth={2} className="text-fabpink" />
+                      Privacy Policy
+                    </a>
+                    <a
+                      href="https://travelchatter.dpbcreative.com/terms.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                    >
+                      <FileText size={16} strokeWidth={2} className="text-fabpink" />
+                      Terms & Conditions
+                    </a>
+                  </div>
                 </div>
               </>
             )}
@@ -344,6 +371,18 @@ function Shell() {
           />
           {backupError && <p className="bg-surface px-4 pb-2 text-xs text-red-500">{backupError}</p>}
         </>
+      )}
+
+      {autoBackupFailing && !autoBackupWarningDismissed && (
+        <p className="bg-surface px-4 pb-2 text-xs text-red-500">
+          Automatic backup isn't working right now - back up manually to be safe.{' '}
+          <button onClick={() => setShowBackup(true)} className="underline">
+            Back up
+          </button>{' '}
+          <button onClick={() => setAutoBackupWarningDismissed(true)} className="underline">
+            Dismiss
+          </button>
+        </p>
       )}
 
       {shareLinkError && (

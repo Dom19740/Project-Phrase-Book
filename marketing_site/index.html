@@ -154,6 +154,17 @@
   .hero p.lead { font-size: 19px; margin: 22px 0 30px; max-width: 480px; }
   .cta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
   .cta-row img.badge { height: 54px; width: auto; }
+  .scroll-hint {
+    display: block;
+    margin: 36px 0 0;
+    color: var(--pink);
+    opacity: 0.35;
+    animation: scroll-hint-bob 2s ease-in-out infinite;
+  }
+  @keyframes scroll-hint-bob {
+    0%, 100% { transform: translateY(0); opacity: 0.25; }
+    50% { transform: translateY(6px); opacity: 0.5; }
+  }
   .hero-visual { position: relative; }
   .hero-visual img {
     border-radius: 26px;
@@ -231,6 +242,7 @@
     .hero h1 br.mobile-break { display: inline; }
     .hero p.lead { margin-left: auto; margin-right: auto; font-size: 16.5px; }
     .cta-row { justify-content: center; }
+    .scroll-hint { margin: 32px auto 0; }
     .hero-visual { max-width: 240px; margin: 0 auto; }
   }
   @media (max-width: 860px) {
@@ -373,6 +385,9 @@
             <img class="badge" src="assets/web-app-badge.svg" alt="Use Web App" width="181" height="54">
           </a>
         </div>
+        <svg class="scroll-hint" width="20" height="28" viewBox="0 0 20 28" fill="none" aria-hidden="true">
+          <path d="M10 2 V22 M3 15 L10 22 L17 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
       <div class="hero-visual">
         <img src="assets/shots/shot-1.jpg" alt="Travel Chatter app screenshot: every phrase you actually need" width="380" height="675" loading="eager">
@@ -576,7 +591,6 @@
     lightbox.addEventListener('click', closeLightbox);
     prevBtn.addEventListener('click', function (e) { e.stopPropagation(); showPrev(); });
     nextBtn.addEventListener('click', function (e) { e.stopPropagation(); showNext(); });
-    lightboxImg.addEventListener('click', function (e) { e.stopPropagation(); });
     document.addEventListener('keydown', function (e) {
       if (!lightbox.classList.contains('open')) return;
       if (e.key === 'Escape') closeLightbox();

@@ -34,6 +34,7 @@ import {
   BACKUP_REMINDER_THRESHOLD,
   getChangesSinceBackup,
   getLastBackupAt,
+  isAutoBackupFailing,
   onBackupStatusChange,
   recordBackupSuccess,
   recordChangeSinceBackup,
@@ -87,6 +88,7 @@ interface PhraseBookContextValue {
   removeLanguage: (languageId: number) => Promise<void>
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   needsBackupReminder: boolean
+  autoBackupFailing: boolean
   backUpToFile: () => Promise<string>
   chooseBackupFolder: () => Promise<string>
   listBackups: () => Promise<BackupFileInfo[]>
@@ -126,6 +128,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const [translationIncomplete, setTranslationIncomplete] = useState<{ languageName: string; count: number } | null>(null)
   const [lastBackupAt, setLastBackupAt] = useState(getLastBackupAt)
   const [changesSinceBackup, setChangesSinceBackup] = useState(getChangesSinceBackup)
+  const [autoBackupFailing, setAutoBackupFailing] = useState(isAutoBackupFailing)
   const needsBackupReminder = languages.length > 0 && (lastBackupAt == null || changesSinceBackup >= BACKUP_REMINDER_THRESHOLD)
 
   // Background translation runs detached from React's render cycle, so it needs the *current*
@@ -161,6 +164,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       onBackupStatusChange(() => {
         setLastBackupAt(getLastBackupAt())
         setChangesSinceBackup(getChangesSinceBackup())
+        setAutoBackupFailing(isAutoBackupFailing())
       }),
     [],
   )
@@ -597,6 +601,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       removeLanguage,
       getLanguagePhrases,
       needsBackupReminder,
+      autoBackupFailing,
       backUpToFile,
       chooseBackupFolder: chooseBackupFolderAction,
       listBackups,
@@ -623,6 +628,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       addPhrase,
       editPhrase,
       needsBackupReminder,
+      autoBackupFailing,
       backUpToFile,
       chooseBackupFolderAction,
       listBackups,
