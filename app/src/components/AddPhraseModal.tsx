@@ -142,7 +142,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
             autoFocus
             value={english}
             onChange={(e) => setEnglish(e.target.value)}
-            className={`w-full rounded-xl px-3 py-2 ${fieldClass} ${english && speech.showButton ? 'pr-16' : english || speech.showButton ? 'pr-10' : ''}`}
+            className={`w-full rounded-xl px-3 py-2 ${fieldClass} ${english && speech.supported ? 'pr-16' : english || speech.supported ? 'pr-10' : ''}`}
             placeholder={speech.activeId === 'english' ? 'Listening…' : 'e.g. Nice to meet you?'}
           />
           <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
@@ -156,7 +156,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
                 <X size={16} strokeWidth={2} />
               </button>
             )}
-            {speech.showButton && (
+            {speech.supported && (
               <button
                 type="button"
                 onClick={() => (speech.activeId === 'english' ? speech.stop() : speech.start('english', 'en-US', setEnglish))}
@@ -254,7 +254,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
                       value={translationText[lang.id] ?? ''}
                       onChange={(e) => setTranslationText((prev) => ({ ...prev, [lang.id]: e.target.value }))}
                       className={`w-full rounded-xl px-3 py-2 text-sm ${fieldClass} ${
-                        translationText[lang.id] && speech.showButton ? 'pr-16' : translationText[lang.id] || speech.showButton ? 'pr-9' : ''
+                        translationText[lang.id] && speech.supported ? 'pr-16' : translationText[lang.id] || speech.supported ? 'pr-9' : ''
                       }`}
                       placeholder={speech.activeId === micId ? 'Listening…' : 'Type or record translation'}
                     />
@@ -269,7 +269,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
                           <X size={14} strokeWidth={2} />
                         </button>
                       )}
-                      {speech.showButton && (
+                      {speech.supported && (
                         <button
                           type="button"
                           onClick={() =>

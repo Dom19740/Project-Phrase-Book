@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from 'react'
-import { isIosDevice } from './platform'
 
 interface SpeechRecognitionResultLike {
   results: { [index: number]: { [index: number]: { transcript: string } } }
@@ -43,18 +42,10 @@ export function useSpeechToText() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
 
   const supported = getRecognitionCtor() != null
-  // iOS/Safari never implements SpeechRecognition, so `supported` is always false there - show the
-  // mic button anyway and explain the gap on tap, rather than making it look like the feature is missing.
-  const showButton = supported || isIosDevice()
 
   const start = useCallback((id: string, lang: string, onResult: (text: string) => void) => {
     const Ctor = getRecognitionCtor()
-    if (!Ctor) {
-      if (isIosDevice()) {
-        window.alert("Voice input isn't supported in Safari on iPhone or iPad yet - please type instead.")
-      }
-      return
-    }
+    if (!Ctor) return
 
     recognitionRef.current?.stop()
 
@@ -81,5 +72,5 @@ export function useSpeechToText() {
     recognitionRef.current?.stop()
   }, [])
 
-  return { supported, showButton, activeId, start, stop, error }
+  return { supported, activeId, start, stop, error }
 }
