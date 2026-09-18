@@ -10,7 +10,10 @@ import { Share } from '@capacitor/share'
  */
 export async function shareUrl(url: string, text?: string, dialogTitle?: string): Promise<'shared' | 'copied'> {
   if (Capacitor.getPlatform() !== 'web') {
-    await Share.share({ url, text, dialogTitle })
+    // iOS's share sheet passes `text` and `url` as separate items, and its "Copy" action only
+    // copies the first one - dropping the link entirely. Folding the link into the text avoids
+    // that (Android's native plugin already does this concatenation itself).
+    await Share.share({ text: text ? `${text}\n${url}` : url, dialogTitle })
     return 'shared'
   }
 
