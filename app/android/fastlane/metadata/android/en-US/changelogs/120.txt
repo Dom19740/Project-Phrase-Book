@@ -1,0 +1,9 @@
+What's new in 1.2.0:
+
+- Quick-add button on the homescreen widget - add a phrase without opening the app
+- Refreshed widget design with a new app icon and a color-matched Favorites / Not Learnt filter
+- Shared phrase links now open straight into the app
+- More reliable backups, plus automatic backup on iOS
+- Smoother onboarding experience
+- Fixed iOS microphone, share, and status bar issues
+- General bug fixes and performance improvements
