@@ -71,17 +71,17 @@ final class PhraseWidgetTheme {
         if (TEAL_HEX.equalsIgnoreCase(rawAccentHex)) {
             accent = Color.parseColor(TEAL_HEX);
             chipRes = dark ? R.drawable.widget_language_chip_dark_teal : R.drawable.widget_language_chip_light_teal;
-            pillRes = R.drawable.widget_pill_teal;
+            pillRes = chipRes;
             fabRes = R.drawable.widget_fab_teal;
         } else if (LEMON_HEX.equalsIgnoreCase(rawAccentHex)) {
             accent = dark ? Color.parseColor(LEMON_HEX) : OLIVE;
             chipRes = dark ? R.drawable.widget_language_chip_dark_lemon : R.drawable.widget_language_chip_light_olive;
-            pillRes = dark ? R.drawable.widget_pill_lemon : R.drawable.widget_pill_olive;
+            pillRes = chipRes;
             fabRes = dark ? R.drawable.widget_fab_lemon : R.drawable.widget_fab_olive;
         } else {
             accent = DEFAULT_ACCENT;
             chipRes = dark ? R.drawable.widget_language_chip_dark_pink : R.drawable.widget_language_chip_light_pink;
-            pillRes = R.drawable.widget_pill_pink;
+            pillRes = chipRes;
             fabRes = R.drawable.widget_fab_pink;
         }
 

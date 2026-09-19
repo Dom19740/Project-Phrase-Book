@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="30dp"
+    android:height="33dp"
+    android:viewportWidth="100"
+    android:viewportHeight="110">
+    <path
+        android:fillColor="@color/widget_fabpink"
+        android:pathData="M4,4 H96 V84 H28 L4,108 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,26 H46 V58 H38 V72 H28 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,26 H72 V58 H64 V72 H54 Z" />
+</vector>
