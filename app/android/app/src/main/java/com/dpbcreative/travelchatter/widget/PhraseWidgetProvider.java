@@ -141,7 +141,8 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
         views.setInt(R.id.filter_pill, "setBackgroundResource", theme.pillRes);
         views.setTextColor(R.id.filter_pill, theme.onAccent);
         views.setTextColor(R.id.empty_view, theme.muted);
-        views.setInt(R.id.quick_add_button, "setColorFilter", theme.accent);
+        views.setInt(R.id.quick_add_button, "setBackgroundResource", theme.fabRes);
+        views.setInt(R.id.quick_add_button, "setColorFilter", theme.onAccent);
     }
 
     private static PhraseWidgetDb.LanguageRow resolveActiveLanguage(Context context, int appWidgetId, List<PhraseWidgetDb.LanguageRow> languages) {

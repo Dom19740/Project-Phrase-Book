@@ -34,8 +34,9 @@ final class PhraseWidgetTheme {
     final int itemBackgroundRes;
     final int languageChipRes;
     final int pillRes;
+    final int fabRes;
 
-    private PhraseWidgetTheme(boolean dark, int accent, int backgroundRes, int itemBackgroundRes, int languageChipRes, int pillRes) {
+    private PhraseWidgetTheme(boolean dark, int accent, int backgroundRes, int itemBackgroundRes, int languageChipRes, int pillRes, int fabRes) {
         this.dark = dark;
         this.accent = accent;
         this.onAccent = readableTextOn(accent);
@@ -43,6 +44,7 @@ final class PhraseWidgetTheme {
         this.itemBackgroundRes = itemBackgroundRes;
         this.languageChipRes = languageChipRes;
         this.pillRes = pillRes;
+        this.fabRes = fabRes;
         if (dark) {
             surface = Color.parseColor("#1E1E1E");
             surfaceHover = Color.parseColor("#292929");
@@ -65,24 +67,28 @@ final class PhraseWidgetTheme {
         int accent;
         int chipRes;
         int pillRes;
+        int fabRes;
         if (TEAL_HEX.equalsIgnoreCase(rawAccentHex)) {
             accent = Color.parseColor(TEAL_HEX);
             chipRes = dark ? R.drawable.widget_language_chip_dark_teal : R.drawable.widget_language_chip_light_teal;
             pillRes = R.drawable.widget_pill_teal;
+            fabRes = R.drawable.widget_fab_teal;
         } else if (LEMON_HEX.equalsIgnoreCase(rawAccentHex)) {
             accent = dark ? Color.parseColor(LEMON_HEX) : OLIVE;
             chipRes = dark ? R.drawable.widget_language_chip_dark_lemon : R.drawable.widget_language_chip_light_olive;
             pillRes = dark ? R.drawable.widget_pill_lemon : R.drawable.widget_pill_olive;
+            fabRes = dark ? R.drawable.widget_fab_lemon : R.drawable.widget_fab_olive;
         } else {
             accent = DEFAULT_ACCENT;
             chipRes = dark ? R.drawable.widget_language_chip_dark_pink : R.drawable.widget_language_chip_light_pink;
             pillRes = R.drawable.widget_pill_pink;
+            fabRes = R.drawable.widget_fab_pink;
         }
 
         int backgroundRes = dark ? R.drawable.widget_background_dark : R.drawable.widget_background_light;
         int itemBackgroundRes = dark ? R.drawable.widget_item_background_dark : R.drawable.widget_item_background_light;
 
-        return new PhraseWidgetTheme(dark, accent, backgroundRes, itemBackgroundRes, chipRes, pillRes);
+        return new PhraseWidgetTheme(dark, accent, backgroundRes, itemBackgroundRes, chipRes, pillRes, fabRes);
     }
 
     private static boolean resolveDark(Context context) {
