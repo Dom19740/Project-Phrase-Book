@@ -8,6 +8,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { FlashCardsModal } from './components/FlashCardsModal'
 import { InstallPrompt } from './components/InstallPrompt'
 import { LanguageTabs } from './components/LanguageTabs'
+import { LearnFavoriteSettingModal } from './components/LearnFavoriteSettingModal'
 import { LoadingScreen } from './components/LoadingScreen'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
@@ -73,6 +74,10 @@ function Shell() {
     translationIncomplete,
     toggleLearned,
     toggleFavorite,
+    removeFavoriteOnLearn,
+    setRemoveFavoriteOnLearn,
+    showLearnFavoritePrompt,
+    resolveLearnFavoritePrompt,
     reorder,
     addPhrase,
     editPhrase,
@@ -311,8 +316,23 @@ function Shell() {
                     Backup & Share
                   </button>
 
+                  <div className="mt-1 border-t border-hairline pt-2">
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={removeFavoriteOnLearn}
+                      onClick={() => setRemoveFavoriteOnLearn(!removeFavoriteOnLearn)}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`size-4 shrink-0 rounded-full border transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
+                      />
+                      Remove learnt from favorites
+                    </button>
+                  </div>
+
                   <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">
-                    <p className="mb-1.5 text-xs font-medium text-muted">Theme</p>
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setThemeOverride('light')}
@@ -349,7 +369,6 @@ function Shell() {
                   </div>
 
                   <div className="mt-1 border-t border-hairline pt-2">
-                    <p className="mb-1 px-2.5 text-xs font-medium text-muted">Legal</p>
                     <a
                       href="https://travelchatter.dpbcreative.com/privacy.html"
                       target="_blank"
@@ -551,6 +570,8 @@ function Shell() {
       {showInstallPrompt && installPlatform && (
         <InstallPrompt platform={installPlatform} onClose={() => setShowInstallPrompt(false)} />
       )}
+
+      {showLearnFavoritePrompt && <LearnFavoriteSettingModal onConfirm={resolveLearnFavoritePrompt} />}
 
       {showFlashCards && (
         <FlashCardsModal

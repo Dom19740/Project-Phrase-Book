@@ -63,6 +63,10 @@ interface PhraseBookContextValue {
   refreshPhrases: () => Promise<void>
   toggleLearned: (translationId: number, learned: boolean) => Promise<void>
   toggleFavorite: (translationId: number, favorite: boolean) => Promise<void>
+  removeFavoriteOnLearn: boolean
+  setRemoveFavoriteOnLearn: (value: boolean) => void
+  showLearnFavoritePrompt: boolean
+  resolveLearnFavoritePrompt: (removeFavorite: boolean) => Promise<void>
   reorder: (orderedTranslationIds: number[]) => Promise<void>
   addPhrase: (
     english: string,
@@ -131,6 +135,15 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const [autoBackupFailing, setAutoBackupFailing] = useState(isAutoBackupFailing)
   const needsBackupReminder = languages.length > 0 && (lastBackupAt == null || changesSinceBackup >= BACKUP_REMINDER_THRESHOLD)
 
+  const [removeFavoriteOnLearn, setRemoveFavoriteOnLearn] = usePersistedState('phrasebook-remove-favorite-on-learn', false)
+  const [learnFavoritePromptSeen, setLearnFavoritePromptSeen] = usePersistedState('phrasebook-learn-favorite-prompt-seen', false)
+  // Set only the first time a phrase is marked as learnt (via row tap or bulk select), while the
+  // "remove from favorites?" prompt is awaiting the user's answer - the actual DB write is held
+  // until resolveLearnFavoritePrompt runs, so the prompt can't be skipped past on the first use.
+  const [pendingLearnAction, setPendingLearnAction] = useState<
+    { kind: 'single'; translationId: number } | { kind: 'bulk'; translationIds: number[] } | null
+  >(null)
+
   // Background translation runs detached from React's render cycle, so it needs the *current*
   // active language at the time each chunk finishes, not the value closed over when it started.
   const activeLanguageIdRef = useRef(activeLanguageId)
@@ -188,10 +201,15 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   const toggleLearned = useCallback(
     async (translationId: number, learned: boolean) => {
+      if (learned && !learnFavoritePromptSeen) {
+        setPendingLearnAction({ kind: 'single', translationId })
+        return
+      }
       await setLearned(translationId, learned)
+      if (learned && removeFavoriteOnLearn) await setFavorite(translationId, false)
       await refreshPhrases()
     },
-    [refreshPhrases],
+    [learnFavoritePromptSeen, removeFavoriteOnLearn, refreshPhrases],
   )
 
   const toggleFavorite = useCallback(
@@ -287,10 +305,34 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   const bulkMarkLearned = useCallback(
     async (translationIds: number[], learned: boolean) => {
+      if (learned && !learnFavoritePromptSeen) {
+        setPendingLearnAction({ kind: 'bulk', translationIds })
+        return
+      }
       await bulkSetLearned(translationIds, learned)
+      if (learned && removeFavoriteOnLearn) await bulkSetFavorite(translationIds, false)
       await refreshPhrases()
     },
-    [refreshPhrases],
+    [learnFavoritePromptSeen, removeFavoriteOnLearn, refreshPhrases],
+  )
+
+  const resolveLearnFavoritePrompt = useCallback(
+    async (removeFavorite: boolean) => {
+      setRemoveFavoriteOnLearn(removeFavorite)
+      setLearnFavoritePromptSeen(true)
+      const action = pendingLearnAction
+      setPendingLearnAction(null)
+      if (!action) return
+      if (action.kind === 'single') {
+        await setLearned(action.translationId, true)
+        if (removeFavorite) await setFavorite(action.translationId, false)
+      } else {
+        await bulkSetLearned(action.translationIds, true)
+        if (removeFavorite) await bulkSetFavorite(action.translationIds, false)
+      }
+      await refreshPhrases()
+    },
+    [pendingLearnAction, refreshPhrases],
   )
 
   const bulkMarkFavorite = useCallback(
@@ -581,6 +623,10 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
+      removeFavoriteOnLearn,
+      setRemoveFavoriteOnLearn,
+      showLearnFavoritePrompt: pendingLearnAction != null,
+      resolveLearnFavoritePrompt,
       reorder,
       addPhrase,
       editPhrase,
@@ -624,6 +670,10 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
+      removeFavoriteOnLearn,
+      setRemoveFavoriteOnLearn,
+      pendingLearnAction,
+      resolveLearnFavoritePrompt,
       reorder,
       addPhrase,
       editPhrase,
