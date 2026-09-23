@@ -400,7 +400,7 @@ export function PhraseList({
             <div className="flex flex-col items-center gap-2 py-10 text-center">
               <p className="font-brand text-xl font-bold tracking-[-0.035em] text-ink">Write it as you go.</p>
               <p className="max-w-xs text-sm leading-relaxed text-muted">
-                Tap the <span className="text-fabpink">+</span> button to capture your first phrase in this language.
+                Tap the <span className="text-fabpink">+</span> button to capture a phrase in this language.
               </p>
             </div>
           )}
