@@ -514,7 +514,9 @@ function Shell() {
           languages={languages}
           activeLanguageId={activeLanguageId}
           onClose={() => setShowAddPhrase(false)}
-          onSubmit={(english, categoryName, languageIds, manualTranslations) => addPhrase(english, categoryName, languageIds, manualTranslations)}
+          onSubmit={(english, categoryName, languageIds, manualTranslations, favorite) =>
+            addPhrase(english, categoryName, languageIds, manualTranslations, favorite)
+          }
         />
       )}
 

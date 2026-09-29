@@ -73,6 +73,7 @@ interface PhraseBookContextValue {
     categoryName: string | null,
     languageIds: number[],
     manualTranslations?: { languageId: number; text: string }[],
+    favorite?: boolean,
   ) => Promise<void>
   editPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
   deleteOneLanguage: (translationId: number) => Promise<void>
@@ -229,7 +230,13 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addPhrase = useCallback(
-    async (english: string, categoryName: string | null, languageIds: number[], manualTranslations?: { languageId: number; text: string }[]) => {
+    async (
+      english: string,
+      categoryName: string | null,
+      languageIds: number[],
+      manualTranslations?: { languageId: number; text: string }[],
+      favorite?: boolean,
+    ) => {
       const translations: { languageId: number; text: string }[] = [...(manualTranslations ?? [])]
       let finalCategory = categoryName
 
@@ -271,7 +278,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
       // Only the chosen languages get a row at all (blank for any that didn't get an automatic
       // translation) - a language not selected here simply won't have this phrase.
-      await addPhraseConcept({ english, categoryName: finalCategory, translations, languageIds })
+      await addPhraseConcept({ english, categoryName: finalCategory, translations, languageIds, favorite })
       await refreshCategories()
       await refreshPhrases()
     },

@@ -169,6 +169,8 @@ interface NewPhraseInput {
    * every tracked language when omitted (e.g. seed data, where `translations` already covers them).
    */
   languageIds?: number[]
+  /** Marks every created translation row as a favorite right away. */
+  favorite?: boolean
 }
 
 /** Creates a phrase concept and a translation row for each language it should exist in, in one transaction. */
@@ -190,8 +192,8 @@ export async function addPhraseConcept(input: NewPhraseInput): Promise<number> {
   const languages = input.languageIds ? allLanguages.filter((l) => input.languageIds!.includes(l.id)) : allLanguages
   const textByLanguage = new Map((input.translations ?? []).map((t) => [t.languageId, t.text]))
   const sets = languages.map((lang) => ({
-    statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, ?);',
-    values: [conceptId, lang.id, textByLanguage.get(lang.id) ?? '', sortOrder],
+    statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order, favorite) VALUES (?, ?, ?, ?, ?);',
+    values: [conceptId, lang.id, textByLanguage.get(lang.id) ?? '', sortOrder, input.favorite ? 1 : 0],
   }))
   if (sets.length > 0) await db.executeSet(sets)
 

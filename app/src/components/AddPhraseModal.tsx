@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, Mic, RefreshCw, X } from 'lucide-react'
+import { ChevronDown, Mic, RefreshCw, Star, X } from 'lucide-react'
 import type { Category, Language } from '../db/types'
 import { getLanguageFlag, getSpeechLocale } from '../lib/languageFlags'
 import { pillClass } from '../lib/pillStyles'
@@ -22,11 +22,13 @@ interface Props {
     categoryName: string | null,
     languageIds: number[],
     manualTranslations?: { languageId: number; text: string }[],
+    favorite?: boolean,
   ) => Promise<void>
 }
 
 export function AddPhraseModal({ categories, languages, activeLanguageId, onClose, onSubmit }: Props) {
   const [english, setEnglish] = useState('')
+  const [favorite, setFavorite] = useState(false)
   const [categoryChoice, setCategoryChoice] = useState('')
   const [newCategory, setNewCategory] = useState('')
   const [saving, setSaving] = useState(false)
@@ -126,7 +128,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
     const manualTranslations = [...selectedLanguageIds]
       .map((languageId) => ({ languageId, text: (translationText[languageId] ?? '').trim() }))
       .filter((t) => t.text.length > 0)
-    await onSubmit(english.trim(), categoryName, [...selectedLanguageIds], manualTranslations)
+    await onSubmit(english.trim(), categoryName, [...selectedLanguageIds], manualTranslations, favorite)
     setSaving(false)
     onClose()
   }
@@ -134,7 +136,19 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
       <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
-        <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Add phrase</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold tracking-tight text-ink">Add phrase</h2>
+          <button
+            type="button"
+            onClick={() => setFavorite((v) => !v)}
+            aria-pressed={favorite}
+            aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+            title={favorite ? 'Remove from favorites' : 'Add to favorites'}
+            className="rounded-full p-1.5 hover:bg-surfacehover active:scale-90 transition-all"
+          >
+            <Star size={20} strokeWidth={2.5} fill={favorite ? 'currentColor' : 'none'} className={favorite ? 'text-fabpink' : 'text-muted'} />
+          </button>
+        </div>
 
         <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">English</label>
         <div className="relative mb-4">
