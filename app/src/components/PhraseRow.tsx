@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, GripVertical, Loader2, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
 import { useSpeakRate } from '../lib/useSpeakRate'
@@ -46,6 +46,19 @@ export function PhraseRow({
   const nextSpeakRate = useSpeakRate()
   const rowRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleOutsidePointerDown(event: PointerEvent) {
+      if (!rowRef.current?.contains(event.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', handleOutsidePointerDown)
+    return () => document.removeEventListener('pointerdown', handleOutsidePointerDown)
+  }, [menuOpen])
+
+  useEffect(() => {
+    if (selectionMode) setMenuOpen(false)
+  }, [selectionMode])
+
   function clearPressTimer() {
     if (pressTimer.current != null) {
       window.clearTimeout(pressTimer.current)
@@ -71,22 +84,25 @@ export function PhraseRow({
       longPressFired.current = false
       return
     }
-    setMenuOpen(true)
+    setMenuOpen((open) => !open)
   }
 
   return (
     <div
       ref={rowRef}
-      className={`group relative flex items-center gap-1.5 rounded-2xl bg-surface border px-2 py-0.1 shadow-sm transition-all hover:border-fabpink/40 cursor-pointer select-none ${
+      className={`group relative overflow-hidden rounded-2xl bg-surface border shadow-sm transition-all hover:border-fabpink/40 select-none ${
         dragging ? 'border-fabpink' : 'border-hairline'
       } ${menuOpen ? '' : 'active:scale-[0.99]'}`}
-      onPointerDown={handlePointerDown}
-      onPointerUp={clearPressTimer}
-      onPointerLeave={clearPressTimer}
-      onPointerCancel={clearPressTimer}
-      onClick={handleClick}
-      title={selectionMode ? 'Tap to select' : 'Tap for options, or long-press to jump straight to edit'}
     >
+      <div
+        className="relative flex cursor-pointer items-center gap-1.5 px-2 py-0.1"
+        onPointerDown={handlePointerDown}
+        onPointerUp={clearPressTimer}
+        onPointerLeave={clearPressTimer}
+        onPointerCancel={clearPressTimer}
+        onClick={handleClick}
+        title={selectionMode ? 'Tap to select' : 'Tap for options, or long-press to jump straight to edit'}
+      >
       <button
         type="button"
         onClick={async (e) => {
@@ -175,16 +191,29 @@ export function PhraseRow({
         </button>
       )}
 
-      {menuOpen && (
-        <PhraseQuickMenu
-          anchorRef={rowRef}
-          learned={phrase.learned}
-          favorite={phrase.favorite}
-          onToggleLearned={() => onToggleLearned(phrase.translationId, !phrase.learned)}
-          onToggleFavorite={() => onToggleFavorite(phrase.translationId, !phrase.favorite)}
-          onEdit={() => onEdit(phrase)}
-          onClose={() => setMenuOpen(false)}
-        />
+      </div>
+      {!selectionMode && (
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${menuOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+          aria-hidden={!menuOpen}
+          onTransitionEnd={(event) => {
+            if (menuOpen && event.target === event.currentTarget && event.propertyName === 'grid-template-rows') {
+              rowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+            }
+          }}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <PhraseQuickMenu
+              open={menuOpen}
+              learned={phrase.learned}
+              favorite={phrase.favorite}
+              onToggleLearned={() => onToggleLearned(phrase.translationId, !phrase.learned)}
+              onToggleFavorite={() => onToggleFavorite(phrase.translationId, !phrase.favorite)}
+              onEdit={() => onEdit(phrase)}
+              onClose={() => setMenuOpen(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   )
