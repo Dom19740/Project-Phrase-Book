@@ -51,7 +51,7 @@ final class PhraseRemoteViewsFactory implements RemoteViewsService.RemoteViewsFa
             }
         }
         filter = PhraseWidgetPrefs.getFilter(context, appWidgetId);
-        phrases = PhraseWidgetDb.getPhrases(context, languageId, filter);
+        phrases = PhraseWidgetDb.getPhrases(context, languageId, filter, PhraseWidgetSortPrefs.get(context));
     }
 
     @Override

@@ -66,13 +66,13 @@ final class PhraseWidgetDb {
         return result;
     }
 
-    static List<PhraseRow> getPhrases(Context context, int languageId, String filter) {
+    static List<PhraseRow> getPhrases(Context context, int languageId, String filter, String sortMode) {
         List<PhraseRow> result = new ArrayList<>();
         String condition = "favorites".equals(filter) ? "t.favorite = 1" : "t.learned = 0";
         String sql = "SELECT t.id, pc.english, t.text, t.favorite, t.learned FROM translations t "
                 + "JOIN phrase_concepts pc ON pc.id = t.phrase_concept_id "
                 + "WHERE t.language_id = ? AND " + condition + " "
-                + "ORDER BY t.sort_order, t.id";
+                + "ORDER BY " + orderByClause(sortMode);
         try (SQLiteDatabase db = openReadOnly(context);
              Cursor c = db.rawQuery(sql, new String[] { String.valueOf(languageId) })) {
             while (c.moveToNext()) {
@@ -82,5 +82,30 @@ final class PhraseWidgetDb {
             // Same fallback as above.
         }
         return result;
+    }
+
+    /**
+     * Mirrors PhraseList.tsx's sortItems() so the widget's row order matches whatever the app is
+     * currently showing - favorites always sort first there, then the active mode breaks ties.
+     * "custom" (and any unrecognized/never-synced mode) falls back to the drag-reorder column.
+     */
+    private static String orderByClause(String sortMode) {
+        String mode = sortMode == null ? "custom" : sortMode;
+        switch (mode) {
+            case "date-asc":
+                return "t.favorite DESC, pc.id ASC, t.id ASC";
+            case "date-desc":
+                return "t.favorite DESC, pc.id DESC, t.id DESC";
+            case "english-asc":
+                return "t.favorite DESC, pc.english COLLATE NOCASE ASC, t.id ASC";
+            case "english-desc":
+                return "t.favorite DESC, pc.english COLLATE NOCASE DESC, t.id ASC";
+            case "translation-asc":
+                return "t.favorite DESC, t.text COLLATE NOCASE ASC, t.id ASC";
+            case "translation-desc":
+                return "t.favorite DESC, t.text COLLATE NOCASE DESC, t.id ASC";
+            default:
+                return "t.favorite DESC, t.sort_order ASC, t.id ASC";
+        }
     }
 }

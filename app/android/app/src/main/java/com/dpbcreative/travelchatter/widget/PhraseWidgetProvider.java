@@ -207,4 +207,10 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
         PhraseWidgetThemePrefs.set(context, theme, accentHex);
         updateAllWidgets(context);
     }
+
+    /** Bridges WidgetRefreshPlugin#syncSortMode (JS can't see PhraseWidgetSortPrefs directly since it's package-private). */
+    public static void syncSortMode(Context context, String sortMode) {
+        PhraseWidgetSortPrefs.set(context, sortMode);
+        updateAllWidgets(context);
+    }
 }

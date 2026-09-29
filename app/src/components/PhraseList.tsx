@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { usePersistedState } from '../lib/usePersistedState'
+import { syncWidgetSortMode } from '../lib/widgetRefresh'
 import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
 import { DragReorderList } from './DragReorderList'
@@ -200,6 +201,10 @@ export function PhraseList({
   useEffect(() => {
     onSelectionModeChange?.(selectionMode)
   }, [selectionMode, onSelectionModeChange])
+
+  useEffect(() => {
+    syncWidgetSortMode(sortMode)
+  }, [sortMode])
 
   const categoryOrderIndex = useMemo(() => {
     const map = new Map<string, number>()

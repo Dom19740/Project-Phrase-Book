@@ -5,6 +5,8 @@ export interface WidgetRefreshPlugin {
   refresh(): Promise<void>
   /** Pushes the app's current theme/accent so the widget's colors match instead of only following the OS setting. */
   syncTheme(options: { theme: string; accent: string }): Promise<void>
+  /** Pushes the app's current sort mode so the widget's phrase order matches what's on screen in the app. */
+  syncSortMode(options: { sortMode: string }): Promise<void>
 }
 
 const WidgetRefresh = registerPlugin<WidgetRefreshPlugin>('WidgetRefresh')
@@ -20,4 +22,11 @@ export function refreshWidget(): void {
 export function syncWidgetTheme(theme: 'dark' | 'light', accent: string): void {
   if (Capacitor.getPlatform() !== 'android') return
   WidgetRefresh.syncTheme({ theme, accent }).catch(() => {})
+}
+
+/** Called whenever the app's active sort mode changes, so the widget's phrase order tracks it
+ * live instead of always showing the custom drag order. */
+export function syncWidgetSortMode(sortMode: string): void {
+  if (Capacitor.getPlatform() !== 'android') return
+  WidgetRefresh.syncSortMode({ sortMode }).catch(() => {})
 }
