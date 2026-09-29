@@ -135,7 +135,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
-      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
+      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold tracking-tight text-ink">Add phrase</h2>
           <button
@@ -203,7 +203,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
           {languagesOpen && (
             <>
               <button className="fixed inset-0 z-40 cursor-default" onClick={() => setLanguagesOpen(false)} aria-label="Close language selector" />
-              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-hairline bg-surface p-3 pr-9 shadow-xl">
+              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border-[1.5px] border-hairline bg-surface p-3 pr-9 shadow-2xl">
                 <button
                   type="button"
                   onClick={() => setLanguagesOpen(false)}

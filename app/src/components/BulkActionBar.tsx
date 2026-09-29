@@ -180,7 +180,7 @@ export function BulkActionBar({
         {panel != null && (
           <>
             <button className="fixed inset-0 z-40 cursor-default" onClick={() => setPanel(null)} aria-label="Close popup" />
-            <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-2xl border border-hairline bg-surface p-3 shadow-xl">
+            <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-2xl border-[1.5px] border-hairline bg-surface p-3 shadow-2xl">
               {panel === 'category' && (
                 <>
                   <PopoutSelect

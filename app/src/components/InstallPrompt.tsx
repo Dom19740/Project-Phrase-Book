@@ -14,7 +14,7 @@ export function InstallPrompt({ platform, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="w-full min-w-0 rounded-t-3xl border border-hairline bg-surface p-5 pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))] shadow-2xl sm:max-w-sm sm:rounded-3xl sm:pb-5"
+        className="w-full min-w-0 rounded-t-3xl border-[1.5px] border-hairline bg-surface p-5 pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))] shadow-2xl sm:max-w-sm sm:rounded-3xl sm:pb-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">

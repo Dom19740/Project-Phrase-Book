@@ -8,7 +8,7 @@ export function LearnFavoriteSettingModal({ onConfirm }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center" onClick={() => onConfirm(false)}>
       <div
-        className="w-full min-w-0 rounded-t-3xl border border-hairline bg-surface p-5 pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))] shadow-2xl sm:max-w-sm sm:rounded-3xl sm:pb-5"
+        className="w-full min-w-0 rounded-t-3xl border-[1.5px] border-hairline bg-surface p-5 pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))] shadow-2xl sm:max-w-sm sm:rounded-3xl sm:pb-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3">

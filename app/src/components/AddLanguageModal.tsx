@@ -81,7 +81,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
       onClick={onClose}
     >
       <div
-        className={`w-full min-w-0 ${selected ? 'sm:max-w-md' : 'sm:max-w-sm'} rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0`}
+        className={`w-full min-w-0 ${selected ? 'sm:max-w-md' : 'sm:max-w-sm'} rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0`}
         onClick={(e) => e.stopPropagation()}
       >
         {selected ? (

@@ -53,7 +53,7 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
       onClick={onClose}
     >
       <div
-        className="w-full min-w-0 sm:max-w-md max-h-[75vh] overflow-y-auto rounded-2xl border border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0"
+        className="w-full min-w-0 sm:max-w-md max-h-[75vh] overflow-y-auto rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Manage categories</h2>
