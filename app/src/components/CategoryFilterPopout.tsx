@@ -30,15 +30,15 @@ export function CategoryFilterPopout({
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full bg-fabpink px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
+        className="flex items-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
       >
-        <Tag size={14} strokeWidth={2} className="text-onaccent" />
+        <Tag size={14} strokeWidth={2} className="text-fabpink" />
         Categories
         {favoritesOnly && (
-          <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-onaccent" aria-hidden="true" />
+          <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-hidden="true" />
         )}
         {hiddenCount > 0 && (
-          <span className="rounded-full bg-white/20 border border-white/30 text-onaccent text-[10px] font-bold uppercase tracking-wider leading-none px-1.5 py-0.5">
+          <span className="rounded-full bg-fabpink/10 border border-fabpink/30 text-fabpink text-[10px] font-bold uppercase tracking-wider leading-none px-1.5 py-0.5">
             {hiddenCount} hidden
           </span>
         )}

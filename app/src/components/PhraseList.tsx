@@ -328,10 +328,10 @@ export function PhraseList({
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
+            className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
             title="Cycle: Not Learnt → Learnt → All"
           >
-            <Eye size={13} strokeWidth={2} className="text-onaccent" />
+            <Eye size={13} strokeWidth={2} className="text-fabpink" />
             {LEARNED_FILTER_LABEL[learnedFilter]}
           </button>
         </div>
@@ -339,9 +339,9 @@ export function PhraseList({
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
+            className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
           >
-            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-onaccent" />}
+            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
             {selectionMode ? 'Cancel' : 'Select'}
           </button>
 
@@ -353,7 +353,7 @@ export function PhraseList({
             panelWidthClassName="w-max"
             accent
             dense
-            icon={<ListFilter size={14} strokeWidth={2} className="text-onaccent shrink-0" />}
+            icon={<ListFilter size={14} strokeWidth={2} className="text-fabpink shrink-0" />}
           />
         </div>
       </div>

@@ -56,13 +56,13 @@ export function PopoutSelect<T extends string | number>({
           dense ? 'px-2.5 py-1.5 text-xs font-medium' : 'px-3.5 py-2 text-sm'
         } ${
           accent
-            ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20'
+            ? 'border-2 border-fabpink bg-transparent text-fabpink'
             : `border-2 bg-surface text-ink ${open ? 'border-fabpink' : 'border-hairline hover:border-fabpink/40'}`
         }`}
       >
         {icon}
         <span className="flex-1 min-w-0 flex items-center gap-1 text-left truncate">{activeTrigger}</span>
-        <ChevronDown size={14} strokeWidth={2} className={`shrink-0 ${accent ? 'text-onaccent' : 'text-ink'}`} />
+        <ChevronDown size={14} strokeWidth={2} className={`shrink-0 ${accent ? 'text-fabpink' : 'text-ink'}`} />
       </button>
 
       {open && (
