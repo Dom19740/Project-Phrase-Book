@@ -359,7 +359,7 @@ function Shell() {
                           onClick={() => setAccent(color)}
                           aria-label={`Use accent color ${color}`}
                           aria-pressed={accent === color}
-                          className={`h-6 w-6 shrink-0 rounded-full transition-transform active:scale-90 ${
+                          className={`size-4 shrink-0 rounded-full transition-transform active:scale-90 ${
                             accent === color ? 'ring-2 ring-offset-2 ring-offset-surface ring-ink' : ''
                           }`}
                           style={{ backgroundColor: theme === 'light' ? (LIGHT_MODE_ACCENT_OVERRIDES[color] ?? color) : color }}
