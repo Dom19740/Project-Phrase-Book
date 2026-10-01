@@ -1,0 +1,9 @@
+What's new in 1.2.1:
+
+- New phrases are now favorited automatically
+- Learnt phrases no longer clutter your Favorites list
+- Widget phrase order now stays in sync with the app
+- Phrase details now open with a smooth slide-down animation
+- Refreshed outlines for category and action buttons
+- Unified panel borders for a more consistent look
+- General bug fixes and improvements

@@ -326,7 +326,7 @@ function Shell() {
                     >
                       <span
                         aria-hidden="true"
-                        className={`size-4 shrink-0 rounded-full border transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
+                        className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink' : ''}`}
                       />
                       Remove learnt from favorites
                     </button>

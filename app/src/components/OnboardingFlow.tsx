@@ -47,7 +47,7 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
           <div className="flex flex-col gap-0.5">
             {['My name is...', 'Nice to meet you.', 'Thank you everyone.'].map((phrase) => (
               <div key={phrase} className="flex items-center gap-2 rounded-lg px-2 py-1 text-xs text-ink">
-                <span aria-hidden="true" className="size-3.5 shrink-0 rounded-full border border-fabpink/40" />
+                <span aria-hidden="true" className="size-3.5 shrink-0 rounded-full border-2 border-fabpink" />
                 <span className="min-w-0 flex-1 truncate">{phrase}</span>
               </div>
             ))}

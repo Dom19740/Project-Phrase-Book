@@ -152,7 +152,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                     >
                       <span
                         aria-hidden="true"
-                        className={`size-4 shrink-0 rounded-full border transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
+                        className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${checked ? 'bg-fabpink' : ''}`}
                       />
                       <span className="min-w-0 flex-1 truncate">
                         <span className="text-ink">{p.english}</span>

@@ -169,7 +169,7 @@ export function PhraseRow({
           <div className="shrink-0 flex items-center justify-center size-9" role="checkbox" aria-checked={selected}>
             <span
               aria-hidden="true"
-              className={`size-4 shrink-0 rounded-full border transition-colors ${selected ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
+              className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${selected ? 'bg-fabpink' : ''}`}
             />
           </div>
         )}

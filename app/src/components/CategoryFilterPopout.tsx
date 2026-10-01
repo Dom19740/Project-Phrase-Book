@@ -57,7 +57,7 @@ export function CategoryFilterPopout({
             >
               <span
                 aria-hidden="true"
-                className={`size-4 shrink-0 rounded-full border transition-colors ${favoritesOnly ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
+                className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${favoritesOnly ? 'bg-fabpink' : ''}`}
               />
               Favorites only
             </button>
@@ -70,7 +70,7 @@ export function CategoryFilterPopout({
             >
               <span
                 aria-hidden="true"
-                className={`size-4 shrink-0 rounded-full border transition-colors ${groupByCategoryOn ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
+                className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
               />
               Group by category
             </button>

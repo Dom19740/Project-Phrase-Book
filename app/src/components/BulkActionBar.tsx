@@ -233,7 +233,7 @@ export function BulkActionBar({
                           >
                             <span
                               aria-hidden="true"
-                              className={`size-4 shrink-0 rounded-full border transition-colors ${checked ? 'bg-fabpink border-fabpink' : 'border-fabpink/40'}`}
+                              className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${checked ? 'bg-fabpink' : ''}`}
                             />
                             <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
                             {lang.name}
