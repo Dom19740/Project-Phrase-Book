@@ -50,12 +50,14 @@ export function LanguageTabs({
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-hairline px-4 py-2">
-
+    <div className="flex shrink-0 flex-col border-b border-hairline">
+      <div className="flex flex-wrap items-center gap-2 px-4 py-2">
       <div className="relative flex w-full flex-1 items-center gap-2 sm:w-auto">
         <div className="relative flex-1">
           <button
             onClick={() => (languages.length === 0 ? setShowAddLanguage(true) : setOpen((v) => !v))}
+            aria-expanded={open}
+            aria-controls="language-selection-panel"
             className="h-10 w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 text-sm font-semibold shadow-lg shadow-fabpink/10 active:scale-[0.98] transition-all"
           >
             {languages.length === 0 ? (
@@ -69,77 +71,6 @@ export function LanguageTabs({
             <ChevronDown size={16} strokeWidth={2.5} className="text-fabpink" />
           </button>
 
-          {open && (
-            <>
-              <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close language menu" />
-              <div className="animate-menu-open absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border-[1.5px] border-hairline bg-surface p-1.5 shadow-2xl">
-                <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
-                  {languages.map((lang) => (
-                    <div key={lang.id} className="flex items-center gap-1 rounded-lg hover:bg-surfacehover transition-colors">
-                      {confirmingRemoveId === lang.id ? (
-                        <div className="flex flex-1 items-center justify-end gap-1 px-2 py-1.5">
-                          <button
-                            onClick={() => {
-                              onRemoveLanguage(lang.id)
-                              setConfirmingRemoveId(null)
-                            }}
-                            className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-onaccent active:scale-95 transition-transform"
-                          >
-                            Delete
-                          </button>
-                          <button onClick={() => setConfirmingRemoveId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="shrink-0 p-2 text-base leading-none" aria-hidden="true">
-                            {getLanguageFlag(lang.code)}
-                          </span>
-                          <button
-                            onClick={() => {
-                              onSelect(lang.id)
-                              setOpen(false)
-                            }}
-                            className="flex flex-1 items-center rounded-lg py-2 pr-2 text-sm text-left text-ink"
-                          >
-                            {lang.name}
-                          </button>
-                          <button
-                            onClick={() => onSetLanguagePhonetics(lang.id, !lang.phoneticsEnabled)}
-                            className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-colors ${
-                              lang.phoneticsEnabled ? 'border-fabpink text-fabpink' : 'border-hairline text-muted hover:bg-surfacehover'
-                            }`}
-                            aria-label={lang.phoneticsEnabled ? `Disable phonetics for ${lang.name}` : `Add phonetics for ${lang.name}`}
-                            title={lang.phoneticsEnabled ? 'Disable phonetics' : 'Add phonetics'}
-                          >
-                            {lang.phoneticsEnabled ? 'Phonetics On' : 'Add Phonetics'}
-                          </button>
-                          <button
-                            onClick={() => setConfirmingRemoveId(lang.id)}
-                            className="shrink-0 rounded-full border border-hairline p-2 text-muted hover:bg-surfacehover transition-colors"
-                            aria-label={`Delete ${lang.name}`}
-                          >
-                            <Trash2 size={14} strokeWidth={2} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => {
-                    setOpen(false)
-                    setShowAddLanguage(true)
-                  }}
-                  className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline px-2 pt-2 pb-1 text-sm font-semibold text-fabpink hover:bg-surfacehover transition-colors"
-                >
-                  <Plus size={15} strokeWidth={2.5} />
-                  Add language
-                </button>
-              </div>
-            </>
-          )}
         </div>
 
         {/* Reserves the collapsed search control's width in the flex row so nothing has to
@@ -193,6 +124,90 @@ export function LanguageTabs({
       </div>
 
       {menu}
+      </div>
+
+      {open && (
+        <button
+          className="fixed inset-0 z-40 cursor-default"
+          onClick={() => setOpen(false)}
+          aria-label="Close language menu"
+        />
+      )}
+      <div
+        id="language-selection-panel"
+        className="menu-panel-reveal relative z-50 shrink-0 bg-surface"
+        data-open={open}
+        aria-hidden={!open}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="max-h-64 overflow-y-auto px-4 py-2">
+            <div className="flex flex-col gap-1">
+              {languages.map((lang) => (
+                <div key={lang.id} className="flex items-center gap-1 rounded-lg hover:bg-surfacehover transition-colors">
+                  {confirmingRemoveId === lang.id ? (
+                    <div className="flex flex-1 items-center justify-end gap-1 px-2 py-1.5">
+                      <button
+                        onClick={() => {
+                          onRemoveLanguage(lang.id)
+                          setConfirmingRemoveId(null)
+                        }}
+                        className="rounded-full px-2.5 py-1 text-xs font-medium bg-fabpink text-onaccent active:scale-95 transition-transform"
+                      >
+                        Delete
+                      </button>
+                      <button onClick={() => setConfirmingRemoveId(null)} className="rounded-full px-2.5 py-1 text-xs font-medium text-muted">
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="shrink-0 p-2 text-base leading-none" aria-hidden="true">
+                        {getLanguageFlag(lang.code)}
+                      </span>
+                      <button
+                        onClick={() => {
+                          onSelect(lang.id)
+                          setOpen(false)
+                        }}
+                        className="flex flex-1 items-center rounded-lg py-2 pr-2 text-sm text-left text-ink"
+                      >
+                        {lang.name}
+                      </button>
+                      <button
+                        onClick={() => onSetLanguagePhonetics(lang.id, !lang.phoneticsEnabled)}
+                        className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-colors ${
+                          lang.phoneticsEnabled ? 'border-fabpink text-fabpink' : 'border-hairline text-muted hover:bg-surfacehover'
+                        }`}
+                        aria-label={lang.phoneticsEnabled ? `Disable phonetics for ${lang.name}` : `Add phonetics for ${lang.name}`}
+                        title={lang.phoneticsEnabled ? 'Disable phonetics' : 'Add phonetics'}
+                      >
+                        {lang.phoneticsEnabled ? 'Phonetics On' : 'Add Phonetics'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmingRemoveId(lang.id)}
+                        className="shrink-0 rounded-full border border-hairline p-2 text-muted hover:bg-surfacehover transition-colors"
+                        aria-label={`Delete ${lang.name}`}
+                      >
+                        <Trash2 size={14} strokeWidth={2} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                setOpen(false)
+                setShowAddLanguage(true)
+              }}
+              className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline px-2 pt-2 pb-1 text-sm font-semibold text-fabpink hover:bg-surfacehover transition-colors"
+            >
+              <Plus size={15} strokeWidth={2.5} />
+              Add language
+            </button>
+          </div>
+        </div>
+      </div>
 
       {showAddLanguage && (
         <AddLanguageModal

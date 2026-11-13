@@ -229,16 +229,16 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       )
 
       if (failed.length > 0) {
-        console.error(`${failed.length} pronunciation guide(s) could not be generated after retrying.`)
+        console.error(`${failed.length} phonetic translation(s) could not be generated after retrying.`)
         setPhoneticsIncomplete({ languageId, languageName, count: failed.length, error: null })
       }
     } catch (err) {
-      console.error(`Pronunciation guide generation failed for ${languageName}:`, err)
+      console.error(`Phonetic translation generation failed for ${languageName}:`, err)
       setPhoneticsIncomplete({
         languageId,
         languageName,
         count: pendingCount,
-        error: err instanceof Error ? err.message : 'Pronunciation guide generation failed.',
+        error: err instanceof Error ? err.message : 'Phonetic translation generation failed.',
       })
     } finally {
       phoneticsInProgress.current.delete(languageId)

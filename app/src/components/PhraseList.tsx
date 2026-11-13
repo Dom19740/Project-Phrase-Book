@@ -387,7 +387,7 @@ export function PhraseList({
                 onClick={() => setShowPhonetics((value) => !value)}
                 aria-pressed={showPhonetics}
                 className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
-                title={showPhonetics ? 'Show native script' : 'Show pronunciation guide'}
+                title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
               >
                 <Languages size={13} strokeWidth={2} />
                 {showPhonetics ? 'PHONETIC' : 'Native'}
@@ -399,7 +399,7 @@ export function PhraseList({
                   disabled={generatingPhonetics}
                   className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry guides' : 'Generate guides'}
+                  {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
                 </button>
               )}
             </>

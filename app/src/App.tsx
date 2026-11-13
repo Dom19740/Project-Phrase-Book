@@ -503,7 +503,7 @@ function Shell() {
           style={{ bottom: 'calc(9rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
-          <span className="truncate">Creating pronunciation guides for {backgroundPhonetics.languageName}&hellip;</span>
+          <span className="truncate">Creating phonetic translations for {backgroundPhonetics.languageName}&hellip;</span>
         </div>
       )}
 
@@ -522,12 +522,12 @@ function Shell() {
 
       {!backgroundPhonetics && phoneticsIncomplete && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
+          className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(9rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <TriangleAlert size={15} strokeWidth={2.5} className="shrink-0 text-fabpink" />
-          <span className="truncate">
-            {phoneticsIncomplete.count} pronunciation guide{phoneticsIncomplete.count === 1 ? '' : 's'} in {phoneticsIncomplete.languageName} could not be generated.
+          <span className="min-w-0 whitespace-normal break-words leading-5">
+            {phoneticsIncomplete.count} phonetic translation{phoneticsIncomplete.count === 1 ? '' : 's'} in {phoneticsIncomplete.languageName} could not be generated.
             {phoneticsIncomplete.error ? ` ${phoneticsIncomplete.error}` : ''}
           </span>
         </div>

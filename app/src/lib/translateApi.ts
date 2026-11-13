@@ -103,7 +103,7 @@ export async function translatePhrasesBulk(englishPhrases: string[], targetLangC
   return data.translations
 }
 
-/** Generates learner-friendly romanized pronunciation guides for a batch of existing translations. */
+/** Generates learner-friendly romanized phonetic translations for a batch of existing translations. */
 export async function generatePhoneticsBulk(translations: string[], targetLangCode: string, targetLangName: string): Promise<string[]> {
   const baseUrl = import.meta.env.VITE_TRANSLATE_API_URL
   if (!baseUrl) throw new Error('VITE_TRANSLATE_API_URL is not configured')

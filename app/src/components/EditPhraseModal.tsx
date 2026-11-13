@@ -237,7 +237,7 @@ export function EditPhraseModal({
 
             {phoneticsEnabled && (
               <>
-                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Pronunciation guide (editable)</label>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Phonetic Translation (editable)</label>
                 <input
                   value={phonetic}
                   onChange={(event) => setPhonetic(event.target.value)}
