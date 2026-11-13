@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GripVertical, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, GripVertical, Save, Trash2 } from 'lucide-react'
 import type { Category } from '../db/types'
 import { DragReorderList } from './DragReorderList'
 
@@ -12,7 +12,7 @@ interface Props {
   onReorder: (orderedCategoryIds: number[]) => Promise<void>
 }
 
-export function ManageCategoriesModal({ categories, onClose, onCreate, onRename, onDelete, onReorder }: Props) {
+export function ManageCategoriesPanel({ categories, onClose, onCreate, onRename, onDelete, onReorder }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingName, setEditingName] = useState('')
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(null)
@@ -48,15 +48,18 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
-      onClick={onClose}
-    >
-      <div
-        className="w-full min-w-0 sm:max-w-md max-h-[75vh] overflow-y-auto rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Manage categories</h2>
+    <div className="animate-menu-open-right max-h-[60vh] min-w-0 overflow-y-auto overscroll-contain pr-1">
+        <div className="mb-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Back to sort and categories"
+            className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-fabpink text-fabpink transition-colors hover:bg-fabpink/10 active:scale-95"
+          >
+            <ArrowLeft size={15} strokeWidth={2} />
+          </button>
+          <h2 className="text-sm font-extrabold uppercase tracking-wider text-fabpink">Manage categories</h2>
+        </div>
 
         <DragReorderList
           items={categories}
@@ -157,12 +160,6 @@ export function ManageCategoriesModal({ categories, onClose, onCreate, onRename,
           </button>
         </div>
 
-        <div className="flex justify-end">
-          <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
-            Close
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

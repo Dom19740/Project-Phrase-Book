@@ -13,7 +13,7 @@ interface Props {
 export function PhraseQuickMenu({ open, learned, favorite, onToggleLearned, onToggleFavorite, onEdit, onClose }: Props) {
   return (
     <div
-      className="flex flex-col p-1.5"
+      className={`flex flex-col p-1.5 ${open ? 'animate-menu-open' : ''}`}
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => event.stopPropagation()}
     >

@@ -262,7 +262,7 @@ export function FlashCardsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-appbg text-ink"
+      className="animate-modal-backdrop fixed inset-0 z-50 flex flex-col bg-appbg text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)', paddingBottom: 'var(--safe-area-inset-bottom, 0px)' }}
     >
       <header className="flex items-center justify-between px-4 py-3 border-b border-hairline shrink-0">

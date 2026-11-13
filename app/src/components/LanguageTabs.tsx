@@ -72,7 +72,7 @@ export function LanguageTabs({
           {open && (
             <>
               <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close language menu" />
-              <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border-[1.5px] border-hairline bg-surface p-1.5 shadow-2xl">
+              <div className="animate-menu-open absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border-[1.5px] border-hairline bg-surface p-1.5 shadow-2xl">
                 <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                   {languages.map((lang) => (
                     <div key={lang.id} className="flex items-center gap-1 rounded-lg hover:bg-surfacehover transition-colors">
@@ -110,10 +110,10 @@ export function LanguageTabs({
                             className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-colors ${
                               lang.phoneticsEnabled ? 'border-fabpink text-fabpink' : 'border-hairline text-muted hover:bg-surfacehover'
                             }`}
-                            aria-label={lang.phoneticsEnabled ? `Disable pronunciation guide for ${lang.name}` : `Enable pronunciation guide for ${lang.name}`}
-                            title={lang.phoneticsEnabled ? 'Disable pronunciation guide' : 'Enable pronunciation guide'}
+                            aria-label={lang.phoneticsEnabled ? `Disable phonetics for ${lang.name}` : `Add phonetics for ${lang.name}`}
+                            title={lang.phoneticsEnabled ? 'Disable phonetics' : 'Add phonetics'}
                           >
-                            {lang.phoneticsEnabled ? 'Guides on' : 'Add guide'}
+                            {lang.phoneticsEnabled ? 'Phonetics On' : 'Add Phonetics'}
                           </button>
                           <button
                             onClick={() => setConfirmingRemoveId(lang.id)}

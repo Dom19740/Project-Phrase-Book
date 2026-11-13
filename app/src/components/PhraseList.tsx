@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   ArrowDown,
   ArrowDownAZ,
@@ -20,9 +20,8 @@ import { syncWidgetSortMode } from '../lib/widgetRefresh'
 import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
 import { DragReorderList } from './DragReorderList'
-import { ManageCategoriesModal } from './ManageCategoriesModal'
+import { ManageCategoriesPanel } from './ManageCategoriesPanel'
 import { PhraseRow } from './PhraseRow'
-import { PopoutSelect } from './PopoutSelect'
 
 interface Props {
   phrases: PhraseListItem[]
@@ -72,7 +71,7 @@ function SortIcon({ mode }: { mode: SortMode }) {
       ) : mode === 'custom' ? (
         <GripVertical size={14} strokeWidth={2} />
       ) : (
-        <Languages size={14} strokeWidth={2} />
+        <span className="text-sm font-semibold leading-none" aria-hidden="true">文</span>
       )}
     </span>
   )
@@ -192,7 +191,8 @@ export function PhraseList({
   onReorderCategories,
 }: Props) {
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
-  const [groupByCategoryOn, setGroupByCategoryOn] = usePersistedState('phrasebook-group-by-category', false)
+  const [sortOptionsExpanded, setSortOptionsExpanded] = usePersistedState('phrasebook-sort-section-expanded', false)
+  const [groupByCategoryOn, setGroupByCategoryOn] = usePersistedState('phrasebook-group-by-category', true)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [learnedFilter, setLearnedFilter] = usePersistedState<LearnedFilter>('phrasebook-learned-filter', 'unlearned')
   const [primaryExpanded, setPrimaryExpanded] = useState(true)
@@ -204,8 +204,14 @@ export function PhraseList({
   const [hiddenCategoryList, setHiddenCategoryList] = usePersistedState<string[]>('phrasebook-hidden-categories', [])
   const hiddenCategories = useMemo(() => new Set(hiddenCategoryList), [hiddenCategoryList])
   const [showManageCategories, setShowManageCategories] = useState(false)
+  const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const sortTriggerRef = useRef<HTMLDivElement>(null)
+  const sortPanelRef = useRef<HTMLDivElement>(null)
+  const bulkTriggerRef = useRef<HTMLDivElement>(null)
+  const bulkPanelRef = useRef<HTMLDivElement>(null)
+  const phraseRowsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     onSelectionModeChange?.(selectionMode)
@@ -215,6 +221,35 @@ export function PhraseList({
     syncWidgetSortMode(sortMode)
   }, [sortMode])
 
+  useEffect(() => {
+    if (!sortMenuOpen && !selectionMode) return
+
+    function handleOutsidePointerDown(event: PointerEvent) {
+      const target = event.target
+      if (!(target instanceof Node)) return
+
+      if (
+        sortMenuOpen &&
+        !sortTriggerRef.current?.contains(target) &&
+        !sortPanelRef.current?.contains(target)
+      ) {
+        setSortMenuOpen(false)
+      }
+      if (
+        selectionMode &&
+        !bulkTriggerRef.current?.contains(target) &&
+        !bulkPanelRef.current?.contains(target) &&
+        !phraseRowsRef.current?.contains(target)
+      ) {
+        setSelectionMode(false)
+        setSelectedIds(new Set())
+      }
+    }
+
+    document.addEventListener('pointerdown', handleOutsidePointerDown)
+    return () => document.removeEventListener('pointerdown', handleOutsidePointerDown)
+  }, [sortMenuOpen, selectionMode])
+
   const categoryOrderIndex = useMemo(() => {
     const map = new Map<string, number>()
     categories.forEach((c, i) => map.set(c.name, i))
@@ -222,14 +257,14 @@ export function PhraseList({
   }, [categories])
 
   const allCategoryNames = useMemo(() => {
-    const names = new Set<string>()
+    const names = new Set(categories.map((category) => category.name))
     for (const p of phrases) names.add(p.categoryName ?? 'Uncategorized')
     return [...names].sort((a, b) => {
       const ia = categoryOrderIndex.get(a) ?? Infinity
       const ib = categoryOrderIndex.get(b) ?? Infinity
       return ia !== ib ? ia - ib : a.localeCompare(b)
     })
-  }, [phrases, categoryOrderIndex])
+  }, [categories, phrases, categoryOrderIndex])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -333,18 +368,17 @@ export function PhraseList({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="shrink-0 flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
+      <div className="shrink-0">
+        <div className="flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
         <div className="flex flex-wrap items-center gap-2">
-          <CategoryFilterPopout
-            allCategoryNames={allCategoryNames}
-            hiddenCategories={hiddenCategories}
-            onToggleCategoryVisible={toggleCategoryVisible}
-            onManageCategories={() => setShowManageCategories(true)}
-            groupByCategoryOn={groupByCategoryOn}
-            onToggleGroupByCategory={setGroupByCategoryOn}
-            favoritesOnly={favoritesOnly}
-            onToggleFavoritesOnly={setFavoritesOnly}
-          />
+          <button
+            onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
+            className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
+            title="Cycle: Not Learnt → Learnt → All"
+          >
+            <Eye size={13} strokeWidth={2} />
+            {LEARNED_FILTER_LABEL[learnedFilter]}
+          </button>
 
           {phoneticsEnabled && (
             <>
@@ -352,91 +386,174 @@ export function PhraseList({
                 type="button"
                 onClick={() => setShowPhonetics((value) => !value)}
                 aria-pressed={showPhonetics}
-                className={`flex items-center gap-1.5 shrink-0 rounded-full border-2 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
-                  showPhonetics ? 'border-fabpink bg-fabpink text-onaccent' : 'border-hairline text-muted'
-                }`}
+                className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
                 title={showPhonetics ? 'Show native script' : 'Show pronunciation guide'}
               >
                 <Languages size={13} strokeWidth={2} />
-                {showPhonetics ? 'Pronunciation' : 'Native script'}
+                {showPhonetics ? 'PHONETIC' : 'Native'}
               </button>
               {phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
                 <button
                   type="button"
                   onClick={() => void onGeneratePhonetics()}
                   disabled={generatingPhonetics}
-                  className="shrink-0 rounded-full border border-hairline px-2.5 py-1.5 text-[10px] font-bold text-muted hover:bg-surfacehover disabled:opacity-50"
+                  className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {generatingPhonetics ? 'Generating guides...' : phoneticsError ? 'Retry guides' : 'Generate guides'}
+                  {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry guides' : 'Generate guides'}
                 </button>
               )}
             </>
           )}
 
-          <button
-            onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
-            title="Cycle: Not Learnt → Learnt → All"
-          >
-            <Eye size={13} strokeWidth={2} className="text-fabpink" />
-            {LEARNED_FILTER_LABEL[learnedFilter]}
-          </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
-            className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
-          >
-            {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
-            {selectionMode ? 'Cancel' : 'Select'}
-          </button>
+          <div ref={bulkTriggerRef}>
+            <button
+              onClick={() => {
+                if (selectionMode) {
+                  exitSelectionMode()
+                } else {
+                  setSortMenuOpen(false)
+                  setSelectionMode(true)
+                }
+              }}
+              className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+            >
+              {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
+              {selectionMode ? 'Close' : 'Bulk'}
+            </button>
+          </div>
 
-          <PopoutSelect
-            value={sortMode}
-            onChange={setSortMode}
-            options={SORT_OPTIONS}
-            align="right"
-            panelWidthClassName="w-max"
-            accent
-            dense
-            icon={<ListFilter size={14} strokeWidth={2} className="text-fabpink shrink-0" />}
+          <div ref={sortTriggerRef}>
+            <button
+              type="button"
+              onClick={() => {
+                if (sortMenuOpen) {
+                  setSortMenuOpen(false)
+                } else {
+                  if (selectionMode) exitSelectionMode()
+                  setSortMenuOpen(true)
+                }
+              }}
+              aria-expanded={sortMenuOpen}
+              className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+            >
+              {sortMenuOpen ? <X size={14} strokeWidth={2} /> : <ListFilter size={14} strokeWidth={2} />}
+              {sortMenuOpen ? 'Close' : 'Sort'}
+            </button>
+          </div>
+        </div>
+        </div>
+
+        <div
+          ref={sortPanelRef}
+          className="menu-panel-reveal shrink-0 border-b border-hairline bg-surface"
+          data-open={sortMenuOpen}
+          aria-hidden={!sortMenuOpen}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className="relative overflow-hidden px-4 py-2">
+              {showManageCategories ? (
+                <ManageCategoriesPanel
+                  categories={categories}
+                  onClose={() => setShowManageCategories(false)}
+                  onCreate={onCreateCategory}
+                  onRename={onRenameCategory}
+                  onDelete={onDeleteCategory}
+                  onReorder={onReorderCategories}
+                />
+              ) : (
+                <div className={sortMenuOpen ? 'animate-menu-open' : ''}>
+                  <button
+                    type="button"
+                    aria-expanded={sortOptionsExpanded}
+                    onClick={() => setSortOptionsExpanded((expanded) => !expanded)}
+                    className="flex w-full items-center gap-1.5 px-2.5 pb-1 text-left"
+                  >
+                    {sortOptionsExpanded ? (
+                      <ChevronDown size={14} strokeWidth={2} className="text-fabpink" />
+                    ) : (
+                      <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />
+                    )}
+                    <ListFilter size={14} strokeWidth={2} className="text-fabpink" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Sort</span>
+                  </button>
+                  {sortOptionsExpanded && (
+                    <div className="flex flex-wrap gap-1 pb-1">
+                      {SORT_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setSortMode(option.value)}
+                          aria-pressed={sortMode === option.value}
+                          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left transition-colors hover:bg-surfacehover ${
+                            sortMode === option.value ? 'font-medium text-fabpink' : 'text-ink'
+                          }`}
+                        >
+                          {option.shortLabel}
+                          <span className="sr-only">{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <CategoryFilterPopout
+                    allCategoryNames={allCategoryNames}
+                    hiddenCategories={hiddenCategories}
+                    onToggleCategoryVisible={toggleCategoryVisible}
+                    onManageCategories={() => setShowManageCategories(true)}
+                    groupByCategoryOn={groupByCategoryOn}
+                    onToggleGroupByCategory={setGroupByCategoryOn}
+                    favoritesOnly={favoritesOnly}
+                    onToggleFavoritesOnly={setFavoritesOnly}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        ref={bulkPanelRef}
+        className="menu-panel-reveal shrink-0"
+        data-open={selectionMode}
+        aria-hidden={!selectionMode}
+      >
+        <div className="min-h-0">
+          <BulkActionBar
+            selectedCount={selectedIds.size}
+            languageName={languageName}
+            currentLanguageId={activeLanguageId}
+            languages={languages}
+            categories={categories}
+            onMarkLearned={async (learnedVal) => {
+              await onBulkMarkLearned(selectedTranslationIds, learnedVal)
+            }}
+            onMarkFavorite={async (favoriteVal) => {
+              await onBulkMarkFavorite(selectedTranslationIds, favoriteVal)
+            }}
+            onChangeCategory={async (categoryName) => {
+              await onBulkChangeCategory(selectedConceptIds, categoryName)
+            }}
+            onCopyToLanguages={async (targetLanguageIds) => {
+              await onBulkCopyToLanguages(selectedConceptIds, targetLanguageIds)
+            }}
+            onDeleteOneLanguage={async () => {
+              await onBulkDeleteOneLanguage(selectedTranslationIds)
+              exitSelectionMode()
+            }}
+            onDeleteAllLanguages={async () => {
+              await onBulkDeleteAllLanguages(selectedConceptIds)
+              exitSelectionMode()
+            }}
+            onDone={exitSelectionMode}
           />
         </div>
       </div>
 
-      {selectionMode && (
-        <BulkActionBar
-          selectedCount={selectedIds.size}
-          languageName={languageName}
-          currentLanguageId={activeLanguageId}
-          languages={languages}
-          categories={categories}
-          onMarkLearned={async (learnedVal) => {
-            await onBulkMarkLearned(selectedTranslationIds, learnedVal)
-          }}
-          onMarkFavorite={async (favoriteVal) => {
-            await onBulkMarkFavorite(selectedTranslationIds, favoriteVal)
-          }}
-          onChangeCategory={async (categoryName) => {
-            await onBulkChangeCategory(selectedConceptIds, categoryName)
-          }}
-          onCopyToLanguages={async (targetLanguageIds) => {
-            await onBulkCopyToLanguages(selectedConceptIds, targetLanguageIds)
-          }}
-          onDeleteOneLanguage={async () => {
-            await onBulkDeleteOneLanguage(selectedTranslationIds)
-            exitSelectionMode()
-          }}
-          onDeleteAllLanguages={async () => {
-            await onBulkDeleteAllLanguages(selectedConceptIds)
-            exitSelectionMode()
-          }}
-          onDone={exitSelectionMode}
-        />
-      )}
-
       <div
+        ref={phraseRowsRef}
         className="flex-1 overflow-y-auto px-4 py-3"
         style={{
           paddingBottom: `calc(5rem + var(--safe-area-inset-bottom, 0px))`,
@@ -476,10 +593,14 @@ export function PhraseList({
                         {groupByCategoryOn && (
                           <button
                             onClick={() => setCollapsed((c) => ({ ...c, [group.categoryName]: !isCollapsed }))}
-                            className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"
+                            className="flex w-full items-center justify-between py-1 pl-3 text-left text-[11px] font-extrabold uppercase tracking-wider text-muted"
                           >
                             <span>{group.categoryName}</span>
-                            {isCollapsed ? <ChevronRight size={16} strokeWidth={2} /> : <ChevronDown size={16} strokeWidth={2} />}
+                            {isCollapsed ? (
+                              <ChevronRight size={16} strokeWidth={2} className="text-muted" />
+                            ) : (
+                              <ChevronDown size={16} strokeWidth={2} className="text-muted" />
+                            )}
                           </button>
                         )}
                         {!isCollapsed && <div className="mt-1.5">{renderDraggableGroup(group.items)}</div>}
@@ -511,17 +632,6 @@ export function PhraseList({
           )}
         </div>
       </div>
-
-      {showManageCategories && (
-        <ManageCategoriesModal
-          categories={categories}
-          onClose={() => setShowManageCategories(false)}
-          onCreate={onCreateCategory}
-          onRename={onRenameCategory}
-          onDelete={onDeleteCategory}
-          onReorder={onReorderCategories}
-        />
-      )}
     </div>
   )
 }

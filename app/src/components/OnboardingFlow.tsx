@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { ArrowDown, ArrowRight, Check, ChevronDown, Eye, Layers, ListChecks, ListFilter, Mic, Pencil, Search, Star, Tag, Volume2 } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, ChevronDown, Eye, Languages, Layers, ListChecks, ListFilter, Mic, Pencil, Search, Star, Tag, Volume2 } from 'lucide-react'
 import { Logo, Wordmark } from './Logo'
 
 interface Props {
@@ -87,8 +87,8 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
     ),
   },
   {
-    title: 'Filter, sort, and select',
-    body: "Tap Categories to filter or group your list. Cycle through Learnt or Not Learnt phrases, Select bulk actions, and sort or reorder however you like.",
+    title: 'Filter, sort, and bulk actions',
+    body: 'Tap Categories to filter or group your list. Cycle through Learnt or Not Learnt phrases, use Bulk to manage multiple phrases, and switch between native script and phonetic text when available.',
     illustration: (
       <div className="flex w-full flex-col items-center gap-2">
         <div className="flex w-full max-w-xs flex-wrap items-center justify-center gap-2">
@@ -100,11 +100,15 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
             <Eye size={13} strokeWidth={2.5} />
             Not Learnt
           </span>
+          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
+            <Languages size={13} strokeWidth={2.5} />
+            PHONETIC
+          </span>
         </div>
         <div className="flex w-full max-w-xs flex-wrap items-center justify-center gap-2">
           <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
             <ListChecks size={13} strokeWidth={2.5} />
-            Select
+            Bulk
           </span>
           <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
             <ListFilter size={13} strokeWidth={2.5} />

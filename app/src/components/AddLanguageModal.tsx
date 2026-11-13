@@ -83,11 +83,11 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
+      className="animate-modal-backdrop fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
       onClick={onClose}
     >
       <div
-        className={`w-full min-w-0 ${selected ? 'sm:max-w-md' : 'sm:max-w-sm'} rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0`}
+        className={`animate-modal-panel w-full min-w-0 ${selected ? 'sm:max-w-md' : 'sm:max-w-sm'} rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0`}
         onClick={(e) => e.stopPropagation()}
       >
         {selected ? (
@@ -97,8 +97,7 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             </h2>
 
             <p className="text-xs text-muted mb-3">
-              Phrases get translated into {selected.name} automatically. Choose whether to include a
-              learner-friendly pronunciation guide.
+              Choose whether to include learner-friendly phonetic translations.
             </p>
 
             <label className="mb-4 flex items-start gap-2 rounded-xl border border-hairline p-3 text-sm text-ink">
@@ -106,12 +105,9 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                 type="checkbox"
                 checked={phoneticsEnabled}
                 onChange={(event) => setPhoneticsEnabled(event.target.checked)}
-                className="mt-0.5 accent-fabpink"
+                className="mt-0.5 size-4 shrink-0 appearance-none rounded-full border-2 border-fabpink checked:bg-fabpink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fabpink"
               />
-              <span>
-                Enable pronunciation guide
-                <span className="mt-0.5 block text-xs text-muted">Adds editable, learner-friendly romanization alongside the original writing.</span>
-              </span>
+              <span>Enable phonetics</span>
             </label>
 
             {hasExistingPhrases && (

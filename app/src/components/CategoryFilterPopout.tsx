@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Settings2, Star, Tag } from 'lucide-react'
+import { usePersistedState } from '../lib/usePersistedState'
+import { ChevronDown, ChevronRight, Settings2, Star, Tag } from 'lucide-react'
 import { pillClass } from '../lib/pillStyles'
 
 interface Props {
@@ -23,86 +23,83 @@ export function CategoryFilterPopout({
   favoritesOnly,
   onToggleFavoritesOnly,
 }: Props) {
-  const [open, setOpen] = useState(false)
   const hiddenCount = hiddenCategories.size
+  const [categoriesExpanded, setCategoriesExpanded] = usePersistedState('phrasebook-categories-section-expanded', false)
 
   return (
-    <div className="relative">
+    <div className="flex flex-col gap-1.5">
       <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+        type="button"
+        aria-expanded={categoriesExpanded}
+        onClick={() => setCategoriesExpanded((expanded) => !expanded)}
+        className="flex w-full items-center gap-1.5 border-t border-hairline px-2.5 pt-2 text-left"
       >
+        {categoriesExpanded ? <ChevronDown size={14} strokeWidth={2} className="text-fabpink" /> : <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />}
         <Tag size={14} strokeWidth={2} className="text-fabpink" />
-        Categories
-        {favoritesOnly && (
-          <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-hidden="true" />
-        )}
+        <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Categories</span>
+        {favoritesOnly && <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-hidden="true" />}
         {hiddenCount > 0 && (
-          <span className="rounded-full bg-fabpink/10 border border-fabpink/30 text-fabpink text-[10px] font-bold uppercase tracking-wider leading-none px-1.5 py-0.5">
+          <span className="rounded-full border border-fabpink/30 bg-fabpink/10 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider text-fabpink">
             {hiddenCount} hidden
           </span>
         )}
       </button>
-
-      {open && (
-        <>
-          <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close category filter" />
-          <div className="absolute left-0 top-full z-50 mt-2 w-64 max-w-[80vw] rounded-2xl border-[1.5px] border-hairline bg-surface p-3 shadow-2xl">
+      {categoriesExpanded && (
+        <div className="flex flex-col gap-0.5">
+          <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-1">
+            {allCategoryNames.map((name) => {
+              const visible = !hiddenCategories.has(name)
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => onToggleCategoryVisible(name, !visible)}
+                  aria-pressed={visible}
+                  className={`${pillClass(visible)} active:scale-95`}
+                >
+                  {name}
+                </button>
+              )
+            })}
+            <button
+              type="button"
+              onClick={onManageCategories}
+              aria-label="Manage categories"
+              title="Manage categories"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-fabpink text-fabpink transition-colors hover:bg-fabpink/10 active:scale-95"
+            >
+              <Settings2 size={14} strokeWidth={2} />
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-2.5">
             <button
               type="button"
               role="checkbox"
               aria-checked={favoritesOnly}
               onClick={() => onToggleFavoritesOnly(!favoritesOnly)}
-              className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
             >
               <span
                 aria-hidden="true"
-                className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${favoritesOnly ? 'bg-fabpink' : ''}`}
+                className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${favoritesOnly ? 'bg-fabpink' : ''}`}
               />
-              Favorites only
+              <span className="truncate">Favorites only</span>
             </button>
             <button
               type="button"
               role="checkbox"
               aria-checked={groupByCategoryOn}
               onClick={() => onToggleGroupByCategory(!groupByCategoryOn)}
-              className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 mb-1 border-b border-hairline pb-2 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
             >
               <span
                 aria-hidden="true"
-                className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
+                className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
               />
-              Group by category
-            </button>
-
-            <div className="flex flex-wrap gap-1.5 max-h-64 overflow-y-auto">
-              {allCategoryNames.map((name) => {
-                const visible = !hiddenCategories.has(name)
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => onToggleCategoryVisible(name, !visible)}
-                    aria-pressed={visible}
-                    className={`${pillClass(visible)} active:scale-95`}
-                  >
-                    {name}
-                  </button>
-                )
-              })}
-            </div>
-            <button
-              onClick={() => {
-                setOpen(false)
-                onManageCategories()
-              }}
-              className="mt-2 flex w-full items-center gap-1.5 rounded-lg border-t border-hairline pt-2 text-xs text-muted hover:text-ink transition-colors"
-            >
-              <Settings2 size={13} strokeWidth={2} />
-              Manage categories
+              <span>Group by category</span>
             </button>
           </div>
-        </>
+        </div>
       )}
     </div>
   )

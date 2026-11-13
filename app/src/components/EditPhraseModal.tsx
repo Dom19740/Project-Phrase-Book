@@ -123,8 +123,8 @@ export function EditPhraseModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
-      <div className="w-full min-w-0 sm:max-w-md rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
+    <div className="animate-modal-backdrop fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
+      <div className="animate-modal-panel w-full min-w-0 sm:max-w-md rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
         {confirmingDelete ? (
           <>
             <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Delete phrase</h2>
@@ -288,7 +288,7 @@ export function EditPhraseModal({
             )}
 
             {copyPanelOpen && (
-              <div className="mb-4 rounded-xl border border-hairline p-3">
+              <div className="animate-menu-open mb-4 rounded-xl border border-hairline p-3">
                 {otherLanguages.length === 0 ? (
                   <p className="text-sm text-muted">Add another language first to copy this phrase into.</p>
                 ) : (
