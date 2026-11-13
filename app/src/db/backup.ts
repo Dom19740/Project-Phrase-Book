@@ -5,6 +5,7 @@ export const BACKUP_VERSION = 1
 interface BackupTranslation {
   languageCode: string
   text: string
+  phonetic?: string
   learned: boolean
   favorite: boolean
 }
@@ -18,14 +19,20 @@ interface BackupPhrase {
 export interface BackupSnapshot {
   version: number
   exportedAt: string
-  languages: { name: string; code: string }[]
+  languages: { name: string; code: string; phoneticsEnabled?: boolean }[]
   phrases: BackupPhrase[]
 }
 
 function isBackupTranslation(value: unknown): value is BackupTranslation {
   if (typeof value !== 'object' || value === null) return false
   const t = value as Record<string, unknown>
-  return typeof t.languageCode === 'string' && typeof t.text === 'string' && typeof t.learned === 'boolean' && typeof t.favorite === 'boolean'
+  return (
+    typeof t.languageCode === 'string' &&
+    typeof t.text === 'string' &&
+    (t.phonetic == null || typeof t.phonetic === 'string') &&
+    typeof t.learned === 'boolean' &&
+    typeof t.favorite === 'boolean'
+  )
 }
 
 function isBackupPhrase(value: unknown): value is BackupPhrase {
@@ -46,7 +53,14 @@ export function isValidBackupSnapshot(data: unknown): data is BackupSnapshot {
   return (
     typeof s.version === 'number' &&
     Array.isArray(s.languages) &&
-    s.languages.every((l) => typeof l === 'object' && l !== null && typeof (l as Record<string, unknown>).name === 'string' && typeof (l as Record<string, unknown>).code === 'string') &&
+    s.languages.every(
+      (l) =>
+        typeof l === 'object' &&
+        l !== null &&
+        typeof (l as Record<string, unknown>).name === 'string' &&
+        typeof (l as Record<string, unknown>).code === 'string' &&
+        ((l as Record<string, unknown>).phoneticsEnabled == null || typeof (l as Record<string, unknown>).phoneticsEnabled === 'boolean'),
+    ) &&
     Array.isArray(s.phrases) &&
     s.phrases.every(isBackupPhrase)
   )
@@ -56,8 +70,8 @@ export function isValidBackupSnapshot(data: unknown): data is BackupSnapshot {
 export async function exportSnapshot(): Promise<BackupSnapshot> {
   const db = await getDb()
 
-  const languagesRes = await db.query('SELECT id, name, code FROM languages ORDER BY sort_order, id;')
-  const languages = (languagesRes.values ?? []) as { id: number; name: string; code: string }[]
+  const languagesRes = await db.query('SELECT id, name, code, phonetics_enabled FROM languages ORDER BY sort_order, id;')
+  const languages = (languagesRes.values ?? []) as { id: number; name: string; code: string; phonetics_enabled: number }[]
   const languageCodeById = new Map(languages.map((l) => [l.id, l.code]))
 
   const conceptsRes = await db.query(
@@ -69,20 +83,21 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
   const concepts = (conceptsRes.values ?? []) as { id: number; english: string; category_name: string | null }[]
 
   const translationsRes = await db.query(
-    'SELECT phrase_concept_id, language_id, text, learned, favorite FROM translations ORDER BY phrase_concept_id;',
+    'SELECT phrase_concept_id, language_id, text, phonetic, learned, favorite FROM translations ORDER BY phrase_concept_id;',
   )
   const translationsByConcept = new Map<number, BackupTranslation[]>()
   for (const row of (translationsRes.values ?? []) as {
     phrase_concept_id: number
     language_id: number
     text: string
+    phonetic: string
     learned: number
     favorite: number
   }[]) {
     const languageCode = languageCodeById.get(row.language_id)
     if (!languageCode) continue
     const list = translationsByConcept.get(row.phrase_concept_id) ?? []
-    list.push({ languageCode, text: row.text, learned: !!row.learned, favorite: !!row.favorite })
+    list.push({ languageCode, text: row.text, phonetic: row.phonetic, learned: !!row.learned, favorite: !!row.favorite })
     translationsByConcept.set(row.phrase_concept_id, list)
   }
 
@@ -95,7 +110,7 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
   return {
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
-    languages: languages.map((l) => ({ name: l.name, code: l.code })),
+    languages: languages.map((l) => ({ name: l.name, code: l.code, phoneticsEnabled: !!l.phonetics_enabled })),
     phrases,
   }
 }
@@ -109,12 +124,12 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
 export async function exportSnapshotForLanguage(languageId: number): Promise<BackupSnapshot> {
   const db = await getDb()
 
-  const languageRes = await db.query('SELECT name, code FROM languages WHERE id = ?;', [languageId])
-  const language = (languageRes.values ?? [])[0] as { name: string; code: string } | undefined
+  const languageRes = await db.query('SELECT name, code, phonetics_enabled FROM languages WHERE id = ?;', [languageId])
+  const language = (languageRes.values ?? [])[0] as { name: string; code: string; phonetics_enabled: number } | undefined
   if (!language) throw new Error('Language not found')
 
   const rowsRes = await db.query(
-    `SELECT pc.english, c.name AS category_name, t.text
+    `SELECT pc.english, c.name AS category_name, t.text, t.phonetic
      FROM translations t
      JOIN phrase_concepts pc ON pc.id = t.phrase_concept_id
      LEFT JOIN categories c ON c.id = pc.category_id
@@ -122,20 +137,20 @@ export async function exportSnapshotForLanguage(languageId: number): Promise<Bac
      ORDER BY t.sort_order, pc.id;`,
     [languageId],
   )
-  const rows = (rowsRes.values ?? []) as { english: string; category_name: string | null; text: string }[]
+  const rows = (rowsRes.values ?? []) as { english: string; category_name: string | null; text: string; phonetic: string }[]
 
   // learned/favorite are the sender's own personal tracking, not meaningful to a recipient -
   // reset to false rather than leaking the sender's progress into someone else's phrasebook.
   const phrases: BackupPhrase[] = rows.map((r) => ({
     english: r.english,
     category: r.category_name,
-    translations: [{ languageCode: language.code, text: r.text, learned: false, favorite: false }],
+    translations: [{ languageCode: language.code, text: r.text, phonetic: r.phonetic, learned: false, favorite: false }],
   }))
 
   return {
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
-    languages: [{ name: language.name, code: language.code }],
+    languages: [{ name: language.name, code: language.code, phoneticsEnabled: !!language.phonetics_enabled }],
     phrases,
   }
 }
@@ -171,7 +186,11 @@ export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
 
     const languageIdByCode = new Map<string, number>()
     for (const [i, lang] of snapshot.languages.entries()) {
-      await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [lang.name, lang.code, i], false)
+      await db.run(
+        'INSERT INTO languages (name, code, sort_order, phonetics_enabled) VALUES (?, ?, ?, ?);',
+        [lang.name, lang.code, i, lang.phoneticsEnabled ? 1 : 0],
+        false,
+      )
       languageIdByCode.set(lang.code, await lastInsertId(db))
     }
 
@@ -195,8 +214,8 @@ export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
         const languageId = languageIdByCode.get(t.languageCode)
         if (languageId == null) continue
         await db.run(
-          'INSERT INTO translations (phrase_concept_id, language_id, text, learned, favorite, sort_order) VALUES (?, ?, ?, ?, ?, ?);',
-          [conceptId, languageId, t.text, t.learned ? 1 : 0, t.favorite ? 1 : 0, i],
+          'INSERT INTO translations (phrase_concept_id, language_id, text, phonetic, learned, favorite, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?);',
+          [conceptId, languageId, t.text, t.phonetic ?? '', t.learned ? 1 : 0, t.favorite ? 1 : 0, i],
           false,
         )
       }

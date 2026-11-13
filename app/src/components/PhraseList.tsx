@@ -31,6 +31,9 @@ interface Props {
   activeLanguageId: number
   languages: Language[]
   translating?: boolean
+  generatingPhonetics?: boolean
+  phoneticsError?: string | null
+  onGeneratePhonetics: () => Promise<void>
   categories: Category[]
   search: string
   onToggleLearned: (id: number, learned: boolean) => void
@@ -123,11 +126,11 @@ const SORT_OPTIONS: { value: SortMode; label: string; shortLabel: ReactNode }[] 
     ),
 }))
 
-function sortKey(item: PhraseListItem, mode: SortMode): string {
-  return mode.startsWith('translation') ? item.text : item.english
+function sortKey(item: PhraseListItem, mode: SortMode, showPhonetics: boolean): string {
+  return mode.startsWith('translation') ? (showPhonetics ? item.phonetic || item.text : item.text) : item.english
 }
 
-function sortItems(items: PhraseListItem[], mode: SortMode): PhraseListItem[] {
+function sortItems(items: PhraseListItem[], mode: SortMode, showPhonetics: boolean): PhraseListItem[] {
   const dir = mode.endsWith('asc') ? 1 : -1
   return [...items].sort((a, b) => {
     if (a.favorite !== b.favorite) return a.favorite ? -1 : 1
@@ -135,7 +138,7 @@ function sortItems(items: PhraseListItem[], mode: SortMode): PhraseListItem[] {
     // Phrase concept ids are assigned in insertion order, so they double as a "date added" sort
     // without needing a dedicated timestamp column.
     if (mode.startsWith('date')) return dir * (a.phraseConceptId - b.phraseConceptId)
-    return dir * sortKey(a, mode).localeCompare(sortKey(b, mode))
+    return dir * sortKey(a, mode, showPhonetics).localeCompare(sortKey(b, mode, showPhonetics))
   })
 }
 
@@ -144,7 +147,7 @@ type LearnedFilter = 'unlearned' | 'learned' | 'all'
 const LEARNED_FILTER_CYCLE: LearnedFilter[] = ['unlearned', 'learned', 'all']
 const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Not Learnt', learned: 'Learnt', all: 'All' }
 
-function groupByCategory(items: PhraseListItem[], mode: SortMode, categoryOrderIndex: Map<string, number>): Group[] {
+function groupByCategory(items: PhraseListItem[], mode: SortMode, categoryOrderIndex: Map<string, number>, showPhonetics: boolean): Group[] {
   const map = new Map<string, PhraseListItem[]>()
   for (const item of items) {
     const key = item.categoryName ?? 'Uncategorized'
@@ -157,7 +160,7 @@ function groupByCategory(items: PhraseListItem[], mode: SortMode, categoryOrderI
       const ib = categoryOrderIndex.get(b) ?? Infinity
       return ia !== ib ? ia - ib : a.localeCompare(b)
     })
-    .map(([categoryName, groupItems]) => ({ categoryName, items: sortItems(groupItems, mode) }))
+    .map(([categoryName, groupItems]) => ({ categoryName, items: sortItems(groupItems, mode, showPhonetics) }))
 }
 
 export function PhraseList({
@@ -167,6 +170,9 @@ export function PhraseList({
   activeLanguageId,
   languages,
   translating = false,
+  generatingPhonetics = false,
+  phoneticsError = null,
+  onGeneratePhonetics,
   categories,
   search,
   onToggleLearned,
@@ -192,6 +198,9 @@ export function PhraseList({
   const [primaryExpanded, setPrimaryExpanded] = useState(true)
   const [secondaryExpanded, setSecondaryExpanded] = useState(false)
   const [favoritesOnly, setFavoritesOnly] = usePersistedState('phrasebook-favorites-only', false)
+  const [showPhonetics, setShowPhonetics] = usePersistedState('phrasebook-show-phonetics', false)
+  const phoneticsEnabled = languages.find((language) => language.id === activeLanguageId)?.phoneticsEnabled ?? false
+  const displayPhonetics = phoneticsEnabled && showPhonetics
   const [hiddenCategoryList, setHiddenCategoryList] = usePersistedState<string[]>('phrasebook-hidden-categories', [])
   const hiddenCategories = useMemo(() => new Set(hiddenCategoryList), [hiddenCategoryList])
   const [showManageCategories, setShowManageCategories] = useState(false)
@@ -229,7 +238,12 @@ export function PhraseList({
       if (hiddenCategories.has(categoryName)) return false
       if (favoritesOnly && !p.favorite) return false
       if (!q) return true
-      return p.english.toLowerCase().includes(q) || p.text.toLowerCase().includes(q) || categoryName.toLowerCase().includes(q)
+      return (
+        p.english.toLowerCase().includes(q) ||
+        p.text.toLowerCase().includes(q) ||
+        p.phonetic.toLowerCase().includes(q) ||
+        categoryName.toLowerCase().includes(q)
+      )
     })
   }, [phrases, search, hiddenCategories, favoritesOnly])
 
@@ -244,14 +258,14 @@ export function PhraseList({
     return { primaryItems: unlearnedItems, primaryLabel: 'Not Learnt', secondaryItems: learnedItems, secondaryLabel: 'Learnt' }
   }, [learnedFilter, filtered, unlearnedItems, learnedItems])
 
-  const secondarySorted = useMemo(() => sortItems(secondaryItems, sortMode), [secondaryItems, sortMode])
+  const secondarySorted = useMemo(() => sortItems(secondaryItems, sortMode, displayPhonetics), [secondaryItems, sortMode, displayPhonetics])
 
   const groups = useMemo<Group[]>(
     () =>
       groupByCategoryOn
-        ? groupByCategory(primaryItems, sortMode, categoryOrderIndex)
-        : [{ categoryName: '', items: sortItems(primaryItems, sortMode) }],
-    [primaryItems, groupByCategoryOn, sortMode, categoryOrderIndex],
+        ? groupByCategory(primaryItems, sortMode, categoryOrderIndex, displayPhonetics)
+        : [{ categoryName: '', items: sortItems(primaryItems, sortMode, displayPhonetics) }],
+    [primaryItems, groupByCategoryOn, sortMode, categoryOrderIndex, displayPhonetics],
   )
 
   function toggleCategoryVisible(categoryName: string, visible: boolean) {
@@ -289,6 +303,7 @@ export function PhraseList({
         key={item.translationId}
         phrase={item}
         languageCode={languageCode}
+        showPhonetics={displayPhonetics}
         translating={translating && !item.text}
         translationFirst={sortMode.startsWith('translation')}
         onToggleLearned={onToggleLearned}
@@ -330,6 +345,33 @@ export function PhraseList({
             favoritesOnly={favoritesOnly}
             onToggleFavoritesOnly={setFavoritesOnly}
           />
+
+          {phoneticsEnabled && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowPhonetics((value) => !value)}
+                aria-pressed={showPhonetics}
+                className={`flex items-center gap-1.5 shrink-0 rounded-full border-2 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
+                  showPhonetics ? 'border-fabpink bg-fabpink text-onaccent' : 'border-hairline text-muted'
+                }`}
+                title={showPhonetics ? 'Show native script' : 'Show pronunciation guide'}
+              >
+                <Languages size={13} strokeWidth={2} />
+                {showPhonetics ? 'Pronunciation' : 'Native script'}
+              </button>
+              {phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
+                <button
+                  type="button"
+                  onClick={() => void onGeneratePhonetics()}
+                  disabled={generatingPhonetics}
+                  className="shrink-0 rounded-full border border-hairline px-2.5 py-1.5 text-[10px] font-bold text-muted hover:bg-surfacehover disabled:opacity-50"
+                >
+                  {generatingPhonetics ? 'Generating guides...' : phoneticsError ? 'Retry guides' : 'Generate guides'}
+                </button>
+              )}
+            </>
+          )}
 
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}

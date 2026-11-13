@@ -10,6 +10,7 @@ interface Props {
   languageCode: string
   /** True while this phrase's translation is still being generated in the background (new-language auto-translate). */
   translating?: boolean
+  showPhonetics?: boolean
   /** Show the translation before the English text - used when the list is sorted alphabetically by translation. */
   translationFirst?: boolean
   onToggleLearned: (id: number, learned: boolean) => void
@@ -29,6 +30,7 @@ export function PhraseRow({
   phrase,
   languageCode,
   translating = false,
+  showPhonetics = false,
   translationFirst = false,
   onToggleLearned,
   onToggleFavorite,
@@ -45,6 +47,7 @@ export function PhraseRow({
   const longPressFired = useRef(false)
   const nextSpeakRate = useSpeakRate()
   const rowRef = useRef<HTMLDivElement>(null)
+  const displayedTranslation = showPhonetics && phrase.phonetic ? phrase.phonetic : phrase.text
 
   useEffect(() => {
     if (!menuOpen) return
@@ -126,8 +129,8 @@ export function PhraseRow({
         <p className="sm:truncate text-sm leading-5">
           {translationFirst ? (
             <>
-              {phrase.text ? (
-                <span className="font-semibold text-ink">{phrase.text} </span>
+              {displayedTranslation ? (
+                <span className="font-semibold text-ink">{displayedTranslation} </span>
               ) : translating ? (
                 <span className="inline-flex items-center gap-1 italic text-muted">
                   <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
@@ -141,8 +144,8 @@ export function PhraseRow({
           ) : (
             <>
               <span className="text-muted">{phrase.english} </span>
-              {phrase.text ? (
-                <span className="font-semibold text-ink">{phrase.text}</span>
+              {displayedTranslation ? (
+                <span className="font-semibold text-ink">{displayedTranslation}</span>
               ) : translating ? (
                 <span className="inline-flex items-center gap-1 italic text-muted">
                   <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />

@@ -612,7 +612,7 @@ export function BackupModal({
               >
                 Choose file
               </button>
-              <p className="mt-1 text-xs text-muted">A CSV (English, Translation, Category) or a plain list of phrases, one per line.</p>
+              <p className="mt-1 text-xs text-muted">A CSV (English, Translation, optional Phonetic, Category) or a plain list of phrases, one per line.</p>
 
               <div className="mt-3 flex gap-2">
                 <input

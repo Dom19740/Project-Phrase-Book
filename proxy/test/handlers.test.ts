@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import translateHandler from '../api/translate.js'
 import translateBulkHandler from '../api/translate-bulk.js'
+import translatePhoneticsHandler from '../api/translate-phonetics.js'
 import translateAlternativesHandler from '../api/translate-alternatives.js'
 import { bulkDeviceRateLimit, deviceRateLimit, ipRateLimit } from '../lib/redis.js'
 import { redisOps } from '../lib/redisOps.js'
@@ -223,6 +224,32 @@ test('translate-bulk: the bulk-specific device limit returns 429 even when the g
   await translateBulkHandler(makeReq({ body: { englishPhrases: ['Hello'], targetLangCode: 'vi' } }), res)
 
   assert.equal(state.statusCode, 429)
+})
+
+// --- /api/translate-alternatives ---
+
+test('translate-phonetics: a valid request returns romanized guides', async () => {
+  mock.method(deviceRateLimit, 'limit', async () => ({ success: true }))
+  mock.method(ipRateLimit, 'limit', async () => ({ success: true }))
+  mock.method(bulkDeviceRateLimit, 'limit', async () => ({ success: true }))
+  mock.method(globalThis, 'fetch', async () => bulkGeminiSuccess(['sà-wàt-dii', 'khàaw pèt']))
+
+  const { res, state } = makeRes()
+  await translatePhoneticsHandler(makeReq({ body: { translations: ['สวัสดี', 'ข้าวเผ็ด'], targetLangCode: 'th', targetLangName: 'Thai' } }), res)
+
+  assert.equal(state.statusCode, 200)
+  assert.deepEqual((state.body as { phonetics: string[] }).phonetics, ['sà-wàt-dii', 'khàaw pèt'])
+})
+
+test('translate-phonetics: empty translations are rejected', async () => {
+  mock.method(deviceRateLimit, 'limit', async () => ({ success: true }))
+  mock.method(ipRateLimit, 'limit', async () => ({ success: true }))
+  mock.method(bulkDeviceRateLimit, 'limit', async () => ({ success: true }))
+
+  const { res, state } = makeRes()
+  await translatePhoneticsHandler(makeReq({ body: { translations: [], targetLangCode: 'th' } }), res)
+
+  assert.equal(state.statusCode, 400)
 })
 
 // --- /api/translate-alternatives ---

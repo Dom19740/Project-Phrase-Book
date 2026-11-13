@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
+    "serve": "vercel dev --local",
     "typecheck": "tsc --noEmit",
     "test": "tsc -p tsconfig.test.json && node --env-file=test.env --test"
   },

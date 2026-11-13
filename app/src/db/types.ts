@@ -3,6 +3,7 @@ export interface Language {
   name: string
   code: string
   sortOrder: number
+  phoneticsEnabled: boolean
 }
 
 export interface Category {
@@ -24,6 +25,7 @@ export interface Translation {
   phraseConceptId: number
   languageId: number
   text: string
+  phonetic: string
   learned: boolean
   favorite: boolean
   sortOrder: number
@@ -36,6 +38,7 @@ export interface PhraseListItem {
   languageId: number
   english: string
   text: string
+  phonetic: string
   learned: boolean
   favorite: boolean
   sortOrder: number

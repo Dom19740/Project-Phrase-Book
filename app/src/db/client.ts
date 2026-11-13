@@ -58,11 +58,19 @@ async function migrate(db: SQLiteDBConnection): Promise<void> {
   if (!hasColor) {
     await db.execute("ALTER TABLE languages ADD COLUMN color TEXT NOT NULL DEFAULT '#207781';")
   }
+  const hasPhoneticsEnabled = (languageColumns.values ?? []).some((c) => c.name === 'phonetics_enabled')
+  if (!hasPhoneticsEnabled) {
+    await db.execute('ALTER TABLE languages ADD COLUMN phonetics_enabled INTEGER NOT NULL DEFAULT 0;')
+  }
 
   const translationColumns = await db.query('PRAGMA table_info(translations);')
   const hasFavorite = (translationColumns.values ?? []).some((c) => c.name === 'favorite')
   if (!hasFavorite) {
     await db.execute('ALTER TABLE translations ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;')
+  }
+  const hasPhonetic = (translationColumns.values ?? []).some((c) => c.name === 'phonetic')
+  if (!hasPhonetic) {
+    await db.execute("ALTER TABLE translations ADD COLUMN phonetic TEXT NOT NULL DEFAULT '';")
   }
 
   const categoryColumns = await db.query('PRAGMA table_info(categories);')

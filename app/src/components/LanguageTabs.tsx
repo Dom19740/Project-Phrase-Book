@@ -8,7 +8,14 @@ interface Props {
   languages: Language[]
   activeLanguageId: number | null
   onSelect: (id: number) => void
-  onAddLanguage: (name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) => Promise<void>
+  onAddLanguage: (
+    name: string,
+    code: string,
+    includeConceptIds?: number[] | null,
+    sourceLanguageId?: number | null,
+    phoneticsEnabled?: boolean,
+  ) => Promise<void>
+  onSetLanguagePhonetics: (languageId: number, enabled: boolean) => Promise<void>
   onRemoveLanguage: (id: number) => void
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   search: string
@@ -21,6 +28,7 @@ export function LanguageTabs({
   activeLanguageId,
   onSelect,
   onAddLanguage,
+  onSetLanguagePhonetics,
   onRemoveLanguage,
   getLanguagePhrases,
   search,
@@ -96,6 +104,16 @@ export function LanguageTabs({
                             className="flex flex-1 items-center rounded-lg py-2 pr-2 text-sm text-left text-ink"
                           >
                             {lang.name}
+                          </button>
+                          <button
+                            onClick={() => onSetLanguagePhonetics(lang.id, !lang.phoneticsEnabled)}
+                            className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-colors ${
+                              lang.phoneticsEnabled ? 'border-fabpink text-fabpink' : 'border-hairline text-muted hover:bg-surfacehover'
+                            }`}
+                            aria-label={lang.phoneticsEnabled ? `Disable pronunciation guide for ${lang.name}` : `Enable pronunciation guide for ${lang.name}`}
+                            title={lang.phoneticsEnabled ? 'Disable pronunciation guide' : 'Enable pronunciation guide'}
+                          >
+                            {lang.phoneticsEnabled ? 'Guides on' : 'Add guide'}
                           </button>
                           <button
                             onClick={() => setConfirmingRemoveId(lang.id)}

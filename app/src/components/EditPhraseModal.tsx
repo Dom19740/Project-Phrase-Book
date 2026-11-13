@@ -16,10 +16,11 @@ interface Props {
   phrase: PhraseListItem
   languageCode: string
   languageName: string
+  phoneticsEnabled: boolean
   categories: Category[]
   languages: Language[]
   onClose: () => void
-  onSubmit: (english: string, text: string, categoryName: string | null) => Promise<void>
+  onSubmit: (english: string, text: string, categoryName: string | null, phonetic: string) => Promise<void>
   onDeleteOneLanguage: (translationId: number) => Promise<void>
   onDeleteAllLanguages: (phraseConceptId: number) => Promise<void>
   onCopyToLanguages: (targetLanguageIds: number[]) => Promise<void>
@@ -29,6 +30,7 @@ export function EditPhraseModal({
   phrase,
   languageCode,
   languageName,
+  phoneticsEnabled,
   categories,
   languages,
   onClose,
@@ -39,6 +41,7 @@ export function EditPhraseModal({
 }: Props) {
   const [english, setEnglish] = useState(phrase.english)
   const [text, setText] = useState(phrase.text)
+  const [phonetic, setPhonetic] = useState(phrase.phonetic)
   const [categoryChoice, setCategoryChoice] = useState(phrase.categoryName ?? '')
   const [newCategory, setNewCategory] = useState('')
   const [saving, setSaving] = useState(false)
@@ -104,7 +107,9 @@ export function EditPhraseModal({
     if (!canSubmit) return
     setSaving(true)
     const categoryName = categoryChoice === NEW_CATEGORY ? newCategory.trim() : categoryChoice || null
-    await onSubmit(english.trim(), text.trim(), categoryName)
+    const nextPhonetic =
+      text.trim() !== phrase.text && phonetic.trim() === phrase.phonetic ? '' : phonetic.trim()
+    await onSubmit(english.trim(), text.trim(), categoryName, nextPhonetic)
     setSaving(false)
     onClose()
   }
@@ -229,6 +234,18 @@ export function EditPhraseModal({
                 {copiedField === 'text' ? <Check size={16} strokeWidth={2.5} className="text-fabpink" /> : <Copy size={16} strokeWidth={2} />}
               </button>
             </div>
+
+            {phoneticsEnabled && (
+              <>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Pronunciation guide (editable)</label>
+                <input
+                  value={phonetic}
+                  onChange={(event) => setPhonetic(event.target.value)}
+                  className={`w-full rounded-xl px-3 py-2 mb-3 ${fieldClass}`}
+                  placeholder="Learner-friendly romanization"
+                />
+              </>
+            )}
 
             {alternativesError && <p className="text-xs text-red-400 -mt-2 mb-3">{alternativesError}</p>}
 

@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
 
 export const CREATE_TABLES_SQL = `
 CREATE TABLE IF NOT EXISTS languages (
@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS languages (
   name        TEXT NOT NULL,
   code        TEXT NOT NULL UNIQUE,
   color       TEXT NOT NULL DEFAULT '#207781',
-  sort_order  INTEGER NOT NULL DEFAULT 0
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  phonetics_enabled INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -28,6 +29,7 @@ CREATE TABLE IF NOT EXISTS translations (
   phrase_concept_id   INTEGER NOT NULL REFERENCES phrase_concepts(id) ON DELETE CASCADE,
   language_id         INTEGER NOT NULL REFERENCES languages(id) ON DELETE CASCADE,
   text                TEXT NOT NULL,
+  phonetic            TEXT NOT NULL DEFAULT '',
   learned             INTEGER NOT NULL DEFAULT 0,
   favorite            INTEGER NOT NULL DEFAULT 0,
   sort_order          INTEGER NOT NULL DEFAULT 0,

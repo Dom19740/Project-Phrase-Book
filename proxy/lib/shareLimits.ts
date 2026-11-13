@@ -24,7 +24,8 @@ function isValidLanguage(value: unknown): boolean {
     l.name.length <= MAX_SHARE_LANG_NAME_LENGTH &&
     typeof l.code === 'string' &&
     l.code.length > 0 &&
-    l.code.length <= MAX_SHARE_LANG_CODE_LENGTH
+    l.code.length <= MAX_SHARE_LANG_CODE_LENGTH &&
+    (l.phoneticsEnabled == null || typeof l.phoneticsEnabled === 'boolean')
   )
 }
 
@@ -36,6 +37,7 @@ function isValidTranslation(value: unknown): boolean {
     t.languageCode.length <= MAX_SHARE_LANG_CODE_LENGTH &&
     typeof t.text === 'string' &&
     t.text.length <= MAX_SHARE_TEXT_LENGTH &&
+    (t.phonetic == null || (typeof t.phonetic === 'string' && t.phonetic.length <= MAX_SHARE_TEXT_LENGTH)) &&
     typeof t.learned === 'boolean' &&
     typeof t.favorite === 'boolean'
   )

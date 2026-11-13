@@ -10,12 +10,19 @@ interface Props {
   activeLanguageId: number | null
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   onClose: () => void
-  onSubmit: (name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) => Promise<void>
+  onSubmit: (
+    name: string,
+    code: string,
+    includeConceptIds?: number[] | null,
+    sourceLanguageId?: number | null,
+    phoneticsEnabled?: boolean,
+  ) => Promise<void>
 }
 
 export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhrases, onClose, onSubmit }: Props) {
   const [selected, setSelected] = useState<LanguageOption | null>(null)
   const [saving, setSaving] = useState(false)
+  const [phoneticsEnabled, setPhoneticsEnabled] = useState(false)
 
   const [sourceLanguageId, setSourceLanguageId] = useState<number | null>(activeLanguageId ?? languages[0]?.id ?? null)
   const [sourcePhrases, setSourcePhrases] = useState<PhraseListItem[] | null>(null)
@@ -54,24 +61,23 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
   async function handleAdd() {
     if (!selected) return
     setSaving(true)
-    await onSubmit(selected.name, selected.code, hasExistingPhrases ? Array.from(includedIds) : null, hasExistingPhrases ? sourceLanguageId : null)
+    await onSubmit(
+      selected.name,
+      selected.code,
+      hasExistingPhrases ? Array.from(includedIds) : null,
+      hasExistingPhrases ? sourceLanguageId : null,
+      phoneticsEnabled,
+    )
     setSaving(false)
     onClose()
   }
 
   /**
-   * There's nothing to configure when there are no existing phrases to copy from, so picking a
-   * language adds it immediately instead of showing an empty confirmation screen - the caller
-   * follows up with the starter-phrases prompt.
+   * Confirm configuration before adding the first language too, so phonetics can be enabled
+   * before the caller offers starter phrases.
    */
   async function chooseLanguage(lang: LanguageOption) {
-    if (!hasExistingPhrases) {
-      setSaving(true)
-      await onSubmit(lang.name, lang.code, null)
-      setSaving(false)
-      onClose()
-      return
-    }
+    setPhoneticsEnabled(false)
     setSelected(lang)
   }
 
@@ -91,28 +97,42 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             </h2>
 
             <p className="text-xs text-muted mb-3">
-              Selected phrases get translated into {selected.name} automatically. Pick which phrase book
-              to copy from, then uncheck any phrases you don't want carried over.
+              Phrases get translated into {selected.name} automatically. Choose whether to include a
+              learner-friendly pronunciation guide.
             </p>
 
-            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Copy phrases from</label>
-            <PopoutSelect
-              className="mb-3 w-full"
-              align="left"
-              value={sourceLanguageId ?? languages[0]?.id ?? 0}
-              onChange={(id) => setSourceLanguageId(id)}
-              options={languages.map((lang) => ({
-                value: lang.id,
-                label: lang.name,
-                shortLabel: (
-                  <span className="flex items-center gap-1.5">
-                    <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
-                    {lang.name}
-                  </span>
-                ),
-              }))}
-            />
+            <label className="mb-4 flex items-start gap-2 rounded-xl border border-hairline p-3 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={phoneticsEnabled}
+                onChange={(event) => setPhoneticsEnabled(event.target.checked)}
+                className="mt-0.5 accent-fabpink"
+              />
+              <span>
+                Enable pronunciation guide
+                <span className="mt-0.5 block text-xs text-muted">Adds editable, learner-friendly romanization alongside the original writing.</span>
+              </span>
+            </label>
 
+            {hasExistingPhrases && (
+              <>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Copy phrases from</label>
+                <PopoutSelect
+                  className="mb-3 w-full"
+                  align="left"
+                  value={sourceLanguageId ?? languages[0]?.id ?? 0}
+                  onChange={(id) => setSourceLanguageId(id)}
+                  options={languages.map((lang) => ({
+                    value: lang.id,
+                    label: lang.name,
+                    shortLabel: (
+                      <span className="flex items-center gap-1.5">
+                        <span aria-hidden="true">{getLanguageFlag(lang.code)}</span>
+                        {lang.name}
+                      </span>
+                    ),
+                  }))}
+                />
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Phrases to include</span>
               <div className="flex gap-2">
@@ -164,6 +184,8 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             </div>
 
             <p className="text-xs text-muted mb-4">{includedIds.size} of {sourcePhrases?.length ?? 0} phrases selected.</p>
+              </>
+            )}
 
             <div className="flex justify-end gap-2">
               <button

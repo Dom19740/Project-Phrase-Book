@@ -17,7 +17,15 @@ interface Props {
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   onToggleLearned: (translationId: number, learned: boolean) => void
   onToggleFavorite: (translationId: number, favorite: boolean) => void
-  onEditPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
+  onEditPhrase: (
+    phraseConceptId: number,
+    translationId: number,
+    english: string,
+    text: string,
+    categoryName: string | null,
+    phonetic: string,
+    languageId: number,
+  ) => Promise<void>
   onDeleteOneLanguage: (translationId: number) => Promise<void>
   onDeleteAllLanguages: (phraseConceptId: number) => Promise<void>
   onCopyToLanguages: (phraseConceptId: number, targetLanguageIds: number[]) => Promise<void>
@@ -518,12 +526,13 @@ export function FlashCardsModal({
           phrase={editingCard}
           languageCode={languageCode}
           languageName={activeLanguage?.name ?? ''}
+          phoneticsEnabled={activeLanguage?.phoneticsEnabled ?? false}
           categories={categories}
           languages={languages}
           onClose={() => setEditingCard(null)}
-          onSubmit={async (english, text, categoryName) => {
-            await onEditPhrase(editingCard.phraseConceptId, editingCard.translationId, english, text, categoryName)
-            const patch = { english, text, categoryName }
+          onSubmit={async (english, text, categoryName, phonetic) => {
+            await onEditPhrase(editingCard.phraseConceptId, editingCard.translationId, english, text, categoryName, phonetic, editingCard.languageId)
+            const patch = { english, text, categoryName, phonetic }
             setLanguagePhrases((prev) => prev.map((p) => (p.translationId === editingCard.translationId ? { ...p, ...patch } : p)))
             setDeck((prev) => prev.map((p) => (p.translationId === editingCard.translationId ? { ...p, ...patch } : p)))
           }}

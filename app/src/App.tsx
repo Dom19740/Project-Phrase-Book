@@ -72,6 +72,9 @@ function Shell() {
     phrases,
     backgroundTranslation,
     translationIncomplete,
+    backgroundPhonetics,
+    phoneticsIncomplete,
+    generateLanguagePhonetics,
     toggleLearned,
     toggleFavorite,
     removeFavoriteOnLearn,
@@ -94,6 +97,7 @@ function Shell() {
     deleteCategory,
     reorderCategories,
     createLanguage,
+    setLanguagePhoneticsEnabled,
     addStartupPhrases,
     removeLanguage,
     getLanguagePhrases,
@@ -169,9 +173,15 @@ function Shell() {
     }
   }
 
-  async function handleAddLanguage(name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) {
+  async function handleAddLanguage(
+    name: string,
+    code: string,
+    includeConceptIds?: number[] | null,
+    sourceLanguageId?: number | null,
+    phoneticsEnabled = false,
+  ) {
     const wasFirstLanguage = languages.length === 0
-    const lang = await createLanguage(name, code, includeConceptIds, sourceLanguageId)
+    const lang = await createLanguage(name, code, includeConceptIds, sourceLanguageId, phoneticsEnabled)
     if (wasFirstLanguage) setStartupPhrasesLanguageId(lang.id)
   }
 
@@ -253,6 +263,7 @@ function Shell() {
         activeLanguageId={activeLanguageId}
         onSelect={setActiveLanguageId}
         onAddLanguage={handleAddLanguage}
+        onSetLanguagePhonetics={setLanguagePhoneticsEnabled}
         onRemoveLanguage={removeLanguage}
         getLanguagePhrases={getLanguagePhrases}
         search={search}
@@ -452,6 +463,9 @@ function Shell() {
             languageName={activeLanguageName}
             activeLanguageId={activeLanguageId!}
             languages={languages}
+            generatingPhonetics={backgroundPhonetics?.languageId === activeLanguageId}
+            phoneticsError={phoneticsIncomplete?.languageId === activeLanguageId ? phoneticsIncomplete.error : null}
+            onGeneratePhonetics={() => generateLanguagePhonetics(activeLanguageId!)}
             categories={categories}
             search={search}
             onToggleLearned={(id, learned) => toggleLearned(id, learned)}
@@ -483,6 +497,16 @@ function Shell() {
         </div>
       )}
 
+      {backgroundPhonetics && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
+          style={{ bottom: 'calc(9rem + var(--safe-area-inset-bottom, 0px))' }}
+        >
+          <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
+          <span className="truncate">Creating pronunciation guides for {backgroundPhonetics.languageName}&hellip;</span>
+        </div>
+      )}
+
       {!backgroundTranslation && translationIncomplete && (
         <div
           className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
@@ -492,6 +516,19 @@ function Shell() {
           <span className="truncate">
             {translationIncomplete.count} phrase{translationIncomplete.count === 1 ? '' : 's'} in {translationIncomplete.languageName} need
             translation &mdash; add manually when ready.
+          </span>
+        </div>
+      )}
+
+      {!backgroundPhonetics && phoneticsIncomplete && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
+          style={{ bottom: 'calc(9rem + var(--safe-area-inset-bottom, 0px))' }}
+        >
+          <TriangleAlert size={15} strokeWidth={2.5} className="shrink-0 text-fabpink" />
+          <span className="truncate">
+            {phoneticsIncomplete.count} pronunciation guide{phoneticsIncomplete.count === 1 ? '' : 's'} in {phoneticsIncomplete.languageName} could not be generated.
+            {phoneticsIncomplete.error ? ` ${phoneticsIncomplete.error}` : ''}
           </span>
         </div>
       )}
@@ -525,11 +562,12 @@ function Shell() {
           phrase={editingPhrase}
           languageCode={editingLanguageCode}
           languageName={editingLanguageName}
+          phoneticsEnabled={editingLanguage?.phoneticsEnabled ?? false}
           categories={categories}
           languages={languages}
           onClose={() => setEditingPhrase(null)}
-          onSubmit={(english, text, categoryName) =>
-            editPhrase(editingPhrase.phraseConceptId, editingPhrase.translationId, english, text, categoryName)
+          onSubmit={(english, text, categoryName, phonetic) =>
+            editPhrase(editingPhrase.phraseConceptId, editingPhrase.translationId, english, text, categoryName, phonetic, editingPhrase.languageId)
           }
           onDeleteOneLanguage={deleteOneLanguage}
           onDeleteAllLanguages={deleteAllLanguages}

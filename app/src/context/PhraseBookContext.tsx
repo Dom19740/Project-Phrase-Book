@@ -8,6 +8,7 @@ import {
   bulkSetFavorite,
   bulkSetLearned,
   bulkSetTranslationText,
+  bulkSetTranslationPhonetics,
   copyPhrasesToLanguages,
   deleteCategory as deleteCategoryQuery,
   deleteLanguage as deleteLanguageQuery,
@@ -18,12 +19,14 @@ import {
   getCategories,
   getLanguages,
   getPhraseList,
+  getTranslationsNeedingPhonetics,
   importCsvPhrases,
   renameCategory as renameCategoryQuery,
   reorderCategories as reorderCategoriesQuery,
   reorderTranslations,
   setFavorite,
   setLearned,
+  setLanguagePhoneticsEnabled as setLanguagePhoneticsEnabledQuery,
   updatePhrase,
 } from '../db/queries'
 import { backfillSeedCategories } from '../db/seed'
@@ -43,7 +46,7 @@ import {
 import { refreshWidget } from '../lib/widgetRefresh'
 import { readBackupFromPickedLocation, readCsvFromPickedLocation } from '../lib/backupFile'
 import { chooseBackupFolder, type BackupFileInfo, listBackupFiles, readBackupFile, writeManualBackupFile } from '../lib/backupTarget'
-import { translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
+import { generatePhoneticsBulk, translatePhrase, translatePhrasesBulk } from '../lib/translateApi'
 import { createShareLink as uploadShareLink, type ShareLinkResult } from '../lib/shareLink'
 import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
 import { usePersistedState } from '../lib/usePersistedState'
@@ -60,6 +63,8 @@ interface PhraseBookContextValue {
   phrases: PhraseListItem[]
   backgroundTranslation: { languageId: number; languageName: string } | null
   translationIncomplete: { languageName: string; count: number } | null
+  backgroundPhonetics: { languageId: number; languageName: string } | null
+  phoneticsIncomplete: { languageId: number; languageName: string; count: number; error: string | null } | null
   refreshPhrases: () => Promise<void>
   toggleLearned: (translationId: number, learned: boolean) => Promise<void>
   toggleFavorite: (translationId: number, favorite: boolean) => Promise<void>
@@ -75,7 +80,15 @@ interface PhraseBookContextValue {
     manualTranslations?: { languageId: number; text: string }[],
     favorite?: boolean,
   ) => Promise<void>
-  editPhrase: (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => Promise<void>
+  editPhrase: (
+    phraseConceptId: number,
+    translationId: number,
+    english: string,
+    text: string,
+    categoryName: string | null,
+    phonetic: string,
+    languageId: number,
+  ) => Promise<void>
   deleteOneLanguage: (translationId: number) => Promise<void>
   deleteAllLanguages: (phraseConceptId: number) => Promise<void>
   bulkMarkLearned: (translationIds: number[], learned: boolean) => Promise<void>
@@ -88,7 +101,15 @@ interface PhraseBookContextValue {
   renameCategory: (categoryId: number, newName: string) => Promise<void>
   deleteCategory: (categoryId: number) => Promise<void>
   reorderCategories: (orderedCategoryIds: number[]) => Promise<void>
-  createLanguage: (name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) => Promise<Language>
+  createLanguage: (
+    name: string,
+    code: string,
+    includeConceptIds?: number[] | null,
+    sourceLanguageId?: number | null,
+    phoneticsEnabled?: boolean,
+  ) => Promise<Language>
+  setLanguagePhoneticsEnabled: (languageId: number, enabled: boolean) => Promise<void>
+  generateLanguagePhonetics: (languageId: number) => Promise<void>
   addStartupPhrases: (languageId: number, englishKeys?: string[]) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
@@ -131,6 +152,13 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const [phrases, setPhrases] = useState<PhraseListItem[]>([])
   const [backgroundTranslation, setBackgroundTranslation] = useState<{ languageId: number; languageName: string } | null>(null)
   const [translationIncomplete, setTranslationIncomplete] = useState<{ languageName: string; count: number } | null>(null)
+  const [backgroundPhonetics, setBackgroundPhonetics] = useState<{ languageId: number; languageName: string } | null>(null)
+  const [phoneticsIncomplete, setPhoneticsIncomplete] = useState<{
+    languageId: number
+    languageName: string
+    count: number
+    error: string | null
+  } | null>(null)
   const [lastBackupAt, setLastBackupAt] = useState(getLastBackupAt)
   const [changesSinceBackup, setChangesSinceBackup] = useState(getChangesSinceBackup)
   const [autoBackupFailing, setAutoBackupFailing] = useState(isAutoBackupFailing)
@@ -148,6 +176,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   // Background translation runs detached from React's render cycle, so it needs the *current*
   // active language at the time each chunk finishes, not the value closed over when it started.
   const activeLanguageIdRef = useRef(activeLanguageId)
+  const phoneticsInProgress = useRef(new Set<number>())
+  const phoneticsRerunRequested = useRef(new Set<number>())
   useEffect(() => {
     activeLanguageIdRef.current = activeLanguageId
   }, [activeLanguageId])
@@ -166,6 +196,58 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
     if (activeLanguageId == null) return
     setPhrases(await getPhraseList(activeLanguageId))
   }, [activeLanguageId])
+
+  const runBackgroundPhonetics = useCallback(async (languageId: number, languageCode: string, languageName: string) => {
+    if (phoneticsInProgress.current.has(languageId)) {
+      phoneticsRerunRequested.current.add(languageId)
+      return
+    }
+    phoneticsInProgress.current.add(languageId)
+    let pendingCount = 1
+    try {
+      setPhoneticsIncomplete(null)
+      const pending = await getTranslationsNeedingPhonetics(languageId)
+      if (pending.length === 0) return
+      pendingCount = pending.length
+      setBackgroundPhonetics({ languageId, languageName })
+      const failed = await translateInChunksWithRetry(
+        pending,
+        TRANSLATE_CHUNK_SIZE,
+        async (chunk) => {
+          const phonetics = await generatePhoneticsBulk(
+            chunk.map((entry) => entry.text),
+            languageCode,
+            languageName,
+          )
+          if (phonetics.length !== chunk.length) throw new Error('Phonetic generation returned an unexpected number of results.')
+          await bulkSetTranslationPhonetics(chunk.map((entry, index) => ({ translationId: entry.translationId, phonetic: phonetics[index] })))
+          if (activeLanguageIdRef.current === languageId) setPhrases(await getPhraseList(languageId))
+          return phonetics.every((phonetic) => phonetic.trim().length > 0)
+        },
+        TRANSLATE_RETRY_DELAY_MS,
+        TRANSLATE_MAX_ATTEMPTS,
+      )
+
+      if (failed.length > 0) {
+        console.error(`${failed.length} pronunciation guide(s) could not be generated after retrying.`)
+        setPhoneticsIncomplete({ languageId, languageName, count: failed.length, error: null })
+      }
+    } catch (err) {
+      console.error(`Pronunciation guide generation failed for ${languageName}:`, err)
+      setPhoneticsIncomplete({
+        languageId,
+        languageName,
+        count: pendingCount,
+        error: err instanceof Error ? err.message : 'Pronunciation guide generation failed.',
+      })
+    } finally {
+      phoneticsInProgress.current.delete(languageId)
+      setBackgroundPhonetics((current) => (current?.languageId === languageId ? null : current))
+      if (phoneticsRerunRequested.current.delete(languageId)) {
+        void runBackgroundPhonetics(languageId, languageCode, languageName)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     onMutation(scheduleAutoBackup)
@@ -281,17 +363,32 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       await addPhraseConcept({ english, categoryName: finalCategory, translations, languageIds, favorite })
       await refreshCategories()
       await refreshPhrases()
+      for (const language of languages.filter((entry) => languageIds.includes(entry.id))) {
+        if (language.phoneticsEnabled) void runBackgroundPhonetics(language.id, language.code, language.name)
+      }
     },
-    [languages, categories, refreshCategories, refreshPhrases],
+    [languages, categories, refreshCategories, refreshPhrases, runBackgroundPhonetics],
   )
 
   const editPhrase = useCallback(
-    async (phraseConceptId: number, translationId: number, english: string, text: string, categoryName: string | null) => {
-      await updatePhrase(phraseConceptId, translationId, english, text, categoryName)
+    async (
+      phraseConceptId: number,
+      translationId: number,
+      english: string,
+      text: string,
+      categoryName: string | null,
+      phonetic: string,
+      languageId: number,
+    ) => {
+      await updatePhrase(phraseConceptId, translationId, english, text, categoryName, phonetic)
       await refreshCategories()
       await refreshPhrases()
+      const language = languages.find((entry) => entry.id === languageId)
+      if (language?.phoneticsEnabled && !phonetic.trim() && text.trim()) {
+        void runBackgroundPhonetics(language.id, language.code, language.name)
+      }
     },
-    [refreshCategories, refreshPhrases],
+    [activeLanguageId, languages, refreshCategories, refreshPhrases, runBackgroundPhonetics],
   )
 
   const deleteOneLanguage = useCallback(
@@ -474,7 +571,13 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
    * language, starter phrases, or a CSV import whose Translation column was empty or partial.
    */
   const runBackgroundTranslation = useCallback(
-    (languageId: number, languageCode: string, languageName: string, concepts: { id: number; english: string }[]) => {
+    (
+      languageId: number,
+      languageCode: string,
+      languageName: string,
+      concepts: { id: number; english: string }[],
+      phoneticsEnabled = false,
+    ) => {
       if (concepts.length === 0) return
       setBackgroundTranslation({ languageId, languageName })
       setTranslationIncomplete(null)
@@ -511,9 +614,10 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
             setTranslationIncomplete((current) => (current?.languageName === languageName ? null : current))
           }, 8000)
         }
+        if (phoneticsEnabled) void runBackgroundPhonetics(languageId, languageCode, languageName)
       })()
     },
-    [],
+    [runBackgroundPhonetics],
   )
 
   const importLanguageCsv = useCallback(
@@ -522,10 +626,11 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       await refreshCategories()
       setActiveLanguageId(language.id)
       setPhrases(await getPhraseList(language.id))
-      runBackgroundTranslation(language.id, language.code, language.name, result.blank)
+      runBackgroundTranslation(language.id, language.code, language.name, result.blank, language.phoneticsEnabled)
+      if (language.phoneticsEnabled) void runBackgroundPhonetics(language.id, language.code, language.name)
       return { created: result.created, updated: result.updated }
     },
-    [refreshCategories, setActiveLanguageId, runBackgroundTranslation],
+    [refreshCategories, setActiveLanguageId, runBackgroundTranslation, runBackgroundPhonetics],
   )
 
   const bulkCopyToLanguages = useCallback(
@@ -543,7 +648,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       }
       for (const [languageId, concepts] of conceptsByLanguage) {
         const lang = languages.find((l) => l.id === languageId)
-        if (lang) runBackgroundTranslation(languageId, lang.code, lang.name, concepts)
+        if (lang) runBackgroundTranslation(languageId, lang.code, lang.name, concepts, lang.phoneticsEnabled)
       }
     },
     [languages, refreshPhrases, runBackgroundTranslation],
@@ -552,8 +657,14 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const getLanguagePhrases = useCallback((languageId: number) => getPhraseList(languageId), [])
 
   const createLanguage = useCallback(
-    async (name: string, code: string, includeConceptIds?: number[] | null, sourceLanguageId?: number | null) => {
-      const lang = await addLanguage(name, code, includeConceptIds, sourceLanguageId)
+    async (
+      name: string,
+      code: string,
+      includeConceptIds?: number[] | null,
+      sourceLanguageId?: number | null,
+      phoneticsEnabled = false,
+    ) => {
+      const lang = await addLanguage(name, code, includeConceptIds, sourceLanguageId, phoneticsEnabled)
       await refreshLanguages()
       setActiveLanguageId(lang.id)
 
@@ -572,11 +683,34 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       // Translating everything can take a while (many phrases, a slow/mobile connection) - run it
       // in the background instead of blocking the caller, so the "add language" modal can close
       // right away.
-      runBackgroundTranslation(lang.id, lang.code, lang.name, concepts)
+      runBackgroundTranslation(lang.id, lang.code, lang.name, concepts, phoneticsEnabled)
 
       return lang
     },
     [refreshLanguages, runBackgroundTranslation],
+  )
+
+  const setLanguagePhoneticsEnabled = useCallback(
+    async (languageId: number, enabled: boolean) => {
+      await setLanguagePhoneticsEnabledQuery(languageId, enabled)
+      const updatedLanguages = await refreshLanguages()
+      if (!enabled) {
+        setPhoneticsIncomplete(null)
+        return
+      }
+      const language = updatedLanguages.find((entry) => entry.id === languageId)
+      if (language) void runBackgroundPhonetics(language.id, language.code, language.name)
+    },
+    [refreshLanguages, runBackgroundPhonetics],
+  )
+
+  const generateLanguagePhonetics = useCallback(
+    async (languageId: number) => {
+      const language = languages.find((entry) => entry.id === languageId)
+      if (!language) throw new Error('Language not found')
+      await runBackgroundPhonetics(language.id, language.code, language.name)
+    },
+    [languages, runBackgroundPhonetics],
   )
 
   const addStartupPhrases = useCallback(
@@ -603,7 +737,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       await refreshCategories()
       await refreshPhrases()
 
-      runBackgroundTranslation(languageId, lang.code, lang.name, concepts)
+      runBackgroundTranslation(languageId, lang.code, lang.name, concepts, lang.phoneticsEnabled)
     },
     [languages, refreshCategories, refreshPhrases, runBackgroundTranslation],
   )
@@ -627,6 +761,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       phrases,
       backgroundTranslation,
       translationIncomplete,
+      backgroundPhonetics,
+      phoneticsIncomplete,
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
@@ -650,6 +786,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       reorderCategories,
       createLanguage,
+      setLanguagePhoneticsEnabled,
+      generateLanguagePhonetics,
       addStartupPhrases,
       removeLanguage,
       getLanguagePhrases,
@@ -674,6 +812,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       phrases,
       backgroundTranslation,
       translationIncomplete,
+      backgroundPhonetics,
+      phoneticsIncomplete,
       refreshPhrases,
       toggleLearned,
       toggleFavorite,
@@ -709,6 +849,8 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       reorderCategories,
       createLanguage,
+      setLanguagePhoneticsEnabled,
+      generateLanguagePhonetics,
       addStartupPhrases,
       removeLanguage,
       getLanguagePhrases,

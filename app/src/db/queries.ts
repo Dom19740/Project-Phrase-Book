@@ -3,12 +3,13 @@ import type { Category, Language, PhraseListItem } from './types'
 
 export async function getLanguages(): Promise<Language[]> {
   const db = await getDb()
-  const res = await db.query('SELECT id, name, code, sort_order FROM languages ORDER BY sort_order, id;')
+  const res = await db.query('SELECT id, name, code, sort_order, phonetics_enabled FROM languages ORDER BY sort_order, id;')
   return (res.values ?? []).map((r) => ({
     id: r.id,
     name: r.name,
     code: r.code,
     sortOrder: r.sort_order,
+    phoneticsEnabled: !!r.phonetics_enabled,
   }))
 }
 
@@ -23,11 +24,15 @@ export async function addLanguage(
   code: string,
   includeConceptIds?: number[] | null,
   sourceLanguageId?: number | null,
+  phoneticsEnabled = false,
 ): Promise<Language> {
   const db = await getDb()
   const maxOrder = await db.query('SELECT COALESCE(MAX(sort_order), -1) AS m FROM languages;')
   const sortOrder = (maxOrder.values?.[0]?.m ?? -1) + 1
-  const res = await db.run('INSERT INTO languages (name, code, sort_order) VALUES (?, ?, ?);', [name, code, sortOrder])
+  const res = await db.run(
+    'INSERT INTO languages (name, code, sort_order, phonetics_enabled) VALUES (?, ?, ?, ?);',
+    [name, code, sortOrder, phoneticsEnabled ? 1 : 0],
+  )
   const languageId = res.changes?.lastId ?? 0
 
   let favoriteConceptIds: Set<number> | null = null
@@ -49,7 +54,34 @@ export async function addLanguage(
   if (sets.length > 0) await db.executeSet(sets)
 
   await persist()
-  return { id: languageId, name, code, sortOrder }
+  return { id: languageId, name, code, sortOrder, phoneticsEnabled }
+}
+
+export async function setLanguagePhoneticsEnabled(languageId: number, enabled: boolean): Promise<void> {
+  const db = await getDb()
+  await db.run('UPDATE languages SET phonetics_enabled = ? WHERE id = ?;', [enabled ? 1 : 0, languageId])
+  await persist()
+}
+
+export async function getTranslationsNeedingPhonetics(languageId: number): Promise<{ translationId: number; text: string }[]> {
+  const db = await getDb()
+  const res = await db.query(
+    "SELECT id, text FROM translations WHERE language_id = ? AND TRIM(text) <> '' AND TRIM(COALESCE(phonetic, '')) = '';",
+    [languageId],
+  )
+  return (res.values ?? []).map((r) => ({ translationId: r.id as number, text: r.text as string }))
+}
+
+export async function bulkSetTranslationPhonetics(entries: { translationId: number; phonetic: string }[]): Promise<void> {
+  if (entries.length === 0) return
+  const db = await getDb()
+  await db.executeSet(
+    entries.map((entry) => ({
+      statement: 'UPDATE translations SET phonetic = ? WHERE id = ?;',
+      values: [entry.phonetic, entry.translationId],
+    })),
+  )
+  await persist()
 }
 
 export async function deleteLanguage(languageId: number): Promise<void> {
@@ -72,7 +104,7 @@ export async function bulkSetTranslationText(entries: { phraseConceptId: number;
   if (entries.length === 0) return
   const db = await getDb()
   const sets = entries.map((e) => ({
-    statement: 'UPDATE translations SET text = ? WHERE phrase_concept_id = ? AND language_id = ?;',
+    statement: "UPDATE translations SET text = ?, phonetic = '' WHERE phrase_concept_id = ? AND language_id = ?;",
     values: [e.text, e.phraseConceptId, e.languageId],
   }))
   await db.executeSet(sets)
@@ -132,6 +164,7 @@ export async function getPhraseList(languageId: number): Promise<PhraseListItem[
        t.language_id,
        pc.english,
        t.text,
+       t.phonetic,
        t.learned,
        t.favorite,
        t.sort_order,
@@ -150,6 +183,7 @@ export async function getPhraseList(languageId: number): Promise<PhraseListItem[
     languageId: r.language_id,
     english: r.english,
     text: r.text,
+    phonetic: r.phonetic ?? '',
     learned: !!r.learned,
     favorite: !!r.favorite,
     sortOrder: r.sort_order,
@@ -204,6 +238,7 @@ export async function addPhraseConcept(input: NewPhraseInput): Promise<number> {
 export interface CsvImportRow {
   english: string
   text: string
+  phonetic?: string
   category: string | null
 }
 
@@ -247,8 +282,8 @@ export async function importCsvPhrases(
       conceptId = conceptRes.changes?.lastId ?? 0
       conceptIdByEnglish.set(key, conceptId)
       sets.push({
-        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, 0);',
-        values: [conceptId, languageId, row.text],
+        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, phonetic, sort_order) VALUES (?, ?, ?, ?, 0);',
+        values: [conceptId, languageId, row.text, row.phonetic ?? ''],
       })
       // A second row later in the same import with the same English text (a duplicate line, or
       // the same phrase under two categories) must see this translation as already present -
@@ -262,16 +297,24 @@ export async function importCsvPhrases(
     const existingText = existingTextByConcept.get(conceptId)
     if (existingText == null) {
       sets.push({
-        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, sort_order) VALUES (?, ?, ?, 0);',
-        values: [conceptId, languageId, row.text],
+        statement: 'INSERT INTO translations (phrase_concept_id, language_id, text, phonetic, sort_order) VALUES (?, ?, ?, ?, 0);',
+        values: [conceptId, languageId, row.text, row.phonetic ?? ''],
       })
       existingTextByConcept.set(conceptId, row.text)
       created++
       if (!row.text) blank.push({ id: conceptId, english: row.english })
     } else if (row.text) {
+      if (row.text !== existingText || row.phonetic != null) {
+        sets.push({
+          statement: 'UPDATE translations SET text = ?, phonetic = ? WHERE phrase_concept_id = ? AND language_id = ?;',
+          values: [row.text, row.phonetic ?? '', conceptId, languageId],
+        })
+      }
+      updated++
+    } else if (row.phonetic != null) {
       sets.push({
-        statement: 'UPDATE translations SET text = ? WHERE phrase_concept_id = ? AND language_id = ?;',
-        values: [row.text, conceptId, languageId],
+        statement: 'UPDATE translations SET phonetic = ? WHERE phrase_concept_id = ? AND language_id = ?;',
+        values: [row.phonetic, conceptId, languageId],
       })
       updated++
     } else if (!existingText) {
@@ -291,12 +334,13 @@ export async function updatePhrase(
   english: string,
   text: string,
   categoryName: string | null,
+  phonetic: string,
 ): Promise<void> {
   const db = await getDb()
   const categoryId = categoryName ? await findOrCreateCategory(categoryName) : null
   await db.executeSet([
     { statement: 'UPDATE phrase_concepts SET english = ?, category_id = ? WHERE id = ?;', values: [english, categoryId, phraseConceptId] },
-    { statement: 'UPDATE translations SET text = ? WHERE id = ?;', values: [text, translationId] },
+    { statement: 'UPDATE translations SET text = ?, phonetic = ? WHERE id = ?;', values: [text, phonetic, translationId] },
   ])
   await persist()
 }

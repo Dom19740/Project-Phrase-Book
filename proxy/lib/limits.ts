@@ -22,6 +22,12 @@ interface BulkBody {
   targetLangName?: unknown
 }
 
+interface PhoneticsBody {
+  translations?: unknown
+  targetLangCode?: unknown
+  targetLangName?: unknown
+}
+
 interface AlternativesBody {
   english?: unknown
   targetLangCode?: unknown
@@ -74,6 +80,20 @@ export function validateBulkBody(body: BulkBody | null | undefined): string | nu
   for (const phrase of body.englishPhrases) {
     if (typeof phrase !== 'string' || !phrase.trim()) return 'Invalid entry in englishPhrases'
     if (phrase.length > MAX_PHRASE_LENGTH) return `A phrase in englishPhrases exceeds ${MAX_PHRASE_LENGTH} characters`
+  }
+
+  if (!isLangCodeValid(body.targetLangCode)) return 'Missing or invalid targetLangCode'
+  if (body.targetLangName != null && !isLangNameValid(body.targetLangName)) return 'Invalid targetLangName'
+
+  return null
+}
+
+export function validatePhoneticsBody(body: PhoneticsBody | null | undefined): string | null {
+  if (!Array.isArray(body?.translations) || body.translations.length === 0) return 'Missing translations'
+  if (body.translations.length > MAX_BULK_PHRASES) return `translations exceeds ${MAX_BULK_PHRASES} entries`
+  for (const translation of body.translations) {
+    if (typeof translation !== 'string' || !translation.trim()) return 'Invalid entry in translations'
+    if (translation.length > MAX_PHRASE_LENGTH) return `A translation in translations exceeds ${MAX_PHRASE_LENGTH} characters`
   }
 
   if (!isLangCodeValid(body.targetLangCode)) return 'Missing or invalid targetLangCode'
