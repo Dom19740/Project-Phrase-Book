@@ -55,7 +55,7 @@ Configure `GEMINI_API_KEY`, `UPSTASH_REDIS_REST_URL`, and `UPSTASH_REDIS_REST_TO
 
 ### Web app
 
-Set `VITE_TRANSLATE_API_URL` to the deployed API base URL, then deploy the built app from `app`:
+Set `VITE_TRANSLATE_API_URL` to the deployed API base URL, then deploy the built app from `app`. The production GA4 Measurement ID is configured in `app/.env.production`. Analytics runs only in production web builds, not in development or the native Android app.
 
 ```powershell
 cd app
@@ -81,4 +81,6 @@ Upload the generated `.aab` from `app/android/app/build/outputs/bundle/release/`
 
 ### Marketing site
 
-The marketing site is the static files in `marketing_site`. Upload that directory to the static host configured for the marketing domain.
+The marketing site is the static files in `marketing_site`. Set `GA_MEASUREMENT_ID` in `marketing_site/assets/analytics.js` to the same Google Analytics 4 web stream ID used by the web app, then upload that directory to the static host configured for the marketing domain. Leave it empty to disable marketing-site analytics.
+
+Google Analytics reports acquisition sources and campaign tags for the marketing site, and users and visits for the web app. Non-campaign query parameters (including shared-phrase codes) are excluded from analytics page URLs.
