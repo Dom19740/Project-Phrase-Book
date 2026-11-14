@@ -93,14 +93,6 @@ export function BulkActionBar({
       <div className="relative flex flex-col gap-1.5">
         <div className="flex flex-wrap items-center gap-1.5">
           <button
-            onClick={() => setPanel(panel === 'category' ? null : 'category')}
-            disabled={selectedCount === 0}
-            className={pillClass(panel === 'category')}
-          >
-            <Tag size={13} strokeWidth={2} />
-            Category
-          </button>
-          <button
             onClick={() => {
               onMarkLearned(true)
               setLearnedChoice(true)
@@ -121,6 +113,14 @@ export function BulkActionBar({
           >
             <XCircle size={13} strokeWidth={2} />
             Unlearn
+          </button>
+          <button
+            onClick={() => setPanel(panel === 'category' ? null : 'category')}
+            disabled={selectedCount === 0}
+            className={pillClass(panel === 'category')}
+          >
+            <Tag size={13} strokeWidth={2} />
+            Category
           </button>
           <button
             onClick={toggleDeletePanel}
