@@ -29,7 +29,6 @@ interface Props {
   onCopyToLanguages: (targetLanguageIds: number[]) => Promise<void>
   onDeleteOneLanguage: () => Promise<void>
   onDeleteAllLanguages: () => Promise<void>
-  onDone: () => void
 }
 
 type Panel = null | 'category' | 'copy' | 'delete'
@@ -46,7 +45,6 @@ export function BulkActionBar({
   onCopyToLanguages,
   onDeleteOneLanguage,
   onDeleteAllLanguages,
-  onDone,
 }: Props) {
   const [panel, setPanel] = useState<Panel>(null)
   const [categoryChoice, setCategoryChoice] = useState('')
@@ -124,6 +122,15 @@ export function BulkActionBar({
             <XCircle size={13} strokeWidth={2} />
             Unlearn
           </button>
+          <button
+            onClick={toggleDeletePanel}
+            disabled={selectedCount === 0}
+            aria-label="Delete"
+            title="Delete"
+            className={panel === 'delete' ? pillClass(true) : `${PILL_BASE} border-hairline text-muted hover:bg-surfacehover`}
+          >
+            <Trash2 size={13} strokeWidth={2} />
+          </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
@@ -159,23 +166,7 @@ export function BulkActionBar({
           </button>
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-medium text-ink">{selectedCount} selected</span>
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={toggleDeletePanel}
-              disabled={selectedCount === 0}
-              aria-label="Delete"
-              title="Delete"
-              className={panel === 'delete' ? pillClass(true) : `${PILL_BASE} border-hairline text-muted hover:bg-surfacehover`}
-            >
-              <Trash2 size={13} strokeWidth={2} />
-            </button>
-            <button onClick={onDone} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
-              Done
-            </button>
-          </div>
-        </div>
+        <span className="text-sm font-medium text-ink">{selectedCount} selected</span>
 
         {panel != null && (
           <>

@@ -327,22 +327,6 @@ function Shell() {
                     Backup & Share
                   </button>
 
-                  <div className="mt-1 border-t border-hairline pt-2">
-                    <button
-                      type="button"
-                      role="checkbox"
-                      aria-checked={removeFavoriteOnLearn}
-                      onClick={() => setRemoveFavoriteOnLearn(!removeFavoriteOnLearn)}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm text-ink hover:bg-surfacehover transition-colors"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`size-4 shrink-0 rounded-full border-2 border-fabpink transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink' : ''}`}
-                      />
-                      Remove learnt from favorites
-                    </button>
-                  </div>
-
                   <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">
                     <div className="flex items-center gap-1.5">
                       <button
@@ -483,6 +467,8 @@ function Shell() {
             onRenameCategory={renameCategory}
             onDeleteCategory={deleteCategory}
             onReorderCategories={reorderCategories}
+            removeFavoriteOnLearn={removeFavoriteOnLearn}
+            onToggleRemoveFavoriteOnLearn={setRemoveFavoriteOnLearn}
           />
         )}
       </main>

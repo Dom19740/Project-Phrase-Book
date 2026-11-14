@@ -1,5 +1,5 @@
 import { usePersistedState } from '../lib/usePersistedState'
-import { ChevronDown, ChevronRight, Settings2, Star, Tag } from 'lucide-react'
+import { ChevronDown, ChevronRight, Settings2, Tag } from 'lucide-react'
 import { pillClass } from '../lib/pillStyles'
 
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
   onManageCategories: () => void
   groupByCategoryOn: boolean
   onToggleGroupByCategory: (on: boolean) => void
-  favoritesOnly: boolean
-  onToggleFavoritesOnly: (on: boolean) => void
+  removeFavoriteOnLearn: boolean
+  onToggleRemoveFavoriteOnLearn: (on: boolean) => void
 }
 
 export function CategoryFilterPopout({
@@ -20,8 +20,8 @@ export function CategoryFilterPopout({
   onManageCategories,
   groupByCategoryOn,
   onToggleGroupByCategory,
-  favoritesOnly,
-  onToggleFavoritesOnly,
+  removeFavoriteOnLearn,
+  onToggleRemoveFavoriteOnLearn,
 }: Props) {
   const hiddenCount = hiddenCategories.size
   const [categoriesExpanded, setCategoriesExpanded] = usePersistedState('phrasebook-categories-section-expanded', false)
@@ -37,7 +37,6 @@ export function CategoryFilterPopout({
         {categoriesExpanded ? <ChevronDown size={14} strokeWidth={2} className="text-fabpink" /> : <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />}
         <Tag size={14} strokeWidth={2} className="text-fabpink" />
         <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Categories</span>
-        {favoritesOnly && <Star size={12} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-hidden="true" />}
         {hiddenCount > 0 && (
           <span className="rounded-full border border-fabpink/30 bg-fabpink/10 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider text-fabpink">
             {hiddenCount} hidden
@@ -71,32 +70,34 @@ export function CategoryFilterPopout({
               <Settings2 size={14} strokeWidth={2} />
             </button>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-2.5">
+          <div className="flex flex-col gap-1 px-2.5">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={groupByCategoryOn}
+                onClick={() => onToggleGroupByCategory(!groupByCategoryOn)}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
+                />
+                <span>Group by category</span>
+              </button>
+            </div>
             <button
               type="button"
               role="checkbox"
-              aria-checked={favoritesOnly}
-              onClick={() => onToggleFavoritesOnly(!favoritesOnly)}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
+              aria-checked={removeFavoriteOnLearn}
+              onClick={() => onToggleRemoveFavoriteOnLearn(!removeFavoriteOnLearn)}
+              className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
             >
               <span
                 aria-hidden="true"
-                className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${favoritesOnly ? 'bg-fabpink' : ''}`}
+                className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink' : ''}`}
               />
-              <span className="truncate">Favorites only</span>
-            </button>
-            <button
-              type="button"
-              role="checkbox"
-              aria-checked={groupByCategoryOn}
-              onClick={() => onToggleGroupByCategory(!groupByCategoryOn)}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
-            >
-              <span
-                aria-hidden="true"
-                className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
-              />
-              <span>Group by category</span>
+              <span>Remove learnt from favorites</span>
             </button>
           </div>
         </div>

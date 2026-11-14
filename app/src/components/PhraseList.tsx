@@ -1,17 +1,20 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import {
   ArrowDown,
   ArrowDownAZ,
   ArrowUp,
   ArrowUpZA,
+  Check,
   ChevronDown,
   ChevronRight,
   Clock,
   Eye,
+  GraduationCap,
   GripVertical,
   Languages,
   ListChecks,
   ListFilter,
+  Star,
   X,
 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
@@ -50,6 +53,8 @@ interface Props {
   onRenameCategory: (categoryId: number, newName: string) => Promise<void>
   onDeleteCategory: (categoryId: number) => Promise<void>
   onReorderCategories: (orderedCategoryIds: number[]) => Promise<void>
+  removeFavoriteOnLearn: boolean
+  onToggleRemoveFavoriteOnLearn: (value: boolean) => void
 }
 
 interface Group {
@@ -141,10 +146,23 @@ function sortItems(items: PhraseListItem[], mode: SortMode, showPhonetics: boole
   })
 }
 
-type LearnedFilter = 'unlearned' | 'learned' | 'all'
+type LearnedFilter = 'unlearned' | 'learned' | 'all' | 'favorites'
 
-const LEARNED_FILTER_CYCLE: LearnedFilter[] = ['unlearned', 'learned', 'all']
-const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Not Learnt', learned: 'Learnt', all: 'All' }
+const LEARNED_FILTER_CYCLE: LearnedFilter[] = ['unlearned', 'learned', 'all', 'favorites']
+const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Not Learnt', learned: 'Learnt', all: 'All', favorites: 'Favorites' }
+
+function LearnedFilterIcon({ filter }: { filter: LearnedFilter }) {
+  switch (filter) {
+    case 'unlearned':
+      return <GraduationCap size={13} strokeWidth={2} />
+    case 'learned':
+      return <Check size={13} strokeWidth={2} />
+    case 'favorites':
+      return <Star size={13} strokeWidth={2} />
+    case 'all':
+      return <Eye size={13} strokeWidth={2} />
+  }
+}
 
 function groupByCategory(items: PhraseListItem[], mode: SortMode, categoryOrderIndex: Map<string, number>, showPhonetics: boolean): Group[] {
   const map = new Map<string, PhraseListItem[]>()
@@ -189,15 +207,17 @@ export function PhraseList({
   onRenameCategory,
   onDeleteCategory,
   onReorderCategories,
+  removeFavoriteOnLearn,
+  onToggleRemoveFavoriteOnLearn,
 }: Props) {
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
   const [sortOptionsExpanded, setSortOptionsExpanded] = usePersistedState('phrasebook-sort-section-expanded', false)
   const [groupByCategoryOn, setGroupByCategoryOn] = usePersistedState('phrasebook-group-by-category', true)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  const [secondaryCollapsed, setSecondaryCollapsed] = useState<Record<string, boolean>>({})
   const [learnedFilter, setLearnedFilter] = usePersistedState<LearnedFilter>('phrasebook-learned-filter', 'unlearned')
   const [primaryExpanded, setPrimaryExpanded] = useState(true)
   const [secondaryExpanded, setSecondaryExpanded] = useState(false)
-  const [favoritesOnly, setFavoritesOnly] = usePersistedState('phrasebook-favorites-only', false)
   const [showPhonetics, setShowPhonetics] = usePersistedState('phrasebook-show-phonetics', false)
   const phoneticsEnabled = languages.find((language) => language.id === activeLanguageId)?.phoneticsEnabled ?? false
   const displayPhonetics = phoneticsEnabled && showPhonetics
@@ -271,7 +291,6 @@ export function PhraseList({
     return phrases.filter((p) => {
       const categoryName = p.categoryName ?? 'Uncategorized'
       if (hiddenCategories.has(categoryName)) return false
-      if (favoritesOnly && !p.favorite) return false
       if (!q) return true
       return (
         p.english.toLowerCase().includes(q) ||
@@ -280,20 +299,22 @@ export function PhraseList({
         categoryName.toLowerCase().includes(q)
       )
     })
-  }, [phrases, search, hiddenCategories, favoritesOnly])
+  }, [phrases, search, hiddenCategories])
 
   const unlearnedItems = useMemo(() => filtered.filter((p) => !p.learned), [filtered])
   const learnedItems = useMemo(() => filtered.filter((p) => p.learned), [filtered])
+  const favoriteItems = useMemo(() => filtered.filter((p) => p.favorite), [filtered])
+  const otherItems = useMemo(() => filtered.filter((p) => !p.favorite), [filtered])
 
   const { primaryItems, primaryLabel, secondaryItems, secondaryLabel } = useMemo(() => {
     if (learnedFilter === 'learned')
       return { primaryItems: learnedItems, primaryLabel: 'Learnt', secondaryItems: unlearnedItems, secondaryLabel: 'Not Learnt' }
     if (learnedFilter === 'all')
       return { primaryItems: filtered, primaryLabel: 'All', secondaryItems: [] as PhraseListItem[], secondaryLabel: '' }
+    if (learnedFilter === 'favorites')
+      return { primaryItems: favoriteItems, primaryLabel: 'Favorites', secondaryItems: otherItems, secondaryLabel: 'Others' }
     return { primaryItems: unlearnedItems, primaryLabel: 'Not Learnt', secondaryItems: learnedItems, secondaryLabel: 'Learnt' }
-  }, [learnedFilter, filtered, unlearnedItems, learnedItems])
-
-  const secondarySorted = useMemo(() => sortItems(secondaryItems, sortMode, displayPhonetics), [secondaryItems, sortMode, displayPhonetics])
+  }, [learnedFilter, filtered, unlearnedItems, learnedItems, favoriteItems, otherItems])
 
   const groups = useMemo<Group[]>(
     () =>
@@ -301,6 +322,14 @@ export function PhraseList({
         ? groupByCategory(primaryItems, sortMode, categoryOrderIndex, displayPhonetics)
         : [{ categoryName: '', items: sortItems(primaryItems, sortMode, displayPhonetics) }],
     [primaryItems, groupByCategoryOn, sortMode, categoryOrderIndex, displayPhonetics],
+  )
+
+  const secondaryGroups = useMemo<Group[]>(
+    () =>
+      groupByCategoryOn
+        ? groupByCategory(secondaryItems, sortMode, categoryOrderIndex, displayPhonetics)
+        : [{ categoryName: '', items: sortItems(secondaryItems, sortMode, displayPhonetics) }],
+    [secondaryItems, groupByCategoryOn, sortMode, categoryOrderIndex, displayPhonetics],
   )
 
   function toggleCategoryVisible(categoryName: string, visible: boolean) {
@@ -366,6 +395,35 @@ export function PhraseList({
     )
   }
 
+  /** Renders a bucket's groups, collapsible by category when grouping is on - shared by the primary and secondary sections. */
+  function renderGroups(groupList: Group[], collapsedState: Record<string, boolean>, setCollapsedState: Dispatch<SetStateAction<Record<string, boolean>>>) {
+    return (
+      <div className="mt-1.5 flex flex-col gap-3">
+        {groupList.map((group) => {
+          const isCollapsed = groupByCategoryOn && (collapsedState[group.categoryName] ?? false)
+          return (
+            <div key={group.categoryName || 'all'}>
+              {groupByCategoryOn && (
+                <button
+                  onClick={() => setCollapsedState((c) => ({ ...c, [group.categoryName]: !isCollapsed }))}
+                  className="flex w-full items-center justify-between py-1 pl-3 text-left text-[11px] font-extrabold uppercase tracking-wider text-muted"
+                >
+                  <span>{group.categoryName}</span>
+                  {isCollapsed ? (
+                    <ChevronRight size={16} strokeWidth={2} className="text-muted" />
+                  ) : (
+                    <ChevronDown size={16} strokeWidth={2} className="text-muted" />
+                  )}
+                </button>
+              )}
+              {!isCollapsed && <div className="mt-1.5">{renderDraggableGroup(group.items)}</div>}
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0">
@@ -374,9 +432,9 @@ export function PhraseList({
           <button
             onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
             className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
-            title="Cycle: Not Learnt → Learnt → All"
+            title="Cycle: Not Learnt → Learnt → All → Favorites"
           >
-            <Eye size={13} strokeWidth={2} />
+            <LearnedFilterIcon filter={learnedFilter} />
             {LEARNED_FILTER_LABEL[learnedFilter]}
           </button>
 
@@ -504,8 +562,8 @@ export function PhraseList({
                     onManageCategories={() => setShowManageCategories(true)}
                     groupByCategoryOn={groupByCategoryOn}
                     onToggleGroupByCategory={setGroupByCategoryOn}
-                    favoritesOnly={favoritesOnly}
-                    onToggleFavoritesOnly={setFavoritesOnly}
+                    removeFavoriteOnLearn={removeFavoriteOnLearn}
+                    onToggleRemoveFavoriteOnLearn={onToggleRemoveFavoriteOnLearn}
                   />
                 </div>
               )}
@@ -547,7 +605,6 @@ export function PhraseList({
               await onBulkDeleteAllLanguages(selectedConceptIds)
               exitSelectionMode()
             }}
-            onDone={exitSelectionMode}
           />
         </div>
       </div>
@@ -560,7 +617,7 @@ export function PhraseList({
         }}
       >
         <div className="flex flex-col gap-4">
-          {primaryItems.length === 0 && (
+          {primaryItems.length === 0 && secondaryItems.length === 0 && (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
               <p className="font-brand text-xl font-bold tracking-[-0.035em] text-ink">Write it as you go.</p>
               <p className="max-w-xs text-sm leading-relaxed text-muted">
@@ -569,7 +626,7 @@ export function PhraseList({
             </div>
           )}
 
-          {primaryItems.length > 0 && (
+          {!(primaryItems.length === 0 && secondaryItems.length === 0) && (
             <div>
               <button
                 onClick={() => setPrimaryExpanded((v) => !v)}
@@ -584,31 +641,7 @@ export function PhraseList({
                   <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
                 )}
               </button>
-              {primaryExpanded && (
-                <div className="mt-1.5 flex flex-col gap-3">
-                  {groups.map((group) => {
-                    const isCollapsed = groupByCategoryOn && (collapsed[group.categoryName] ?? false)
-                    return (
-                      <div key={group.categoryName || 'all'}>
-                        {groupByCategoryOn && (
-                          <button
-                            onClick={() => setCollapsed((c) => ({ ...c, [group.categoryName]: !isCollapsed }))}
-                            className="flex w-full items-center justify-between py-1 pl-3 text-left text-[11px] font-extrabold uppercase tracking-wider text-muted"
-                          >
-                            <span>{group.categoryName}</span>
-                            {isCollapsed ? (
-                              <ChevronRight size={16} strokeWidth={2} className="text-muted" />
-                            ) : (
-                              <ChevronDown size={16} strokeWidth={2} className="text-muted" />
-                            )}
-                          </button>
-                        )}
-                        {!isCollapsed && <div className="mt-1.5">{renderDraggableGroup(group.items)}</div>}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+              {primaryExpanded && renderGroups(groups, collapsed, setCollapsed)}
             </div>
           )}
 
@@ -627,7 +660,7 @@ export function PhraseList({
                   <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
                 )}
               </button>
-              {secondaryExpanded && <div className="mt-1.5">{renderDraggableGroup(secondarySorted)}</div>}
+              {secondaryExpanded && renderGroups(secondaryGroups, secondaryCollapsed, setSecondaryCollapsed)}
             </div>
           )}
         </div>

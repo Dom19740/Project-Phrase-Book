@@ -19,7 +19,7 @@ export function LearnFavoriteSettingModal({ onConfirm }: Props) {
         </div>
 
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          Remove learnt phrases from your favorites? You can change this later from the menu.
+          Remove learnt phrases from your favorites? You can change this later from the Sort menu.
         </p>
 
         <div className="mt-5 flex justify-end gap-2">
