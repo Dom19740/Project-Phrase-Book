@@ -215,23 +215,30 @@ export async function translateBulkWithGemini(englishPhrases: string[], targetLa
 
 /** Produces learner-friendly romanized pronunciation guides without translating the source text. */
 export async function phoneticBulkWithGemini(translations: string[], targetLang: TargetLanguage): Promise<string[]> {
-  const results: string[] = []
-
+  const batches: string[][] = []
   for (let i = 0; i < translations.length; i += BULK_BATCH_SIZE) {
-    const batch = translations.slice(i, i + BULK_BATCH_SIZE)
-    const numbered = batch.map((translation, idx) => `${idx + 1}. ${translation}`).join('\n')
-    const prompt = `Create a learner-friendly pronunciation guide in Latin letters for each numbered ${targetLang.name} (${targetLang.code}) phrase. This is romanization, not translation: preserve the pronunciation of the supplied phrase and do not add a translation or explanation. Use readable syllable breaks and consistent tone cues where relevant (especially for Thai). Return one concise guide for each item in the same order. Do not include the original writing system.\n\n${numbered}`
-
-    const text = await callGemini({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: { type: 'ARRAY', items: { type: 'STRING' }, minItems: batch.length, maxItems: batch.length },
-      },
-    })
-
-    results.push(...(JSON.parse(text) as string[]))
+    batches.push(translations.slice(i, i + BULK_BATCH_SIZE))
   }
 
-  return results
+  // Each batch is independent (sliced from the original array, no shared state) so they run
+  // concurrently - sequential awaiting here made wall-clock latency scale linearly with the
+  // number of batches for no reason.
+  const batchResults = await Promise.all(
+    batches.map(async (batch) => {
+      const numbered = batch.map((translation, idx) => `${idx + 1}. ${translation}`).join('\n')
+      const prompt = `Create a learner-friendly pronunciation guide in Latin letters for each numbered ${targetLang.name} (${targetLang.code}) phrase. This is romanization, not translation: preserve the pronunciation of the supplied phrase and do not add a translation or explanation. Use readable syllable breaks and consistent tone cues where relevant (especially for Thai). Return one concise guide for each item in the same order. Do not include the original writing system.\n\n${numbered}`
+
+      const text = await callGemini({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: { type: 'ARRAY', items: { type: 'STRING' }, minItems: batch.length, maxItems: batch.length },
+        },
+      })
+
+      return JSON.parse(text) as string[]
+    }),
+  )
+
+  return batchResults.flat()
 }

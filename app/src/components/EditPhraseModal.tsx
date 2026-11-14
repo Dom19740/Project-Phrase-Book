@@ -108,7 +108,7 @@ export function EditPhraseModal({
     setSaving(true)
     const categoryName = categoryChoice === NEW_CATEGORY ? newCategory.trim() : categoryChoice || null
     const nextPhonetic =
-      text.trim() !== phrase.text && phonetic.trim() === phrase.phonetic ? '' : phonetic.trim()
+      phoneticsEnabled && text.trim() !== phrase.text && phonetic.trim() === phrase.phonetic ? '' : phonetic.trim()
     await onSubmit(english.trim(), text.trim(), categoryName, nextPhonetic)
     setSaving(false)
     onClose()

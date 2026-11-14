@@ -214,15 +214,20 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
         pending,
         TRANSLATE_CHUNK_SIZE,
         async (chunk) => {
-          const phonetics = await generatePhoneticsBulk(
-            chunk.map((entry) => entry.text),
-            languageCode,
-            languageName,
-          )
-          if (phonetics.length !== chunk.length) throw new Error('Phonetic generation returned an unexpected number of results.')
-          await bulkSetTranslationPhonetics(chunk.map((entry, index) => ({ translationId: entry.translationId, phonetic: phonetics[index] })))
-          if (activeLanguageIdRef.current === languageId) setPhrases(await getPhraseList(languageId))
-          return phonetics.every((phonetic) => phonetic.trim().length > 0)
+          try {
+            const phonetics = await generatePhoneticsBulk(
+              chunk.map((entry) => entry.text),
+              languageCode,
+              languageName,
+            )
+            if (phonetics.length !== chunk.length) throw new Error('Phonetic generation returned an unexpected number of results.')
+            await bulkSetTranslationPhonetics(chunk.map((entry, index) => ({ translationId: entry.translationId, phonetic: phonetics[index] })))
+            if (activeLanguageIdRef.current === languageId) setPhrases(await getPhraseList(languageId))
+            return phonetics.every((phonetic) => phonetic.trim().length > 0)
+          } catch (err) {
+            console.error('Bulk phonetic generation failed for a chunk:', err)
+            return false
+          }
         },
         TRANSLATE_RETRY_DELAY_MS,
         TRANSLATE_MAX_ATTEMPTS,
@@ -578,7 +583,13 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       concepts: { id: number; english: string }[],
       phoneticsEnabled = false,
     ) => {
-      if (concepts.length === 0) return
+      if (concepts.length === 0) {
+        // Nothing to translate, but any existing rows here may still be missing a phonetic
+        // guide (e.g. a CSV import where every row already had a translation) - the phonetics
+        // trigger below never runs in that case otherwise.
+        if (phoneticsEnabled) void runBackgroundPhonetics(languageId, languageCode, languageName)
+        return
+      }
       setBackgroundTranslation({ languageId, languageName })
       setTranslationIncomplete(null)
       ;(async () => {
@@ -627,10 +638,9 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       setActiveLanguageId(language.id)
       setPhrases(await getPhraseList(language.id))
       runBackgroundTranslation(language.id, language.code, language.name, result.blank, language.phoneticsEnabled)
-      if (language.phoneticsEnabled) void runBackgroundPhonetics(language.id, language.code, language.name)
       return { created: result.created, updated: result.updated }
     },
-    [refreshCategories, setActiveLanguageId, runBackgroundTranslation, runBackgroundPhonetics],
+    [refreshCategories, setActiveLanguageId, runBackgroundTranslation],
   )
 
   const bulkCopyToLanguages = useCallback(
@@ -646,12 +656,21 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
         list.push({ id: entry.conceptId, english: entry.english })
         conceptsByLanguage.set(entry.languageId, list)
       }
-      for (const [languageId, concepts] of conceptsByLanguage) {
+      for (const languageId of targetLanguageIds) {
         const lang = languages.find((l) => l.id === languageId)
-        if (lang) runBackgroundTranslation(languageId, lang.code, lang.name, concepts, lang.phoneticsEnabled)
+        if (!lang) continue
+        const concepts = conceptsByLanguage.get(languageId) ?? []
+        if (concepts.length > 0) {
+          runBackgroundTranslation(languageId, lang.code, lang.name, concepts, lang.phoneticsEnabled)
+        } else if (lang.phoneticsEnabled) {
+          // Every copied phrase already existed here - nothing to translate, but those existing
+          // rows may still be missing a phonetic guide (e.g. copied before phonetics was turned
+          // on for this language).
+          void runBackgroundPhonetics(languageId, lang.code, lang.name)
+        }
       }
     },
-    [languages, refreshPhrases, runBackgroundTranslation],
+    [languages, refreshPhrases, runBackgroundTranslation, runBackgroundPhonetics],
   )
 
   const getLanguagePhrases = useCallback((languageId: number) => getPhraseList(languageId), [])

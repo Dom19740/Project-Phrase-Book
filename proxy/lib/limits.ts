@@ -42,6 +42,17 @@ function isLangNameValid(name: unknown): name is string {
   return typeof name === 'string' && name.length > 0 && name.length <= MAX_LANG_NAME_LENGTH
 }
 
+/** Shared by validateBulkBody and validatePhoneticsBody, which both just bulk-validate an array of strings. */
+function validateBulkStringArray(value: unknown, fieldName: string): string | null {
+  if (!Array.isArray(value) || value.length === 0) return `Missing ${fieldName}`
+  if (value.length > MAX_BULK_PHRASES) return `${fieldName} exceeds ${MAX_BULK_PHRASES} entries`
+  for (const item of value) {
+    if (typeof item !== 'string' || !item.trim()) return `Invalid entry in ${fieldName}`
+    if (item.length > MAX_PHRASE_LENGTH) return `An entry in ${fieldName} exceeds ${MAX_PHRASE_LENGTH} characters`
+  }
+  return null
+}
+
 /** Returns a client-facing error message, or null if the body is within all limits. */
 export function validateTranslateBody(body: TranslateBody | null | undefined): string | null {
   if (typeof body?.english !== 'string' || !body.english.trim()) return 'Missing english'
@@ -75,29 +86,21 @@ export function validateTranslateBody(body: TranslateBody | null | undefined): s
 }
 
 export function validateBulkBody(body: BulkBody | null | undefined): string | null {
-  if (!Array.isArray(body?.englishPhrases) || body.englishPhrases.length === 0) return 'Missing englishPhrases'
-  if (body.englishPhrases.length > MAX_BULK_PHRASES) return `englishPhrases exceeds ${MAX_BULK_PHRASES} entries`
-  for (const phrase of body.englishPhrases) {
-    if (typeof phrase !== 'string' || !phrase.trim()) return 'Invalid entry in englishPhrases'
-    if (phrase.length > MAX_PHRASE_LENGTH) return `A phrase in englishPhrases exceeds ${MAX_PHRASE_LENGTH} characters`
-  }
+  const arrayError = validateBulkStringArray(body?.englishPhrases, 'englishPhrases')
+  if (arrayError) return arrayError
 
-  if (!isLangCodeValid(body.targetLangCode)) return 'Missing or invalid targetLangCode'
-  if (body.targetLangName != null && !isLangNameValid(body.targetLangName)) return 'Invalid targetLangName'
+  if (!isLangCodeValid(body?.targetLangCode)) return 'Missing or invalid targetLangCode'
+  if (body?.targetLangName != null && !isLangNameValid(body.targetLangName)) return 'Invalid targetLangName'
 
   return null
 }
 
 export function validatePhoneticsBody(body: PhoneticsBody | null | undefined): string | null {
-  if (!Array.isArray(body?.translations) || body.translations.length === 0) return 'Missing translations'
-  if (body.translations.length > MAX_BULK_PHRASES) return `translations exceeds ${MAX_BULK_PHRASES} entries`
-  for (const translation of body.translations) {
-    if (typeof translation !== 'string' || !translation.trim()) return 'Invalid entry in translations'
-    if (translation.length > MAX_PHRASE_LENGTH) return `A translation in translations exceeds ${MAX_PHRASE_LENGTH} characters`
-  }
+  const arrayError = validateBulkStringArray(body?.translations, 'translations')
+  if (arrayError) return arrayError
 
-  if (!isLangCodeValid(body.targetLangCode)) return 'Missing or invalid targetLangCode'
-  if (body.targetLangName != null && !isLangNameValid(body.targetLangName)) return 'Invalid targetLangName'
+  if (!isLangCodeValid(body?.targetLangCode)) return 'Missing or invalid targetLangCode'
+  if (body?.targetLangName != null && !isLangNameValid(body.targetLangName)) return 'Invalid targetLangName'
 
   return null
 }

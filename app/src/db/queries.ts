@@ -304,13 +304,28 @@ export async function importCsvPhrases(
       created++
       if (!row.text) blank.push({ id: conceptId, english: row.english })
     } else if (row.text) {
-      if (row.text !== existingText || row.phonetic != null) {
+      const textChanged = row.text !== existingText
+      const phoneticProvided = row.phonetic != null
+      if (textChanged && phoneticProvided) {
         sets.push({
           statement: 'UPDATE translations SET text = ?, phonetic = ? WHERE phrase_concept_id = ? AND language_id = ?;',
-          values: [row.text, row.phonetic ?? '', conceptId, languageId],
+          values: [row.text, row.phonetic, conceptId, languageId],
         })
+        updated++
+      } else if (textChanged) {
+        // No Phonetic column in this CSV - keep the existing phonetic guide intact.
+        sets.push({
+          statement: 'UPDATE translations SET text = ? WHERE phrase_concept_id = ? AND language_id = ?;',
+          values: [row.text, conceptId, languageId],
+        })
+        updated++
+      } else if (phoneticProvided) {
+        sets.push({
+          statement: 'UPDATE translations SET phonetic = ? WHERE phrase_concept_id = ? AND language_id = ?;',
+          values: [row.phonetic, conceptId, languageId],
+        })
+        updated++
       }
-      updated++
     } else if (row.phonetic != null) {
       sets.push({
         statement: 'UPDATE translations SET phonetic = ? WHERE phrase_concept_id = ? AND language_id = ?;',
