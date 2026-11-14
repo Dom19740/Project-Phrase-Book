@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { ArrowDown, ArrowRight, Check, ChevronDown, Eye, Languages, Layers, ListChecks, ListFilter, Mic, Pencil, Search, Star, Tag, Volume2 } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, ChevronDown, Eye, Languages, Layers, ListChecks, ListFilter, Mic, Pencil, Search, Star, Volume2 } from 'lucide-react'
 import { Logo, Wordmark } from './Logo'
 
 interface Props {
@@ -57,6 +57,35 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
     ),
   },
   {
+    title: 'Read it phonetically',
+    body: "For languages written in a different script, Thai, Vietnamese, Japanese and more, turn on phonetics to get a learner-friendly romanized pronunciation guide alongside the native translation. Enable it when adding a language, or any time after from the language selector.",
+    illustration: (
+      <div className="flex w-full flex-col items-center gap-3">
+        <div className="flex w-full max-w-xs items-center justify-between gap-2 rounded-2xl border-2 border-fabpink bg-surface px-4 py-3.5 shadow-lg shadow-fabpink/20">
+          <span className="flex-1 text-lg leading-tight">
+            <span className="text-muted">Hello </span>
+            <span className="font-bold text-ink">สวัสดี</span>
+          </span>
+          <span className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent">
+            <Languages size={13} strokeWidth={2} />
+            Native
+          </span>
+        </div>
+        <ArrowDown size={18} strokeWidth={2.5} className="text-muted" />
+        <div className="flex w-full max-w-xs items-center justify-between gap-2 rounded-2xl border-2 border-fabpink bg-surface px-4 py-3.5 shadow-lg shadow-fabpink/20">
+          <span className="flex-1 text-lg leading-tight">
+            <span className="text-muted">Hello </span>
+            <span className="font-bold text-ink">sà-wàt-dii</span>
+          </span>
+          <span className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent">
+            <Languages size={13} strokeWidth={2} />
+            PHONETIC
+          </span>
+        </div>
+      </div>
+    ),
+  },
+  {
     title: 'Capture your phrases',
     body: [
       'Tap the + button, add a phrase, type or have a local speak the translation, or use Auto translate to show the default translation and alternatives.',
@@ -88,14 +117,10 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Filter, sort, and bulk actions',
-    body: 'Tap Categories to filter or group your list. Cycle through Learnt or Not Learnt phrases, use Bulk to manage multiple phrases, and switch between native script and phonetic text when available.',
+    body: 'Cycle through Not Learnt, Learnt, or All phrases, and switch between native script and phonetic text when available. Tap Sort to reorder your list and show, hide, or manage categories, and use Bulk to select and edit several phrases at once.',
     illustration: (
       <div className="flex w-full flex-col items-center gap-2">
         <div className="flex w-full max-w-xs flex-wrap items-center justify-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
-            <Tag size={13} strokeWidth={2.5} />
-            Categories
-          </span>
           <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
             <Eye size={13} strokeWidth={2.5} />
             Not Learnt

@@ -489,31 +489,31 @@ function Shell() {
 
       {backgroundTranslation && (backgroundTranslation.languageId !== activeLanguageId || phrases.length > 0) && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
+          className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surfacehover/95 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
-          <span className="truncate">Translating {backgroundTranslation.languageName} in the background&hellip;</span>
+          <span className="min-w-0 whitespace-normal break-words leading-5">Translating {backgroundTranslation.languageName} in the background&hellip;</span>
         </div>
       )}
 
       {backgroundPhonetics && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
+          className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surfacehover/95 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(9rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
-          <span className="truncate">Creating phonetic translations for {backgroundPhonetics.languageName}&hellip;</span>
+          <span className="min-w-0 whitespace-normal break-words leading-5">Creating phonetic translations for {backgroundPhonetics.languageName}&hellip;</span>
         </div>
       )}
 
       {!backgroundTranslation && translationIncomplete && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 flex max-w-[85vw] items-center gap-2 rounded-full bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
+          className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surfacehover/95 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <TriangleAlert size={15} strokeWidth={2.5} className="shrink-0 text-fabpink" />
-          <span className="truncate">
+          <span className="min-w-0 whitespace-normal break-words leading-5">
             {translationIncomplete.count} phrase{translationIncomplete.count === 1 ? '' : 's'} in {translationIncomplete.languageName} need
             translation &mdash; add manually when ready.
           </span>
@@ -522,7 +522,7 @@ function Shell() {
 
       {!backgroundPhonetics && phoneticsIncomplete && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surface/90 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
+          className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surfacehover/95 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(9rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <TriangleAlert size={15} strokeWidth={2.5} className="shrink-0 text-fabpink" />
