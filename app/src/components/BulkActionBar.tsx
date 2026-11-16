@@ -167,7 +167,7 @@ export function BulkActionBar({
           </button>
         </div>
 
-        <span className="text-sm font-medium text-ink">{selectedCount} selected</span>
+        <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">{selectedCount} selected</span>
 
         {panel != null && (
           <>
