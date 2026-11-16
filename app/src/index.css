@@ -164,36 +164,6 @@ body {
   animation: modal-backdrop-open 0.22s ease-out both;
 }
 
-@keyframes modal-panel-open {
-  from {
-    opacity: 0;
-    transform: translateY(-12px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-modal-panel {
-  animation: modal-panel-open 0.28s cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-
-@keyframes modal-sheet-open {
-  from {
-    opacity: 0;
-    transform: translateY(32px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-modal-sheet {
-  animation: modal-sheet-open 0.3s cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-
 @keyframes menu-open-up {
   from {
     opacity: 0;
@@ -209,9 +179,7 @@ body {
   .animate-menu-open,
   .animate-menu-open-up,
   .animate-menu-open-right,
-  .animate-modal-backdrop,
-  .animate-modal-panel,
-  .animate-modal-sheet {
+  .animate-modal-backdrop {
     animation-duration: 0.01ms;
   }
 

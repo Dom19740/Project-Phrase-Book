@@ -7,6 +7,7 @@ import { translateAlternatives, translatePhrase } from '../lib/translateApi'
 import { useSpeechToText } from '../lib/useSpeechToText'
 import { PopoutSelect } from './PopoutSelect'
 import { Button } from './ui/Button'
+import { Dialog } from './ui/Dialog'
 
 const NEW_CATEGORY = '__new__'
 
@@ -135,8 +136,8 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
   }
 
   return (
-    <div className="animate-modal-backdrop fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
-      <div className="animate-modal-panel w-full min-w-0 sm:max-w-md rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
+    <Dialog onClose={onClose} maxWidthClassName="sm:max-w-md" dismissOnBackdropClick={false}>
+      <>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold tracking-tight text-ink">Add phrase</h2>
           <button
@@ -344,7 +345,7 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
             {saving ? 'Saving...' : anyLoadingAlternatives ? 'Translating…' : allTranslated ? 'Add phrase' : 'Auto translate'}
           </Button>
         </div>
-      </div>
-    </div>
+      </>
+    </Dialog>
   )
 }
