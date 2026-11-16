@@ -136,7 +136,6 @@ function Shell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
-  const [listScrolled, setListScrolled] = useState(false)
   const [chromeVisible, setChromeVisible] = useState(true)
   // True once the show transition has fully finished - the language bar's menu button opens a
   // dropdown via position:absolute, which the collapse wrapper's overflow-hidden (needed to
@@ -296,7 +295,7 @@ function Shell() {
       className="flex h-full flex-col bg-appbg text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
-      <Header collapsed={listScrolled} chromeVisible={chromeVisible} onToggleChrome={toggleChrome} />
+      <Header chromeVisible={chromeVisible} onToggleChrome={toggleChrome} />
       <div
         className="menu-panel-reveal shrink-0"
         data-open={chromeVisible}
@@ -533,7 +532,6 @@ function Shell() {
             onReorderCategories={reorderCategories}
             removeFavoriteOnLearn={removeFavoriteOnLearn}
             onToggleRemoveFavoriteOnLearn={setRemoveFavoriteOnLearn}
-            onScrollChange={setListScrolled}
             chromeVisible={chromeVisible}
           />
         )}
