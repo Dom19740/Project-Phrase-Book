@@ -38,7 +38,7 @@ export function CategoryFilterPopout({
         <Tag size={14} strokeWidth={2} className="text-ink" />
         <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink">Categories</span>
         {hiddenCount > 0 && (
-          <span className="rounded-full border border-fabpink/30 bg-fabpink/10 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider text-fabpink">
+          <span className="rounded-full border border-fabpink bg-fabpink/10 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider text-fabpink">
             {hiddenCount} hidden
           </span>
         )}
@@ -55,7 +55,7 @@ export function CategoryFilterPopout({
                     type="button"
                     onClick={() => onToggleCategoryVisible(name, !visible)}
                     aria-pressed={visible}
-                    className={`${pillClass(visible)} active:scale-95`}
+                    className={`${pillClass(visible, 'accent')} active:scale-95`}
                   >
                     {name}
                   </button>

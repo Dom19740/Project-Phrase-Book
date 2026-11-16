@@ -20,7 +20,7 @@ import {
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { pillClass } from '../lib/pillStyles'
 import { usePersistedState } from '../lib/usePersistedState'
-import { syncWidgetSortMode } from '../lib/widgetRefresh'
+import { syncWidgetShowPhonetics, syncWidgetSortMode } from '../lib/widgetRefresh'
 import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
 import { DragReorderList } from './DragReorderList'
@@ -252,6 +252,10 @@ export function PhraseList({
   useEffect(() => {
     syncWidgetSortMode(sortMode)
   }, [sortMode])
+
+  useEffect(() => {
+    syncWidgetShowPhonetics(showPhonetics)
+  }, [showPhonetics])
 
   useEffect(() => {
     if (!sortMenuOpen && !selectionMode) return
@@ -682,7 +686,7 @@ export function PhraseList({
           )}
 
           {secondaryItems.length > 0 && (
-            <div className="border-t border-hairline pt-3">
+            <div className="pt-3">
               <button
                 onClick={() => setSecondaryExpanded((v) => !v)}
                 className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"

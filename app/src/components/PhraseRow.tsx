@@ -167,11 +167,11 @@ export function PhraseRow({
 
       <div className="shrink-0 flex items-center justify-end gap-0.5">
         {phrase.learned && phrase.favorite ? (
-          <Star size={16} strokeWidth={2.5} className="text-fabpink" aria-label="Favorite and learned" />
+          <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favorite and learned" />
         ) : (
           <>
             {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learnt" />}
-            {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favorite" />}
+            {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="none" className="text-fabpink" aria-label="Favorite" />}
           </>
         )}
         {selectionMode && (

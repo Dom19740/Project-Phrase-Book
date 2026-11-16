@@ -7,6 +7,8 @@ export interface WidgetRefreshPlugin {
   syncTheme(options: { theme: string; accent: string }): Promise<void>
   /** Pushes the app's current sort mode so the widget's phrase order matches what's on screen in the app. */
   syncSortMode(options: { sortMode: string }): Promise<void>
+  /** Pushes the app's "show phonetics" toggle so the widget's translations match what's on screen in the app. */
+  syncShowPhonetics(options: { showPhonetics: boolean }): Promise<void>
 }
 
 const WidgetRefresh = registerPlugin<WidgetRefreshPlugin>('WidgetRefresh')
@@ -29,4 +31,11 @@ export function syncWidgetTheme(theme: 'dark' | 'light', accent: string): void {
 export function syncWidgetSortMode(sortMode: string): void {
   if (Capacitor.getPlatform() !== 'android') return
   WidgetRefresh.syncSortMode({ sortMode }).catch(() => {})
+}
+
+/** Called whenever the app's "show phonetics" toggle changes, so the widget shows the same
+ * phonetic-vs-native text as the app (for languages that have phonetics enabled). */
+export function syncWidgetShowPhonetics(showPhonetics: boolean): void {
+  if (Capacitor.getPlatform() !== 'android') return
+  WidgetRefresh.syncShowPhonetics({ showPhonetics }).catch(() => {})
 }

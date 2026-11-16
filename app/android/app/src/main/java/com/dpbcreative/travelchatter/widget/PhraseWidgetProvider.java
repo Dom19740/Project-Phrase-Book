@@ -213,4 +213,10 @@ public class PhraseWidgetProvider extends AppWidgetProvider {
         PhraseWidgetSortPrefs.set(context, sortMode);
         updateAllWidgets(context);
     }
+
+    /** Bridges WidgetRefreshPlugin#syncShowPhonetics (JS can't see PhraseWidgetPhoneticsPrefs directly since it's package-private). */
+    public static void syncShowPhonetics(Context context, boolean showPhonetics) {
+        PhraseWidgetPhoneticsPrefs.set(context, showPhonetics);
+        updateAllWidgets(context);
+    }
 }

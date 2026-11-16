@@ -18,6 +18,7 @@ final class PhraseRemoteViewsFactory implements RemoteViewsService.RemoteViewsFa
     private List<PhraseWidgetDb.PhraseRow> phrases = new ArrayList<>();
     private String filter = PhraseWidgetPrefs.FILTER_FAVORITES;
     private String languageCode;
+    private boolean displayPhonetics;
     private PhraseWidgetTheme theme;
 
     PhraseRemoteViewsFactory(Context context, Intent intent) {
@@ -44,12 +45,15 @@ final class PhraseRemoteViewsFactory implements RemoteViewsService.RemoteViewsFa
         // tap-to-speak using the language that's actually on screen instead of whatever was first bound.
         int languageId = PhraseWidgetPrefs.getLanguageId(context, appWidgetId, languages.get(0).id);
         languageCode = languages.get(0).code;
+        boolean phoneticsEnabled = languages.get(0).phoneticsEnabled;
         for (PhraseWidgetDb.LanguageRow language : languages) {
             if (language.id == languageId) {
                 languageCode = language.code;
+                phoneticsEnabled = language.phoneticsEnabled;
                 break;
             }
         }
+        displayPhonetics = phoneticsEnabled && PhraseWidgetPhoneticsPrefs.get(context);
         filter = PhraseWidgetPrefs.getFilter(context, appWidgetId);
         phrases = PhraseWidgetDb.getPhrases(context, languageId, filter, PhraseWidgetSortPrefs.get(context));
     }
@@ -71,7 +75,8 @@ final class PhraseRemoteViewsFactory implements RemoteViewsService.RemoteViewsFa
         item.setInt(R.id.item_root, "setBackgroundResource", theme.itemBackgroundRes);
         item.setTextViewText(R.id.english_text, phrase.english);
         item.setTextColor(R.id.english_text, theme.muted);
-        item.setTextViewText(R.id.translation_text, phrase.text == null || phrase.text.isEmpty() ? context.getString(R.string.widget_needs_translation) : phrase.text);
+        String displayedTranslation = displayPhonetics && phrase.phonetic != null && !phrase.phonetic.isEmpty() ? phrase.phonetic : phrase.text;
+        item.setTextViewText(R.id.translation_text, displayedTranslation == null || displayedTranslation.isEmpty() ? context.getString(R.string.widget_needs_translation) : displayedTranslation);
         item.setTextColor(R.id.translation_text, theme.ink);
 
         // Favorites view already implies favorite=true for every row, so the only useful status
