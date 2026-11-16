@@ -55,6 +55,8 @@ interface Props {
   onReorderCategories: (orderedCategoryIds: number[]) => Promise<void>
   removeFavoriteOnLearn: boolean
   onToggleRemoveFavoriteOnLearn: (value: boolean) => void
+  /** Fires as the phrase rows scroll, so a header above this list can collapse once scrolling starts. */
+  onScrollChange?: (scrolled: boolean) => void
 }
 
 interface Group {
@@ -209,6 +211,7 @@ export function PhraseList({
   onReorderCategories,
   removeFavoriteOnLearn,
   onToggleRemoveFavoriteOnLearn,
+  onScrollChange,
 }: Props) {
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
   const [sortOptionsExpanded, setSortOptionsExpanded] = usePersistedState('phrasebook-sort-section-expanded', false)
@@ -615,6 +618,7 @@ export function PhraseList({
         style={{
           paddingBottom: `calc(5rem + var(--safe-area-inset-bottom, 0px))`,
         }}
+        onScroll={(e) => onScrollChange?.(e.currentTarget.scrollTop > 8)}
       >
         <div className="flex flex-col gap-4">
           {primaryItems.length === 0 && secondaryItems.length === 0 && (

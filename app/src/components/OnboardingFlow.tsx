@@ -337,7 +337,7 @@ export function OnboardingFlow({ onFinish }: Props) {
               aria-hidden="true"
             />
             <Logo size={72} className="relative text-fabpink" />
-            <Wordmark size={28} className="relative mt-4 text-ink" />
+            <Wordmark size={28} className="relative mt-4" />
             <p className="relative mt-4 font-brand text-xs font-semibold uppercase tracking-[0.26em] text-muted">
               The phrasebook you write
             </p>

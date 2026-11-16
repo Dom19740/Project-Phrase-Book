@@ -6,6 +6,7 @@ import { BackupReminderBanner } from './components/BackupReminderBanner'
 import { EditPhraseModal } from './components/EditPhraseModal'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { FlashCardsModal } from './components/FlashCardsModal'
+import { Header } from './components/Header'
 import { InstallPrompt } from './components/InstallPrompt'
 import { LanguageTabs } from './components/LanguageTabs'
 import { LearnFavoriteSettingModal } from './components/LearnFavoriteSettingModal'
@@ -131,6 +132,12 @@ function Shell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
+  const [listScrolled, setListScrolled] = useState(false)
+  // Switching language tabs doesn't reset the shared scroll container's scrollTop, but the new
+  // list starts the user back at the top visually - keep the header expanded to match.
+  useEffect(() => {
+    setListScrolled(false)
+  }, [activeLanguageId])
   const [themeOverride, setThemeOverride] = usePersistedState<Theme | null>('phrasebook-theme', null)
   const systemTheme = useSystemTheme()
   const theme = themeOverride ?? systemTheme
@@ -262,6 +269,7 @@ function Shell() {
       className="flex h-full flex-col bg-md-surface text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
+      <Header collapsed={listScrolled} />
       <LanguageTabs
         languages={languages}
         activeLanguageId={activeLanguageId}
@@ -474,6 +482,7 @@ function Shell() {
             onReorderCategories={reorderCategories}
             removeFavoriteOnLearn={removeFavoriteOnLearn}
             onToggleRemoveFavoriteOnLearn={setRemoveFavoriteOnLearn}
+            onScrollChange={setListScrolled}
           />
         )}
       </main>
