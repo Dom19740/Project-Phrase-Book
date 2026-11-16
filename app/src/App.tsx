@@ -259,7 +259,7 @@ function Shell() {
 
   return (
     <div
-      className="flex h-full flex-col bg-appbg text-ink"
+      className="flex h-full flex-col bg-md-surface text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
       <LanguageTabs

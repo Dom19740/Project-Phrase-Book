@@ -18,6 +18,7 @@ export default {
         brandink: 'var(--color-brandink)',
         fabpink: 'var(--color-fabpink)',
         onaccent: 'var(--color-onaccent)',
+        'md-surface': 'var(--md-surface)',
         primary: 'var(--md-primary)',
         'on-primary': 'var(--md-on-primary)',
         'primary-container': 'var(--md-primary-container)',

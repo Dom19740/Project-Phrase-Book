@@ -97,7 +97,7 @@ export function PhraseRow({
       ref={rowRef}
       whileTap={menuOpen ? undefined : { scale: 0.99 }}
       transition={motionSafeSpring(spatialFast)}
-      className={`group relative overflow-hidden rounded-2xl bg-surface-container shadow-sm transition-colors hover:bg-surface-container-high select-none ${
+      className={`group relative overflow-hidden rounded-2xl bg-surface-container-high shadow-sm transition-colors hover:bg-surface-container-highest select-none ${
         dragging ? 'ring-2 ring-primary' : ''
       }`}
     >
