@@ -10,6 +10,9 @@ interface Props<T> {
   onReorder: (orderedIds: number[]) => void
   renderItem: (item: T, dragHandleProps: DragHandleProps, dragging: boolean) => ReactNode
   className?: string
+  /** Delay (ms) the handle must be held before a drag actually starts - releasing or cancelling
+   * before it elapses is a no-op, so a quick/accidental touch on the handle doesn't reorder anything. */
+  pressDelayMs?: number
 }
 
 const DEFAULT_ROW_HEIGHT = 56
@@ -18,7 +21,7 @@ const DEFAULT_ROW_HEIGHT = 56
  * it, which is what keeps a phrase inside its category/Learnt/Favourites bucket. Position is
  * tracked as slots moved from the drag's start (not incrementally per-move), so fast drags can't
  * drift out of sync with the pointer. */
-export function DragReorderList<T>({ items, getId, onReorder, renderItem, className }: Props<T>) {
+export function DragReorderList<T>({ items, getId, onReorder, renderItem, className, pressDelayMs = 0 }: Props<T>) {
   const [order, setOrder] = useState<number[]>(() => items.map(getId))
   const orderRef = useRef(order)
   orderRef.current = order
@@ -35,6 +38,7 @@ export function DragReorderList<T>({ items, getId, onReorder, renderItem, classN
   const dragState = useRef<{ id: number; startIndex: number; startY: number; rowHeight: number } | null>(null)
   const [draggingId, setDraggingId] = useState<number | null>(null)
   const [dragOffset, setDragOffset] = useState(0)
+  const pendingStartRef = useRef<number | null>(null)
 
   /** Distance from one row's top to the next, gap included - the real per-slot distance, not
    * just the row's own height (which under-measured it and made the drag over-trigger). */
@@ -48,16 +52,37 @@ export function DragReorderList<T>({ items, getId, onReorder, renderItem, classN
     return el?.offsetHeight || DEFAULT_ROW_HEIGHT
   }
 
-  function handlePointerDown(id: number, e: React.PointerEvent) {
+  function armDrag(id: number, startY: number, target: Element, pointerId: number) {
     dragState.current = {
       id,
       startIndex: orderRef.current.indexOf(id),
-      startY: e.clientY,
+      startY,
       rowHeight: measureSlotHeight(id),
     }
     setDraggingId(id)
     setDragOffset(0)
-    e.currentTarget.setPointerCapture(e.pointerId)
+    target.setPointerCapture(pointerId)
+  }
+
+  function handlePointerDown(id: number, e: React.PointerEvent) {
+    if (pressDelayMs <= 0) {
+      armDrag(id, e.clientY, e.currentTarget, e.pointerId)
+      return
+    }
+    const startY = e.clientY
+    const target = e.currentTarget
+    const pointerId = e.pointerId
+    pendingStartRef.current = window.setTimeout(() => {
+      pendingStartRef.current = null
+      armDrag(id, startY, target, pointerId)
+    }, pressDelayMs)
+  }
+
+  function cancelPendingStart() {
+    if (pendingStartRef.current != null) {
+      window.clearTimeout(pendingStartRef.current)
+      pendingStartRef.current = null
+    }
   }
 
   function handlePointerMove(e: React.PointerEvent) {
@@ -83,6 +108,7 @@ export function DragReorderList<T>({ items, getId, onReorder, renderItem, classN
   }
 
   function endDrag() {
+    cancelPendingStart()
     const drag = dragState.current
     dragState.current = null
     setDraggingId(null)

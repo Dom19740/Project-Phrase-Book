@@ -58,6 +58,8 @@ interface Props {
   onToggleRemoveFavoriteOnLearn: (value: boolean) => void
   /** Fires as the phrase rows scroll, so a header above this list can collapse once scrolling starts. */
   onScrollChange?: (scrolled: boolean) => void
+  /** False collapses the whole toolbar (View/Bulk/Sort bar) above the list, driven by the header's hide-chrome toggle. */
+  chromeVisible?: boolean
 }
 
 interface Group {
@@ -213,6 +215,7 @@ export function PhraseList({
   removeFavoriteOnLearn,
   onToggleRemoveFavoriteOnLearn,
   onScrollChange,
+  chromeVisible = true,
 }: Props) {
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
   const [viewOptionsExpanded, setViewOptionsExpanded] = usePersistedState('phrasebook-view-section-expanded', true)
@@ -406,6 +409,7 @@ export function PhraseList({
         getId={(item) => item.translationId}
         onReorder={commitReorder}
         className="flex flex-col gap-1.5"
+        pressDelayMs={200}
         renderItem={(item, dragHandleProps, dragging) => renderRow(item, dragHandleProps, dragging)}
       />
     )
@@ -442,6 +446,8 @@ export function PhraseList({
 
   return (
     <div className="flex h-full flex-col">
+      <div className="menu-panel-reveal shrink-0" data-open={chromeVisible} aria-hidden={!chromeVisible}>
+      <div className="min-h-0 overflow-hidden">
       <div className="shrink-0">
         <div className="flex flex-col gap-2.5 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -609,6 +615,8 @@ export function PhraseList({
             </div>
           </div>
         </div>
+      </div>
+      </div>
       </div>
 
       <div

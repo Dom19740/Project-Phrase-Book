@@ -137,6 +137,19 @@ function Shell() {
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
   const [listScrolled, setListScrolled] = useState(false)
+  const [chromeVisible, setChromeVisible] = useState(true)
+  // True once the show transition has fully finished - the language bar's menu button opens a
+  // dropdown via position:absolute, which the collapse wrapper's overflow-hidden (needed to
+  // actually hide the bar while collapsed/animating) would otherwise clip.
+  const [chromeExpanded, setChromeExpanded] = useState(true)
+
+  function toggleChrome() {
+    setChromeVisible((visible) => {
+      const next = !visible
+      if (!next) setChromeExpanded(false)
+      return next
+    })
+  }
   const [themeOverride, setThemeOverride] = usePersistedState<Theme | null>('phrasebook-theme', null)
   const systemTheme = useSystemTheme()
   const theme = themeOverride ?? systemTheme
@@ -283,7 +296,18 @@ function Shell() {
       className="flex h-full flex-col bg-appbg text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
-      <Header collapsed={listScrolled} />
+      <Header collapsed={listScrolled} chromeVisible={chromeVisible} onToggleChrome={toggleChrome} />
+      <div
+        className="menu-panel-reveal shrink-0"
+        data-open={chromeVisible}
+        aria-hidden={!chromeVisible}
+        onTransitionEnd={(e) => {
+          if (chromeVisible && e.target === e.currentTarget && e.propertyName === 'grid-template-rows') {
+            setChromeExpanded(true)
+          }
+        }}
+      >
+      <div className={`min-h-0 ${chromeExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
       <LanguageTabs
         languages={languages}
         activeLanguageId={activeLanguageId}
@@ -427,6 +451,8 @@ function Shell() {
           </div>
         }
       />
+      </div>
+      </div>
 
       {needsBackupReminder && !backupReminderDismissed && (
         <>
@@ -508,6 +534,7 @@ function Shell() {
             removeFavoriteOnLearn={removeFavoriteOnLearn}
             onToggleRemoveFavoriteOnLearn={setRemoveFavoriteOnLearn}
             onScrollChange={setListScrolled}
+            chromeVisible={chromeVisible}
           />
         )}
       </main>
