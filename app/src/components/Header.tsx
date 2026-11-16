@@ -11,7 +11,7 @@ interface Props {
 export function Header({ collapsed }: Props) {
   return (
     <div
-      className={`shrink-0 flex items-center gap-2 overflow-hidden border-b border-hairline bg-md-surface px-4 transition-[padding] duration-200 ease-out ${
+      className={`shrink-0 flex items-center gap-2 overflow-hidden bg-appbg px-4 transition-[padding] duration-200 ease-out ${
         collapsed ? 'py-1.5' : 'py-3'
       }`}
     >

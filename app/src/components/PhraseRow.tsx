@@ -98,8 +98,8 @@ export function PhraseRow({
       ref={rowRef}
       whileTap={menuOpen ? undefined : { scale: 0.99 }}
       transition={motionSafeSpring(spatialFast)}
-      className={`group relative overflow-hidden rounded-2xl bg-surface-container shadow-sm transition-colors hover:bg-surface-container-high select-none ${
-        dragging ? 'ring-2 ring-primary' : ''
+      className={`group relative overflow-hidden rounded-2xl bg-surface border shadow-sm transition-colors hover:border-fabpink/40 select-none ${
+        dragging ? 'border-fabpink' : 'border-hairline'
       }`}
     >
       <div
