@@ -90,7 +90,7 @@ export function BulkActionBar({
   }
 
   return (
-    <div className="shrink-0 border-b border-hairline bg-surface px-4 py-3">
+    <div className="shrink-0 bg-surface px-4 py-3">
       <div className="relative flex flex-col gap-1.5">
         <div className="flex flex-wrap items-center gap-1.5">
           <button
