@@ -532,12 +532,12 @@ export function PhraseList({
                     className="flex w-full items-center gap-1.5 px-2.5 pb-1 text-left"
                   >
                     {viewOptionsExpanded ? (
-                      <ChevronDown size={14} strokeWidth={2} className="text-fabpink" />
+                      <ChevronDown size={14} strokeWidth={2} className="text-ink" />
                     ) : (
-                      <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />
+                      <ChevronRight size={14} strokeWidth={2} className="text-ink" />
                     )}
-                    <Eye size={14} strokeWidth={2} className="text-fabpink" />
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">View</span>
+                    <Eye size={14} strokeWidth={2} className="text-ink" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink">View</span>
                   </button>
                   <div className="menu-panel-reveal" data-open={viewOptionsExpanded} aria-hidden={!viewOptionsExpanded}>
                     <div className="min-h-0 overflow-hidden">
@@ -565,12 +565,12 @@ export function PhraseList({
                     className="flex w-full items-center gap-1.5 px-2.5 pt-2 pb-1 text-left"
                   >
                     {sortOptionsExpanded ? (
-                      <ChevronDown size={14} strokeWidth={2} className="text-fabpink" />
+                      <ChevronDown size={14} strokeWidth={2} className="text-ink" />
                     ) : (
-                      <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />
+                      <ChevronRight size={14} strokeWidth={2} className="text-ink" />
                     )}
-                    <ListFilter size={14} strokeWidth={2} className="text-fabpink" />
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Sort</span>
+                    <ListFilter size={14} strokeWidth={2} className="text-ink" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink">Sort</span>
                   </button>
                   <div className="menu-panel-reveal" data-open={sortOptionsExpanded} aria-hidden={!sortOptionsExpanded}>
                     <div className="min-h-0 overflow-hidden">

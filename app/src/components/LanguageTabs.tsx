@@ -107,7 +107,7 @@ export function LanguageTabs({
               searchExpanded ? 'opacity-100' : 'pointer-events-none opacity-0'
             }`}
           />
-          {search && searchExpanded && (
+          {searchExpanded && (
             <button
               type="button"
               onClick={() => {

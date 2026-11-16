@@ -11,7 +11,7 @@ export interface WhatsNewEntry {
 export const WHATS_NEW: WhatsNewEntry = {
   version: '1.3.0',
   items: [
-    'New Phonetics guide text to help you pronounce your phrases',
+    'New Phonetics guide text to help you pronounce your phrases. Add it in the language drop down or when adding a new language.',
     'New cleaner interface',
     'General polish and bug fixes',
   ],

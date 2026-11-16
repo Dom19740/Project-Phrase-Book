@@ -34,9 +34,9 @@ export function CategoryFilterPopout({
         onClick={() => setCategoriesExpanded((expanded) => !expanded)}
         className="flex w-full items-center gap-1.5 px-2.5 pt-2 text-left"
       >
-        {categoriesExpanded ? <ChevronDown size={14} strokeWidth={2} className="text-fabpink" /> : <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />}
-        <Tag size={14} strokeWidth={2} className="text-fabpink" />
-        <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Categories</span>
+        {categoriesExpanded ? <ChevronDown size={14} strokeWidth={2} className="text-ink" /> : <ChevronRight size={14} strokeWidth={2} className="text-ink" />}
+        <Tag size={14} strokeWidth={2} className="text-ink" />
+        <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink">Categories</span>
         {hiddenCount > 0 && (
           <span className="rounded-full border border-fabpink/30 bg-fabpink/10 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider text-fabpink">
             {hiddenCount} hidden
