@@ -46,7 +46,7 @@ export function CategoryFilterPopout({
       <div className="menu-panel-reveal" data-open={categoriesExpanded} aria-hidden={!categoriesExpanded}>
         <div className="min-h-0 overflow-hidden">
           <div className="flex flex-col gap-0.5">
-            <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-1">
+            <div className="flex flex-wrap items-center gap-1.5 pb-2">
               {allCategoryNames.map((name) => {
                 const visible = !hiddenCategories.has(name)
                 return (

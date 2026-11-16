@@ -151,7 +151,7 @@ function sortItems(items: PhraseListItem[], mode: SortMode, showPhonetics: boole
 
 type LearnedFilter = 'unlearned' | 'learned' | 'all' | 'favorites'
 
-const LEARNED_FILTER_CYCLE: LearnedFilter[] = ['unlearned', 'learned', 'all', 'favorites']
+const VIEW_FILTER_ORDER: LearnedFilter[] = ['all', 'favorites', 'learned', 'unlearned']
 const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Not Learnt', learned: 'Learnt', all: 'All', favorites: 'Favorites' }
 
 function LearnedFilterIcon({ filter }: { filter: LearnedFilter }) {
@@ -468,9 +468,11 @@ export function PhraseList({
                   setSelectionMode(true)
                 }
               }}
-              className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+              className={`flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
+                selectionMode ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
+              }`}
             >
-              {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
+              {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
               {selectionMode ? 'Close' : 'Bulk'}
             </button>
           </div>
@@ -487,7 +489,9 @@ export function PhraseList({
                 }
               }}
               aria-expanded={sortMenuOpen}
-              className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+              className={`flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
+                sortMenuOpen ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
+              }`}
             >
               {sortMenuOpen ? <X size={14} strokeWidth={2} /> : <ListFilter size={14} strokeWidth={2} />}
               {sortMenuOpen ? 'Close' : 'Sort'}
@@ -520,7 +524,7 @@ export function PhraseList({
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">View</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5 pb-2">
-                    {LEARNED_FILTER_CYCLE.map((filter) => (
+                    {VIEW_FILTER_ORDER.map((filter) => (
                       <button
                         key={filter}
                         type="button"
