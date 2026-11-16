@@ -32,7 +32,7 @@ export function CategoryFilterPopout({
         type="button"
         aria-expanded={categoriesExpanded}
         onClick={() => setCategoriesExpanded((expanded) => !expanded)}
-        className="flex w-full items-center gap-1.5 border-t border-hairline px-2.5 pt-2 text-left"
+        className="flex w-full items-center gap-1.5 px-2.5 pt-2 text-left"
       >
         {categoriesExpanded ? <ChevronDown size={14} strokeWidth={2} className="text-fabpink" /> : <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />}
         <Tag size={14} strokeWidth={2} className="text-fabpink" />

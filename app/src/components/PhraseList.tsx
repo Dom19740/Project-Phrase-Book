@@ -557,7 +557,7 @@ export function PhraseList({
                     type="button"
                     aria-expanded={sortOptionsExpanded}
                     onClick={() => setSortOptionsExpanded((expanded) => !expanded)}
-                    className="flex w-full items-center gap-1.5 border-t border-hairline px-2.5 pt-2 pb-1 text-left"
+                    className="flex w-full items-center gap-1.5 px-2.5 pt-2 pb-1 text-left"
                   >
                     {sortOptionsExpanded ? (
                       <ChevronDown size={14} strokeWidth={2} className="text-fabpink" />
