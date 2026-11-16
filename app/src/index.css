@@ -35,6 +35,34 @@
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+  /* Fallbacks for the M3 role vars App.tsx computes from the user's accent color on mount -
+     point at the nearest existing token so there's no flash of unstyled surfaces before that
+     effect runs. They track light/dark automatically since the vars they alias already do. */
+  --md-primary: var(--color-fabpink);
+  --md-on-primary: var(--color-onaccent);
+  --md-primary-container: var(--color-surfacehover);
+  --md-on-primary-container: var(--color-ink);
+  --md-secondary: var(--color-fabpink);
+  --md-on-secondary: var(--color-onaccent);
+  --md-secondary-container: var(--color-surfacehover);
+  --md-on-secondary-container: var(--color-ink);
+  --md-tertiary: var(--color-fabpink);
+  --md-on-tertiary: var(--color-onaccent);
+  --md-tertiary-container: var(--color-surfacehover);
+  --md-on-tertiary-container: var(--color-ink);
+  --md-surface: var(--color-appbg);
+  --md-surface-container-lowest: var(--color-appbg);
+  --md-surface-container-low: var(--color-surface);
+  --md-surface-container: var(--color-surface);
+  --md-surface-container-high: var(--color-surfacehover);
+  --md-surface-container-highest: var(--color-surfacehover);
+  --md-on-surface: var(--color-ink);
+  --md-on-surface-variant: var(--color-muted);
+  --md-outline: var(--color-hairline);
+  --md-outline-variant: var(--color-hairline);
+  --md-error: #ba1a1a;
+  --md-on-error: #ffffff;
 }
 
 :root[data-theme='light'] {
@@ -239,6 +267,6 @@ body {
 }
 
 :where(:focus-visible) {
-  outline: 2px solid #EC1D8B;
+  outline: 2px solid var(--md-primary, var(--color-fabpink));
   outline-offset: 2px;
 }

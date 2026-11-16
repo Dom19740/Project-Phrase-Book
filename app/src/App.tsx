@@ -14,6 +14,7 @@ import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
+import { applyMaterialTheme } from './lib/materialTheme'
 import { detectInstallablePlatform } from './lib/platform'
 import { usePersistedState } from './lib/usePersistedState'
 import { syncStatusBarStyle } from './lib/systemBars'
@@ -193,7 +194,8 @@ function Shell() {
   useEffect(() => {
     document.documentElement.style.setProperty('--color-fabpink', appliedAccent)
     document.documentElement.style.setProperty('--color-onaccent', readableTextOn(appliedAccent))
-  }, [appliedAccent])
+    applyMaterialTheme(appliedAccent, theme === 'dark')
+  }, [appliedAccent, theme])
 
   useEffect(() => {
     syncWidgetTheme(theme, accent)
