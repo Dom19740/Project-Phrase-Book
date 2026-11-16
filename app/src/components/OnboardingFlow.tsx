@@ -58,7 +58,7 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Read it phonetically',
-    body: "For languages written in a different script, Thai, Vietnamese, Japanese and more, turn on phonetics to get a learner-friendly romanized pronunciation guide alongside the native translation. Enable it when adding a language, or any time after from the language selector.",
+    body: "For languages written in a different script, Thai, Vietnamese, Japanese, etc, add phonetics to get a learner-friendly romanized pronunciation guide alongside the native translation. Enable it when adding a language, or any time after from the language selector.",
     illustration: (
       <div className="flex w-full flex-col items-center gap-3">
         <div className="flex w-full max-w-xs items-center justify-between gap-2 rounded-2xl border-2 border-fabpink bg-surface px-4 py-3.5 shadow-lg shadow-fabpink/20">

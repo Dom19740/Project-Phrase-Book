@@ -238,6 +238,13 @@ export function PhraseList({
   const bulkPanelRef = useRef<HTMLDivElement>(null)
   const phraseRowsRef = useRef<HTMLDivElement>(null)
 
+  // Switching language tabs swaps the list contents but the shared scroll container keeps
+  // whatever scrollTop the previous language's list left it at - scroll back to the top so the
+  // view (and the onScroll-driven header-collapse state) actually matches the new list.
+  useEffect(() => {
+    phraseRowsRef.current?.scrollTo({ top: 0 })
+  }, [activeLanguageId])
+
   useEffect(() => {
     onSelectionModeChange?.(selectionMode)
   }, [selectionMode, onSelectionModeChange])
@@ -433,31 +440,6 @@ export function PhraseList({
     <div className="flex h-full flex-col">
       <div className="shrink-0">
         <div className="flex flex-col gap-2.5 px-4 py-3">
-        {phoneticsEnabled && (
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowPhonetics((value) => !value)}
-              aria-pressed={showPhonetics}
-              className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
-              title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
-            >
-              <Languages size={13} strokeWidth={2} />
-              {showPhonetics ? 'PHONETIC' : 'Native'}
-            </button>
-            {phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
-              <button
-                type="button"
-                onClick={() => void onGeneratePhonetics()}
-                disabled={generatingPhonetics}
-                className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all disabled:opacity-50"
-              >
-                {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
-              </button>
-            )}
-          </div>
-        )}
-
         <div className="flex flex-wrap items-center gap-2">
           <div ref={sortTriggerRef}>
             <button
@@ -498,6 +480,29 @@ export function PhraseList({
               {selectionMode ? 'Close' : 'Bulk'}
             </button>
           </div>
+
+          {phoneticsEnabled && (
+            <button
+              type="button"
+              onClick={() => setShowPhonetics((value) => !value)}
+              aria-pressed={showPhonetics}
+              className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
+              title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
+            >
+              <Languages size={13} strokeWidth={2} />
+              {showPhonetics ? 'PHONETIC' : 'Native'}
+            </button>
+          )}
+          {phoneticsEnabled && phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
+            <button
+              type="button"
+              onClick={() => void onGeneratePhonetics()}
+              disabled={generatingPhonetics}
+              className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all disabled:opacity-50"
+            >
+              {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
+            </button>
+          )}
         </div>
         </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BookOpen, FileText, Layers, Menu, Moon, Plus, Save, Shield, Smartphone, Sun, TriangleAlert } from 'lucide-react'
+import { BookOpen, FileText, Layers, Moon, Plus, Save, Shield, Smartphone, Sparkles, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { BackupReminderBanner } from './components/BackupReminderBanner'
@@ -16,7 +16,9 @@ import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { Button } from './components/ui/Button'
 import { LoadingIndicator } from './components/ui/LoadingIndicator'
+import { MenuIcon } from './components/ui/MenuIcon'
 import { SegmentedControl } from './components/ui/SegmentedControl'
+import { WhatsNewModal } from './components/WhatsNewModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
 import { applyMaterialTheme } from './lib/materialTheme'
 import { detectInstallablePlatform } from './lib/platform'
@@ -25,6 +27,7 @@ import { syncStatusBarStyle } from './lib/systemBars'
 import { syncWidgetTheme } from './lib/widgetRefresh'
 import { onQuickAddRequested, onShareLinkOpened } from './lib/deepLink'
 import { fetchSharedCollection } from './lib/shareImport'
+import { WHATS_NEW } from './lib/whatsNew'
 import type { CsvPhraseRow } from './lib/csvImport'
 import type { PhraseListItem } from './db/types'
 
@@ -134,11 +137,6 @@ function Shell() {
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
   const [listScrolled, setListScrolled] = useState(false)
-  // Switching language tabs doesn't reset the shared scroll container's scrollTop, but the new
-  // list starts the user back at the top visually - keep the header expanded to match.
-  useEffect(() => {
-    setListScrolled(false)
-  }, [activeLanguageId])
   const [themeOverride, setThemeOverride] = usePersistedState<Theme | null>('phrasebook-theme', null)
   const systemTheme = useSystemTheme()
   const theme = themeOverride ?? systemTheme
@@ -152,6 +150,20 @@ function Shell() {
   const [installPromptOffered, setInstallPromptOffered] = usePersistedState('phrasebook-install-prompt-offered', false)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [installPlatform] = useState(detectInstallablePlatform)
+
+  const [lastSeenWhatsNewVersion, setLastSeenWhatsNewVersion] = usePersistedState<string | null>('phrasebook-whats-new-version', null)
+  const [showWhatsNew, setShowWhatsNew] = useState(false)
+
+  // Shows automatically once per version bump for existing users, but a brand-new install
+  // starts already "caught up" (set in finishOnboarding below) since there's nothing new to them.
+  useEffect(() => {
+    if (onboardingSeen && lastSeenWhatsNewVersion !== WHATS_NEW.version) setShowWhatsNew(true)
+  }, [onboardingSeen, lastSeenWhatsNewVersion])
+
+  function dismissWhatsNew() {
+    setShowWhatsNew(false)
+    setLastSeenWhatsNewVersion(WHATS_NEW.version)
+  }
 
   // Dismissing only snoozes the banner for this session - it comes back next launch if the
   // phrasebook is still unbacked-up, rather than being silenced forever after one tap.
@@ -178,6 +190,7 @@ function Shell() {
     const wasFirstOnboarding = !onboardingSeen
     setOnboardingSeen(true)
     setShowOnboarding(false)
+    if (wasFirstOnboarding) setLastSeenWhatsNewVersion(WHATS_NEW.version)
     if (wasFirstOnboarding && !installPromptOffered && installPlatform) {
       setShowInstallPrompt(true)
       setInstallPromptOffered(true)
@@ -287,37 +300,16 @@ function Shell() {
               onClick={() => setMenuOpen((v) => !v)}
               className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink active:scale-90 transition-all"
               aria-label="Menu"
+              aria-expanded={menuOpen}
               title="Menu"
             >
-              <Menu size={20} strokeWidth={2} />
+              <MenuIcon open={menuOpen} size={20} />
             </button>
 
             {menuOpen && (
               <>
                 <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenuOpen(false)} aria-label="Close menu" />
                 <div className="animate-menu-open absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl">
-                  <button
-                    onClick={() => {
-                      setShowOnboarding(true)
-                      setMenuOpen(false)
-                    }}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
-                  >
-                    <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
-                    How to Use
-                  </button>
-                  {installPlatform && (
-                    <button
-                      onClick={() => {
-                        setShowInstallPrompt(true)
-                        setMenuOpen(false)
-                      }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
-                    >
-                      <Smartphone size={16} strokeWidth={2} className="text-fabpink" />
-                      {installPlatform === 'ios' ? 'Add to Home Screen' : 'Get the app'}
-                    </button>
-                  )}
                   <button
                     onClick={() => {
                       setShowFlashCards(true)
@@ -339,6 +331,38 @@ function Shell() {
                     <Save size={16} strokeWidth={2} className="text-fabpink" />
                     Backup & Share
                   </button>
+                  <button
+                    onClick={() => {
+                      setShowOnboarding(true)
+                      setMenuOpen(false)
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                  >
+                    <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
+                    How to Use
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowWhatsNew(true)
+                      setMenuOpen(false)
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                  >
+                    <Sparkles size={16} strokeWidth={2} className="text-fabpink" />
+                    What's New
+                  </button>
+                  {installPlatform && (
+                    <button
+                      onClick={() => {
+                        setShowInstallPrompt(true)
+                        setMenuOpen(false)
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                    >
+                      <Smartphone size={16} strokeWidth={2} className="text-fabpink" />
+                      {installPlatform === 'ios' ? 'Add to Home Screen' : 'Get the app'}
+                    </button>
+                  )}
 
                   <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">
                     <div className="flex items-center gap-1.5">
@@ -611,6 +635,8 @@ function Shell() {
       {showInstallPrompt && installPlatform && (
         <InstallPrompt platform={installPlatform} onClose={() => setShowInstallPrompt(false)} />
       )}
+
+      {showWhatsNew && <WhatsNewModal entry={WHATS_NEW} onClose={dismissWhatsNew} />}
 
       {showLearnFavoritePrompt && <LearnFavoriteSettingModal onConfirm={resolveLearnFavoritePrompt} />}
 

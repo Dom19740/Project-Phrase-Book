@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import type { MouseEvent, ReactNode } from 'react'
-import { motionSafeSpring, spatialDefault } from '../../lib/motionPresets'
+import { motionSafeSpring, spatialDefault, usePrefersReducedMotion } from '../../lib/motionPresets'
 
 interface DialogProps {
   onClose: () => void
@@ -27,6 +27,7 @@ export function Dialog({
   dismissOnBackdropClick = true,
   zIndexClassName = 'z-50',
 }: DialogProps) {
+  const reducedMotion = usePrefersReducedMotion()
   function stopPropagation(event: MouseEvent) {
     event.stopPropagation()
   }
@@ -39,7 +40,7 @@ export function Dialog({
       <motion.div
         initial={{ opacity: 0, y: -12, scale: 0.985 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={motionSafeSpring(spatialDefault)}
+        transition={motionSafeSpring(spatialDefault, reducedMotion)}
         className={`w-full min-w-0 ${maxWidthClassName} rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0 ${className}`}
         onClick={stopPropagation}
       >

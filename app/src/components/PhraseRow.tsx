@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { Check, GripVertical, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
-import { motionSafeSpring, spatialFast } from '../lib/motionPresets'
+import { motionSafeSpring, spatialFast, usePrefersReducedMotion } from '../lib/motionPresets'
 import { useSpeakRate } from '../lib/useSpeakRate'
 import type { PhraseListItem } from '../db/types'
 import { PhraseQuickMenu } from './PhraseQuickMenu'
@@ -44,6 +44,7 @@ export function PhraseRow({
   dragHandleProps,
   dragging = false,
 }: Props) {
+  const reducedMotion = usePrefersReducedMotion()
   const [menuOpen, setMenuOpen] = useState(false)
   const [speaking, setSpeaking] = useState(false)
   const pressTimer = useRef<number | null>(null)
@@ -97,7 +98,7 @@ export function PhraseRow({
     <motion.div
       ref={rowRef}
       whileTap={menuOpen ? undefined : { scale: 0.99 }}
-      transition={motionSafeSpring(spatialFast)}
+      transition={motionSafeSpring(spatialFast, reducedMotion)}
       className={`group relative overflow-hidden rounded-2xl bg-surface border shadow-sm transition-colors hover:border-fabpink/40 select-none ${
         dragging ? 'border-fabpink' : 'border-hairline'
       }`}

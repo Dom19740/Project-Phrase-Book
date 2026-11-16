@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react'
+
 export interface SpringPreset {
   type: 'spring'
   stiffness: number
@@ -20,10 +22,24 @@ export const effectsFast = springFromDampingRatio(3800, 1)
 export const effectsDefault = springFromDampingRatio(1600, 1)
 export const effectsSlow = springFromDampingRatio(800, 1)
 
-export function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
+
+function getReducedMotionSnapshot(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia(REDUCED_MOTION_QUERY).matches
 }
 
-export function motionSafeSpring(preset: SpringPreset): SpringPreset | { duration: number } {
-  return prefersReducedMotion() ? { duration: 0 } : preset
+function subscribeToReducedMotion(onChange: () => void) {
+  if (typeof window === 'undefined') return () => {}
+  const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY)
+  mediaQuery.addEventListener('change', onChange)
+  return () => mediaQuery.removeEventListener('change', onChange)
+}
+
+/** Re-renders the caller when the OS-level reduced-motion setting changes, unlike a one-shot matchMedia read. */
+export function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(subscribeToReducedMotion, getReducedMotionSnapshot, () => false)
+}
+
+export function motionSafeSpring(preset: SpringPreset, reducedMotion: boolean): SpringPreset | { duration: number } {
+  return reducedMotion ? { duration: 0 } : preset
 }

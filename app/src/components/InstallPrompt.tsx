@@ -1,7 +1,7 @@
 import { Layers, Save, Share, SquarePlus, X } from 'lucide-react'
 import { Logo } from './Logo'
 import { Button } from './ui/Button'
-import { Sheet } from './ui/Sheet'
+import { Dialog } from './ui/Dialog'
 import { ANDROID_PLAY_STORE_URL, type InstallablePlatform } from '../lib/platform'
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 
 export function InstallPrompt({ platform, onClose }: Props) {
   return (
-    <Sheet onClose={onClose}>
+    <Dialog onClose={onClose} maxWidthClassName="sm:max-w-md">
       <>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -85,6 +85,6 @@ export function InstallPrompt({ platform, onClose }: Props) {
           )}
         </div>
       </>
-    </Sheet>
+    </Dialog>
   )
 }
