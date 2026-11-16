@@ -215,6 +215,7 @@ export function PhraseList({
   onScrollChange,
 }: Props) {
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
+  const [viewOptionsExpanded, setViewOptionsExpanded] = usePersistedState('phrasebook-view-section-expanded', true)
   const [sortOptionsExpanded, setSortOptionsExpanded] = usePersistedState('phrasebook-sort-section-expanded', false)
   const [groupByCategoryOn, setGroupByCategoryOn] = usePersistedState('phrasebook-group-by-category', true)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
@@ -458,25 +459,6 @@ export function PhraseList({
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <div ref={bulkTriggerRef}>
-            <button
-              onClick={() => {
-                if (selectionMode) {
-                  exitSelectionMode()
-                } else {
-                  setSortMenuOpen(false)
-                  setSelectionMode(true)
-                }
-              }}
-              className={`flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
-                selectionMode ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
-              }`}
-            >
-              {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
-              {selectionMode ? 'Close' : 'Bulk'}
-            </button>
-          </div>
-
           <div ref={sortTriggerRef}>
             <button
               type="button"
@@ -493,8 +475,27 @@ export function PhraseList({
                 sortMenuOpen ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
               }`}
             >
-              {sortMenuOpen ? <X size={14} strokeWidth={2} /> : <ListFilter size={14} strokeWidth={2} />}
-              {sortMenuOpen ? 'Close' : 'Sort'}
+              {sortMenuOpen ? <X size={14} strokeWidth={2} /> : <Eye size={14} strokeWidth={2} />}
+              {sortMenuOpen ? 'Close' : 'View'}
+            </button>
+          </div>
+
+          <div ref={bulkTriggerRef}>
+            <button
+              onClick={() => {
+                if (selectionMode) {
+                  exitSelectionMode()
+                } else {
+                  setSortMenuOpen(false)
+                  setSelectionMode(true)
+                }
+              }}
+              className={`flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
+                selectionMode ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
+              }`}
+            >
+              {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
+              {selectionMode ? 'Close' : 'Bulk'}
             </button>
           </div>
         </div>
@@ -519,23 +520,37 @@ export function PhraseList({
                 />
               ) : (
                 <div className={sortMenuOpen ? 'animate-menu-open' : ''}>
-                  <div className="flex items-center gap-1.5 px-2.5 pb-1">
+                  <button
+                    type="button"
+                    aria-expanded={viewOptionsExpanded}
+                    onClick={() => setViewOptionsExpanded((expanded) => !expanded)}
+                    className="flex w-full items-center gap-1.5 px-2.5 pb-1 text-left"
+                  >
+                    {viewOptionsExpanded ? (
+                      <ChevronDown size={14} strokeWidth={2} className="text-fabpink" />
+                    ) : (
+                      <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />
+                    )}
                     <Eye size={14} strokeWidth={2} className="text-fabpink" />
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">View</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 pb-2">
-                    {VIEW_FILTER_ORDER.map((filter) => (
-                      <button
-                        key={filter}
-                        type="button"
-                        onClick={() => setLearnedFilter(filter)}
-                        aria-pressed={learnedFilter === filter}
-                        className={`flex items-center gap-1.5 ${pillClass(learnedFilter === filter, 'accent')}`}
-                      >
-                        <LearnedFilterIcon filter={filter} />
-                        {LEARNED_FILTER_LABEL[filter]}
-                      </button>
-                    ))}
+                  </button>
+                  <div className="menu-panel-reveal" data-open={viewOptionsExpanded} aria-hidden={!viewOptionsExpanded}>
+                    <div className="min-h-0 overflow-hidden">
+                      <div className="flex flex-wrap gap-1.5 pb-2">
+                        {VIEW_FILTER_ORDER.map((filter) => (
+                          <button
+                            key={filter}
+                            type="button"
+                            onClick={() => setLearnedFilter(filter)}
+                            aria-pressed={learnedFilter === filter}
+                            className={`flex items-center gap-1.5 ${pillClass(learnedFilter === filter, 'accent')}`}
+                          >
+                            <LearnedFilterIcon filter={filter} />
+                            {LEARNED_FILTER_LABEL[filter]}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <button
