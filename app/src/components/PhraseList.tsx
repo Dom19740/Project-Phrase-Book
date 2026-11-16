@@ -432,7 +432,7 @@ export function PhraseList({
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0">
-        <div className="flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
+        <div className="flex flex-col gap-2.5 px-4 py-3">
         {phoneticsEnabled && (
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -503,7 +503,7 @@ export function PhraseList({
 
         <div
           ref={sortPanelRef}
-          className="menu-panel-reveal shrink-0 border-b border-hairline bg-surface"
+          className="menu-panel-reveal shrink-0 bg-surface"
           data-open={sortMenuOpen}
           aria-hidden={!sortMenuOpen}
         >
