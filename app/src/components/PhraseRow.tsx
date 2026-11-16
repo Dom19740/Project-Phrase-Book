@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'motion/react'
 import { Check, GripVertical, Loader2, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
+import { motionSafeSpring, spatialFast } from '../lib/motionPresets'
 import { useSpeakRate } from '../lib/useSpeakRate'
 import type { PhraseListItem } from '../db/types'
 import { PhraseQuickMenu } from './PhraseQuickMenu'
@@ -91,11 +93,13 @@ export function PhraseRow({
   }
 
   return (
-    <div
+    <motion.div
       ref={rowRef}
-      className={`group relative overflow-hidden rounded-2xl bg-surface border shadow-sm transition-all hover:border-fabpink/40 select-none ${
-        dragging ? 'border-fabpink' : 'border-hairline'
-      } ${menuOpen ? '' : 'active:scale-[0.99]'}`}
+      whileTap={menuOpen ? undefined : { scale: 0.99 }}
+      transition={motionSafeSpring(spatialFast)}
+      className={`group relative overflow-hidden rounded-2xl bg-surface-container shadow-sm transition-colors hover:bg-surface-container-high select-none ${
+        dragging ? 'ring-2 ring-primary' : ''
+      }`}
     >
       <div
         className="relative flex cursor-pointer items-center gap-1.5 px-2 py-0.1"
@@ -218,6 +222,6 @@ export function PhraseRow({
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }
