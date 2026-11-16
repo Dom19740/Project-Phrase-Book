@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BookOpen, FileText, Layers, Loader2, Menu, Moon, Plus, Save, Shield, Smartphone, Sun, TriangleAlert } from 'lucide-react'
+import { BookOpen, FileText, Layers, Menu, Moon, Plus, Save, Shield, Smartphone, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { BackupReminderBanner } from './components/BackupReminderBanner'
@@ -15,6 +15,7 @@ import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { Button } from './components/ui/Button'
+import { LoadingIndicator } from './components/ui/LoadingIndicator'
 import { SegmentedControl } from './components/ui/SegmentedControl'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
 import { applyMaterialTheme } from './lib/materialTheme'
@@ -450,7 +451,7 @@ function Shell() {
           // however long translation takes - that can now run to several minutes of retries, and
           // there's no reason to block on it when there's already something real to look at.
           <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
-            <Loader2 size={28} strokeWidth={2.5} className="animate-spin text-fabpink" />
+            <LoadingIndicator size={28} className="text-fabpink" />
             <p className="text-sm">Translating {backgroundTranslation.languageName}&hellip;</p>
           </div>
         ) : (
@@ -492,7 +493,7 @@ function Shell() {
           className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surfacehover/95 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
         >
-          <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
+          <LoadingIndicator size={15} className="text-fabpink" />
           <span className="min-w-0 whitespace-normal break-words leading-5">Translating {backgroundTranslation.languageName} in the background&hellip;</span>
         </div>
       )}
@@ -502,7 +503,7 @@ function Shell() {
           className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surfacehover/95 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(9rem + var(--safe-area-inset-bottom, 0px))' }}
         >
-          <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
+          <LoadingIndicator size={15} className="text-fabpink" />
           <span className="min-w-0 whitespace-normal break-words leading-5">Creating phonetic translations for {backgroundPhonetics.languageName}&hellip;</span>
         </div>
       )}

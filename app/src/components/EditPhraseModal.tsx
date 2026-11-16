@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Copy, Loader2, Mic, RefreshCw, Save, Trash2 } from 'lucide-react'
+import { Check, Copy, Mic, RefreshCw, Save, Trash2 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag, getSpeechLocale } from '../lib/languageFlags'
 import { pillClass } from '../lib/pillStyles'
@@ -8,6 +8,7 @@ import { useSpeechToText } from '../lib/useSpeechToText'
 import { PopoutSelect } from './PopoutSelect'
 import { Button } from './ui/Button'
 import { Dialog } from './ui/Dialog'
+import { LoadingIndicator } from './ui/LoadingIndicator'
 
 const NEW_CATEGORY = '__new__'
 
@@ -340,7 +341,7 @@ export function EditPhraseModal({
                   Cancel
                 </Button>
                 <Button onClick={handleSubmit} disabled={!canSubmit || saving} aria-label={saving ? 'Saving' : 'Save'} title={saving ? 'Saving' : 'Save'} className="p-2.5">
-                  {saving ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : <Save size={16} strokeWidth={2} />}
+                  {saving ? <LoadingIndicator size={16} /> : <Save size={16} strokeWidth={2} />}
                 </Button>
               </div>
             </div>

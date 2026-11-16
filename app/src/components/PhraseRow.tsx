@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
-import { Check, GripVertical, Loader2, Star, Volume2 } from 'lucide-react'
+import { Check, GripVertical, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
 import { motionSafeSpring, spatialFast } from '../lib/motionPresets'
 import { useSpeakRate } from '../lib/useSpeakRate'
 import type { PhraseListItem } from '../db/types'
 import { PhraseQuickMenu } from './PhraseQuickMenu'
+import { LoadingIndicator } from './ui/LoadingIndicator'
 
 interface Props {
   phrase: PhraseListItem
@@ -137,7 +138,7 @@ export function PhraseRow({
                 <span className="font-semibold text-ink">{displayedTranslation} </span>
               ) : translating ? (
                 <span className="inline-flex items-center gap-1 italic text-muted">
-                  <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
+                  <LoadingIndicator size={12} className="text-fabpink" />
                   Translating&hellip;{' '}
                 </span>
               ) : (
@@ -152,7 +153,7 @@ export function PhraseRow({
                 <span className="font-semibold text-ink">{displayedTranslation}</span>
               ) : translating ? (
                 <span className="inline-flex items-center gap-1 italic text-muted">
-                  <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
+                  <LoadingIndicator size={12} className="text-fabpink" />
                   Translating&hellip;
                 </span>
               ) : (

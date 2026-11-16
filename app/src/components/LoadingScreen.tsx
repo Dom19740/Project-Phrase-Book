@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { LoadingIndicator } from './ui/LoadingIndicator'
 
 const PHRASES = [
   'Write it as you go.',
@@ -19,7 +20,7 @@ export function LoadingScreen() {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 bg-appbg text-ink">
-      <span className="spinner-taper" aria-hidden="true" />
+      <LoadingIndicator size={40} className="text-fabpink" />
       <p key={index} className="animate-fade-in text-sm font-medium text-muted">
         {PHRASES[index]}
       </p>
