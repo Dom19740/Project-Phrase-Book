@@ -92,6 +92,8 @@ export function BulkActionBar({
   return (
     <div className="shrink-0 bg-surface px-4 py-3">
       <div className="relative flex flex-col gap-1.5">
+        <span className="ml-1 text-[11px] font-extrabold uppercase tracking-wider text-fabpink">{selectedCount} selected</span>
+
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             onClick={() => {
@@ -166,8 +168,6 @@ export function BulkActionBar({
             Copy to...
           </button>
         </div>
-
-        <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">{selectedCount} selected</span>
 
         {panel != null && (
           <>
