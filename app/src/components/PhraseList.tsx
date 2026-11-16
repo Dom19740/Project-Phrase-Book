@@ -151,7 +151,7 @@ function sortItems(items: PhraseListItem[], mode: SortMode, showPhonetics: boole
 
 type LearnedFilter = 'unlearned' | 'learned' | 'all' | 'favorites'
 
-const VIEW_FILTER_ORDER: LearnedFilter[] = ['all', 'favorites', 'learned', 'unlearned']
+const VIEW_FILTER_ORDER: LearnedFilter[] = ['all', 'favorites', 'unlearned', 'learned']
 const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Not Learnt', learned: 'Learnt', all: 'All', favorites: 'Favorites' }
 
 function LearnedFilterIcon({ filter }: { filter: LearnedFilter }) {
