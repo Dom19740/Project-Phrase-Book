@@ -13,6 +13,8 @@ import { LoadingScreen } from './components/LoadingScreen'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
+import { Button } from './components/ui/Button'
+import { SegmentedControl } from './components/ui/SegmentedControl'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
 import { applyMaterialTheme } from './lib/materialTheme'
 import { detectInstallablePlatform } from './lib/platform'
@@ -331,24 +333,25 @@ function Shell() {
 
                   <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">
                     <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => setThemeOverride('light')}
-                        aria-label="Light theme"
-                        aria-pressed={theme === 'light'}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
-                        style={theme === 'light' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
-                      >
-                        <Sun size={13} strokeWidth={2} />
-                      </button>
-                      <button
-                        onClick={() => setThemeOverride('dark')}
-                        aria-label="Dark theme"
-                        aria-pressed={theme === 'dark'}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
-                        style={theme === 'dark' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
-                      >
-                        <Moon size={13} strokeWidth={2} />
-                      </button>
+                      <SegmentedControl
+                        value={theme}
+                        onChange={setThemeOverride}
+                        options={[
+                          {
+                            value: 'light',
+                            label: <Sun size={13} strokeWidth={2} />,
+                            ariaLabel: 'Light theme',
+                            selectedStyle: { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) },
+                          },
+                          {
+                            value: 'dark',
+                            label: <Moon size={13} strokeWidth={2} />,
+                            ariaLabel: 'Dark theme',
+                            selectedStyle: { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) },
+                          },
+                        ]}
+                        className="border-none bg-transparent p-0"
+                      />
                       <div className="mx-0.5 h-4 w-px shrink-0 bg-hairline" />
                       {ACCENT_COLORS.map((color) => (
                         <button
@@ -522,15 +525,15 @@ function Shell() {
       )}
 
       {!selectionModeActive && (
-        <button
+        <Button
           onClick={() => setShowAddPhrase(true)}
           disabled={languages.length === 0}
-          className="fixed right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-onaccent shadow-lg shadow-black/30 transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+          className="fixed right-6 flex size-14 items-center justify-center"
           style={{ bottom: 'calc(1.5rem + var(--safe-area-inset-bottom, 0px))' }}
           aria-label="Add phrase"
         >
           <Plus size={26} strokeWidth={2.5} />
-        </button>
+        </Button>
       )}
 
       {showAddPhrase && (

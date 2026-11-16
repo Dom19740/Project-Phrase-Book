@@ -5,6 +5,8 @@ import { getLanguageFlag } from '../lib/languageFlags'
 import { pillClass as sharedPillClass } from '../lib/pillStyles'
 import { speak } from '../lib/tts'
 import { useSpeakRate } from '../lib/useSpeakRate'
+import { Button } from './ui/Button'
+import { SegmentedControl } from './ui/SegmentedControl'
 import { EditPhraseModal } from './EditPhraseModal'
 
 type FlashFilterFlag = 'unlearned' | 'favorites'
@@ -352,14 +354,14 @@ export function FlashCardsModal({
 
                 <section>
                   <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Guess via</h2>
-                  <div className="flex flex-wrap gap-2">
-                    <button onClick={() => setDirection('english')} className={pillClass(direction === 'english')}>
-                      English
-                    </button>
-                    <button onClick={() => setDirection('translation')} className={pillClass(direction === 'translation')}>
-                      {activeLanguage?.name ?? 'Translation'}
-                    </button>
-                  </div>
+                  <SegmentedControl
+                    value={direction}
+                    onChange={setDirection}
+                    options={[
+                      { value: 'english', label: 'English' },
+                      { value: 'translation', label: activeLanguage?.name ?? 'Translation' },
+                    ]}
+                  />
                 </section>
 
                 <section>
@@ -380,13 +382,9 @@ export function FlashCardsModal({
               <p className="text-sm text-muted mb-3 text-center">
                 {loadingPhrases ? 'Loading phrases…' : `${matchingPhrases.length} phrase${matchingPhrases.length === 1 ? '' : 's'} match`}
               </p>
-              <button
-                onClick={startSession}
-                disabled={matchingPhrases.length === 0 || loadingPhrases}
-                className="w-full rounded-full bg-fabpink px-5 py-3 text-base font-semibold text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-              >
+              <Button onClick={startSession} disabled={matchingPhrases.length === 0 || loadingPhrases} className="w-full px-5 py-3 text-base">
                 Start
-              </button>
+              </Button>
             </footer>
           )}
         </>
@@ -395,17 +393,18 @@ export function FlashCardsModal({
       {step === 'session' && card && (
         <div className="flex-1 flex flex-col px-4 py-4 min-h-0">
           <div className="flex items-center justify-center pb-3 shrink-0">
-            <button
+            <Button
+              variant="outline"
               onClick={() => {
                 setDirection((d) => (d === 'english' ? 'translation' : 'english'))
                 setFlipped(false)
               }}
-              className="flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
               title="Swap guess direction"
             >
               <ArrowLeftRight size={13} strokeWidth={2.5} className="text-fabpink" />
               Guess via {promptIsTranslation ? (activeLanguage?.name ?? 'Translation') : 'English'}
-            </button>
+            </Button>
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center gap-4 min-h-0">
@@ -444,23 +443,17 @@ export function FlashCardsModal({
             </button>
 
             <div className="w-full max-w-sm flex items-center justify-between gap-3 shrink-0">
-              <button
-                onClick={goPrev}
-                disabled={index === 0}
-                className="flex-1 rounded-full border border-hairline py-3 flex items-center justify-center gap-1 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-30"
-              >
+              <Button variant="outline" onClick={goPrev} disabled={index === 0} className="flex-1 flex items-center justify-center gap-1 py-3 text-sm">
                 <ChevronLeft size={18} strokeWidth={2} /> Previous
-              </button>
-              <button
-                onClick={goNext}
-                className="flex-1 rounded-full bg-fabpink py-3 text-sm font-semibold text-onaccent shadow-lg shadow-fabpink/20 flex items-center justify-center gap-1 active:scale-95 transition-all"
-              >
+              </Button>
+              <Button onClick={goNext} className="flex-1 flex items-center justify-center gap-1 py-3 text-sm">
                 {index === deck.length - 1 ? 'Finish' : 'Next'} <ChevronRight size={18} strokeWidth={2} />
-              </button>
+              </Button>
             </div>
 
             <div className="flex items-center justify-center gap-3 shrink-0">
-              <button
+              <Button
+                variant="outline"
                 onClick={async () => {
                   if (!shownIsTranslation) return
                   setSpeaking(true)
@@ -471,12 +464,12 @@ export function FlashCardsModal({
                   }
                 }}
                 disabled={!shownIsTranslation}
-                className={`rounded-full p-2.5 border border-hairline hover:bg-surfacehover disabled:opacity-30 transition-all ${speaking ? 'text-fabpink' : 'text-muted'}`}
+                className={`p-2.5 ${speaking ? 'text-fabpink' : 'text-muted'}`}
                 aria-label="Speak"
                 title="Speak"
               >
                 <Volume2 size={18} strokeWidth={2} />
-              </button>
+              </Button>
               <button onClick={() => updateCard({ favorite: !card.favorite })} className={pillClass(card.favorite) + ' flex items-center gap-1.5'}>
                 <Star size={15} strokeWidth={2.5} fill={card.favorite ? 'currentColor' : 'none'} />
                 Favorite

@@ -6,6 +6,7 @@ import { pillClass } from '../lib/pillStyles'
 import { translateAlternatives, translatePhrase } from '../lib/translateApi'
 import { useSpeechToText } from '../lib/useSpeechToText'
 import { PopoutSelect } from './PopoutSelect'
+import { Button } from './ui/Button'
 
 const NEW_CATEGORY = '__new__'
 
@@ -336,16 +337,12 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
         )}
 
         <div className="flex justify-end gap-2 mt-3">
-          <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
+          <Button variant="outline" onClick={onClose} className="px-4 py-2 text-sm font-medium">
             Cancel
-          </button>
-          <button
-            onClick={allTranslated ? handleSubmit : handleAutoTranslate}
-            disabled={!canSubmit || saving || anyLoadingAlternatives}
-            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-          >
+          </Button>
+          <Button onClick={allTranslated ? handleSubmit : handleAutoTranslate} disabled={!canSubmit || saving || anyLoadingAlternatives} className="px-5 py-2 text-sm font-medium">
             {saving ? 'Saving...' : anyLoadingAlternatives ? 'Translating…' : allTranslated ? 'Add phrase' : 'Auto translate'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

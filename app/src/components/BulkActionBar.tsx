@@ -3,6 +3,7 @@ import { Check, Copy, Star, StarOff, Tag, Trash2, XCircle } from 'lucide-react'
 import type { Category, Language } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { PopoutSelect } from './PopoutSelect'
+import { Button } from './ui/Button'
 
 const NEW_CATEGORY = '__new__'
 
@@ -194,13 +195,9 @@ export function BulkActionBar({
                       className="w-full mb-2 rounded-xl border-2 border-hairline bg-transparent text-ink px-2 py-1.5 text-sm outline-none focus:border-fabpink transition-all"
                     />
                   )}
-                  <button
-                    onClick={applyCategory}
-                    disabled={busy || (categoryChoice === NEW_CATEGORY && !newCategory.trim())}
-                    className="w-full rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 disabled:active:scale-100 transition-all disabled:opacity-40"
-                  >
+                  <Button onClick={applyCategory} disabled={busy || (categoryChoice === NEW_CATEGORY && !newCategory.trim())} className="w-full px-3.5 py-1.5 text-sm font-medium">
                     Apply
-                  </button>
+                  </Button>
                 </>
               )}
 
@@ -232,13 +229,9 @@ export function BulkActionBar({
                         )
                       })}
                     </div>
-                    <button
-                      onClick={applyCopy}
-                      disabled={busy || copyTargetIds.size === 0}
-                      className="w-full rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-                    >
+                    <Button onClick={applyCopy} disabled={busy || copyTargetIds.size === 0} className="w-full px-3.5 py-1.5 text-sm font-medium">
                       Copy
-                    </button>
+                    </Button>
                   </>
                 ))}
 
@@ -249,18 +242,12 @@ export function BulkActionBar({
                       Delete {selectedCount} phrase(s) from {languageName} only, or from every language?
                     </p>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setDeleteScope('language')}
-                        className="flex-1 rounded-full border border-hairline px-3 py-1.5 text-sm font-medium text-muted hover:bg-surfacehover active:scale-95 transition-all"
-                      >
+                      <Button variant="outline" onClick={() => setDeleteScope('language')} className="flex-1 px-3 py-1.5 text-sm font-medium text-muted">
                         {languageName} only
-                      </button>
-                      <button
-                        onClick={() => setDeleteScope('all')}
-                        className="flex-1 rounded-full bg-fabpink px-3 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all"
-                      >
+                      </Button>
+                      <Button onClick={() => setDeleteScope('all')} className="flex-1 px-3 py-1.5 text-sm font-medium">
                         All languages
-                      </button>
+                      </Button>
                     </div>
                   </>
                 ) : (
@@ -270,14 +257,10 @@ export function BulkActionBar({
                       This can't be undone.
                     </p>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setDeleteScope(null)}
-                        disabled={busy}
-                        className="flex-1 rounded-full border border-hairline px-3 py-1.5 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
-                      >
+                      <Button variant="outline" onClick={() => setDeleteScope(null)} disabled={busy} className="flex-1 px-3 py-1.5 text-sm font-medium">
                         Back
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={async () => {
                           setBusy(true)
                           if (deleteScope === 'language') await onDeleteOneLanguage()
@@ -287,10 +270,10 @@ export function BulkActionBar({
                           setPanel(null)
                         }}
                         disabled={busy}
-                        className="flex-1 rounded-full bg-fabpink px-3 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+                        className="flex-1 px-3 py-1.5 text-sm font-medium"
                       >
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </>
                 ))}
