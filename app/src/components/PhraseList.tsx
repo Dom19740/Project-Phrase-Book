@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
+import { pillClass } from '../lib/pillStyles'
 import { usePersistedState } from '../lib/usePersistedState'
 import { syncWidgetSortMode } from '../lib/widgetRefresh'
 import { BulkActionBar } from './BulkActionBar'
@@ -431,42 +432,30 @@ export function PhraseList({
     <div className="flex h-full flex-col">
       <div className="shrink-0">
         <div className="flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
-            title="Cycle: Not Learnt → Learnt → All → Favorites"
-          >
-            <LearnedFilterIcon filter={learnedFilter} />
-            {LEARNED_FILTER_LABEL[learnedFilter]}
-          </button>
-
-          {phoneticsEnabled && (
-            <>
+        {phoneticsEnabled && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowPhonetics((value) => !value)}
+              aria-pressed={showPhonetics}
+              className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
+              title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
+            >
+              <Languages size={13} strokeWidth={2} />
+              {showPhonetics ? 'PHONETIC' : 'Native'}
+            </button>
+            {phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
               <button
                 type="button"
-                onClick={() => setShowPhonetics((value) => !value)}
-                aria-pressed={showPhonetics}
-                className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
-                title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
+                onClick={() => void onGeneratePhonetics()}
+                disabled={generatingPhonetics}
+                className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all disabled:opacity-50"
               >
-                <Languages size={13} strokeWidth={2} />
-                {showPhonetics ? 'PHONETIC' : 'Native'}
+                {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
               </button>
-              {phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
-                <button
-                  type="button"
-                  onClick={() => void onGeneratePhonetics()}
-                  disabled={generatingPhonetics}
-                  className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all disabled:opacity-50"
-                >
-                  {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
-                </button>
-              )}
-            </>
-          )}
-
-        </div>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-2">
           <div ref={bulkTriggerRef}>
@@ -526,11 +515,30 @@ export function PhraseList({
                 />
               ) : (
                 <div className={sortMenuOpen ? 'animate-menu-open' : ''}>
+                  <div className="flex items-center gap-1.5 px-2.5 pb-1">
+                    <Eye size={14} strokeWidth={2} className="text-fabpink" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">View</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pb-2">
+                    {LEARNED_FILTER_CYCLE.map((filter) => (
+                      <button
+                        key={filter}
+                        type="button"
+                        onClick={() => setLearnedFilter(filter)}
+                        aria-pressed={learnedFilter === filter}
+                        className={`flex items-center gap-1.5 ${pillClass(learnedFilter === filter, 'accent')}`}
+                      >
+                        <LearnedFilterIcon filter={filter} />
+                        {LEARNED_FILTER_LABEL[filter]}
+                      </button>
+                    ))}
+                  </div>
+
                   <button
                     type="button"
                     aria-expanded={sortOptionsExpanded}
                     onClick={() => setSortOptionsExpanded((expanded) => !expanded)}
-                    className="flex w-full items-center gap-1.5 px-2.5 pb-1 text-left"
+                    className="flex w-full items-center gap-1.5 border-t border-hairline px-2.5 pt-2 pb-1 text-left"
                   >
                     {sortOptionsExpanded ? (
                       <ChevronDown size={14} strokeWidth={2} className="text-fabpink" />
@@ -540,24 +548,24 @@ export function PhraseList({
                     <ListFilter size={14} strokeWidth={2} className="text-fabpink" />
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Sort</span>
                   </button>
-                  {sortOptionsExpanded && (
-                    <div className="flex flex-wrap gap-1 pb-1">
-                      {SORT_OPTIONS.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => setSortMode(option.value)}
-                          aria-pressed={sortMode === option.value}
-                          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left transition-colors hover:bg-surfacehover ${
-                            sortMode === option.value ? 'font-medium text-fabpink' : 'text-ink'
-                          }`}
-                        >
-                          {option.shortLabel}
-                          <span className="sr-only">{option.label}</span>
-                        </button>
-                      ))}
+                  <div className="menu-panel-reveal" data-open={sortOptionsExpanded} aria-hidden={!sortOptionsExpanded}>
+                    <div className="min-h-0 overflow-hidden">
+                      <div className="flex flex-wrap gap-1.5 pb-2">
+                        {SORT_OPTIONS.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setSortMode(option.value)}
+                            aria-pressed={sortMode === option.value}
+                            className={`flex items-center gap-1.5 ${pillClass(sortMode === option.value, 'accent')}`}
+                          >
+                            {option.shortLabel}
+                            <span className="sr-only">{option.label}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  </div>
                   <CategoryFilterPopout
                     allCategoryNames={allCategoryNames}
                     hiddenCategories={hiddenCategories}

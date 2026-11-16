@@ -43,65 +43,67 @@ export function CategoryFilterPopout({
           </span>
         )}
       </button>
-      {categoriesExpanded && (
-        <div className="flex flex-col gap-0.5">
-          <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-1">
-            {allCategoryNames.map((name) => {
-              const visible = !hiddenCategories.has(name)
-              return (
+      <div className="menu-panel-reveal" data-open={categoriesExpanded} aria-hidden={!categoriesExpanded}>
+        <div className="min-h-0 overflow-hidden">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-1">
+              {allCategoryNames.map((name) => {
+                const visible = !hiddenCategories.has(name)
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => onToggleCategoryVisible(name, !visible)}
+                    aria-pressed={visible}
+                    className={`${pillClass(visible)} active:scale-95`}
+                  >
+                    {name}
+                  </button>
+                )
+              })}
+              <button
+                type="button"
+                onClick={onManageCategories}
+                aria-label="Manage categories"
+                title="Manage categories"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-fabpink text-fabpink transition-colors hover:bg-fabpink/10 active:scale-95"
+              >
+                <Settings2 size={14} strokeWidth={2} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-1 px-2.5">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <button
-                  key={name}
                   type="button"
-                  onClick={() => onToggleCategoryVisible(name, !visible)}
-                  aria-pressed={visible}
-                  className={`${pillClass(visible)} active:scale-95`}
+                  role="checkbox"
+                  aria-checked={groupByCategoryOn}
+                  onClick={() => onToggleGroupByCategory(!groupByCategoryOn)}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
                 >
-                  {name}
+                  <span
+                    aria-hidden="true"
+                    className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
+                  />
+                  <span>Group by category</span>
                 </button>
-              )
-            })}
-            <button
-              type="button"
-              onClick={onManageCategories}
-              aria-label="Manage categories"
-              title="Manage categories"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-fabpink text-fabpink transition-colors hover:bg-fabpink/10 active:scale-95"
-            >
-              <Settings2 size={14} strokeWidth={2} />
-            </button>
-          </div>
-          <div className="flex flex-col gap-1 px-2.5">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              </div>
               <button
                 type="button"
                 role="checkbox"
-                aria-checked={groupByCategoryOn}
-                onClick={() => onToggleGroupByCategory(!groupByCategoryOn)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
+                aria-checked={removeFavoriteOnLearn}
+                onClick={() => onToggleRemoveFavoriteOnLearn(!removeFavoriteOnLearn)}
+                className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
               >
                 <span
                   aria-hidden="true"
-                  className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
+                  className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink' : ''}`}
                 />
-                <span>Group by category</span>
+                <span>Remove learnt from favorites</span>
               </button>
             </div>
-            <button
-              type="button"
-              role="checkbox"
-              aria-checked={removeFavoriteOnLearn}
-              onClick={() => onToggleRemoveFavoriteOnLearn(!removeFavoriteOnLearn)}
-              className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
-            >
-              <span
-                aria-hidden="true"
-                className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink' : ''}`}
-              />
-              <span>Remove learnt from favorites</span>
-            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
