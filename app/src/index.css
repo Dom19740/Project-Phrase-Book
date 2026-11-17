@@ -218,6 +218,16 @@ body {
       opacity 0.28s ease-out;
   }
 
+  /* Hides the scrollbar on the toolbar's sliding pill row - it's a touch/drag-to-scroll strip,
+     not a document scroll area, so the scrollbar is just visual noise. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
 @keyframes spin-taper {
   to {
     transform: rotate(360deg);

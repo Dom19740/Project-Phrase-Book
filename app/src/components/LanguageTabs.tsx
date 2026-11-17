@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown, Plus, Search, Trash2, X } from 'lucide-react'
+import { ChevronDown, Languages, Plus, Search, Trash2, X } from 'lucide-react'
 import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { AddLanguageModal } from './AddLanguageModal'
@@ -20,6 +20,9 @@ interface Props {
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
   search: string
   onSearchChange: (value: string) => void
+  phoneticsEnabled: boolean
+  showPhonetics: boolean
+  onToggleShowPhonetics: () => void
   menu: ReactNode
 }
 
@@ -33,6 +36,9 @@ export function LanguageTabs({
   getLanguagePhrases,
   search,
   onSearchChange,
+  phoneticsEnabled,
+  showPhonetics,
+  onToggleShowPhonetics,
   menu,
 }: Props) {
   const [open, setOpen] = useState(false)
@@ -58,29 +64,44 @@ export function LanguageTabs({
             onClick={() => (languages.length === 0 ? setShowAddLanguage(true) : setOpen((v) => !v))}
             aria-expanded={open}
             aria-controls="language-selection-panel"
-            className="h-10 w-full flex items-center gap-2 rounded-full border-2 border-fabpink px-4 text-sm font-semibold shadow-lg shadow-fabpink/10 active:scale-[0.98] transition-all"
+            className="h-8 w-full flex items-center justify-between gap-2 rounded-full border-2 border-fabpink px-4 text-sm font-semibold shadow-lg shadow-fabpink/10 active:scale-[0.98] transition-all"
           >
             {languages.length === 0 ? (
-              <Plus size={16} strokeWidth={2.5} className="shrink-0 text-fabpink" />
+              <>
+                <Plus size={16} strokeWidth={2.5} className="shrink-0 text-fabpink" />
+                <span className="flex-1 text-left truncate text-fabpink">Add a language</span>
+              </>
             ) : (
+              // The row also has to fit the phonetics pill, search and menu button, so there's
+              // rarely room for the full name - show just the flag and leave the name for the
+              // dropdown list below, where there's no width pressure.
               <span className="shrink-0 text-base leading-none">{activeLanguage ? getLanguageFlag(activeLanguage.code) : '🌐'}</span>
             )}
-            <span className={`flex-1 text-left truncate ${languages.length === 0 ? 'text-fabpink' : 'text-ink'}`}>
-              {activeLanguage?.name ?? (languages.length === 0 ? 'Add a language' : 'Select a language')}
-            </span>
-            <ChevronDown size={16} strokeWidth={2.5} className="text-fabpink" />
+            <ChevronDown size={16} strokeWidth={2.5} className="shrink-0 text-fabpink" />
           </button>
-
         </div>
+
+        {phoneticsEnabled && (
+          <button
+            type="button"
+            onClick={onToggleShowPhonetics}
+            aria-pressed={showPhonetics}
+            className="flex h-8 w-24 shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-2 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+            title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
+          >
+            <Languages size={13} strokeWidth={2} className="shrink-0" />
+            {showPhonetics ? 'Phonetic' : 'Native'}
+          </button>
+        )}
 
         {/* Reserves the collapsed search control's width in the flex row so nothing has to
             reflow when the overlay below expands/collapses - it stays absolutely positioned
             the whole time instead of switching in and out of flow, which used to make a
             mid-transition frame overlap the menu button next to it. */}
-        <div className="h-10 w-11 shrink-0" aria-hidden="true" />
+        <div className="h-8 w-11 shrink-0" aria-hidden="true" />
 
         <div
-          className={`absolute inset-y-0 right-0 z-10 flex h-10 items-center overflow-hidden rounded-full border-2 bg-surface transition-[width,border-color,box-shadow] duration-300 ease-out ${
+          className={`absolute inset-y-0 right-0 z-10 flex h-8 items-center overflow-hidden rounded-full border-2 bg-surface transition-[width,border-color,box-shadow] duration-300 ease-out ${
             searchExpanded ? 'w-full border-fabpink shadow-lg shadow-fabpink/10' : 'w-11 border-hairline'
           }`}
         >

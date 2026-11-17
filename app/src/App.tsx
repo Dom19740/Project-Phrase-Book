@@ -24,7 +24,7 @@ import { applyMaterialTheme } from './lib/materialTheme'
 import { detectInstallablePlatform } from './lib/platform'
 import { usePersistedState } from './lib/usePersistedState'
 import { syncStatusBarStyle } from './lib/systemBars'
-import { syncWidgetTheme } from './lib/widgetRefresh'
+import { syncWidgetTheme, syncWidgetShowPhonetics } from './lib/widgetRefresh'
 import { onQuickAddRequested, onShareLinkOpened } from './lib/deepLink'
 import { fetchSharedCollection } from './lib/shareImport'
 import { WHATS_NEW } from './lib/whatsNew'
@@ -153,6 +153,10 @@ function Shell() {
   const systemTheme = useSystemTheme()
   const theme = themeOverride ?? systemTheme
   const [accent, setAccent] = usePersistedState<string>('phrasebook-accent', DEFAULT_ACCENT)
+  const [showPhonetics, setShowPhonetics] = usePersistedState('phrasebook-show-phonetics', false)
+  useEffect(() => {
+    syncWidgetShowPhonetics(showPhonetics)
+  }, [showPhonetics])
   const [search, setSearch] = useState('')
   const [startupPhrasesLanguageId, setStartupPhrasesLanguageId] = useState<number | null>(null)
   const [onboardingSeen, setOnboardingSeen] = usePersistedState('phrasebook-onboarding-seen', false)
@@ -283,6 +287,7 @@ function Shell() {
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
   const activeLanguageCode = activeLanguage?.code ?? 'en'
   const activeLanguageName = activeLanguage?.name ?? ''
+  const activeLanguagePhoneticsEnabled = activeLanguage?.phoneticsEnabled ?? false
 
   // Flash cards can study a language other than the active tab, so the edit modal must resolve
   // its language from the phrase being edited rather than assuming the active tab's language.
@@ -317,6 +322,9 @@ function Shell() {
         getLanguagePhrases={getLanguagePhrases}
         search={search}
         onSearchChange={setSearch}
+        phoneticsEnabled={activeLanguagePhoneticsEnabled}
+        showPhonetics={showPhonetics}
+        onToggleShowPhonetics={() => setShowPhonetics((value) => !value)}
         menu={
           <div className="relative shrink-0">
             <button
@@ -510,6 +518,7 @@ function Shell() {
             languageName={activeLanguageName}
             activeLanguageId={activeLanguageId!}
             languages={languages}
+            showPhonetics={showPhonetics}
             generatingPhonetics={backgroundPhonetics?.languageId === activeLanguageId}
             phoneticsError={phoneticsIncomplete?.languageId === activeLanguageId ? phoneticsIncomplete.error : null}
             onGeneratePhonetics={() => generateLanguagePhonetics(activeLanguageId!)}

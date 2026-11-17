@@ -11,16 +11,16 @@ import {
   Eye,
   GraduationCap,
   GripVertical,
-  Languages,
   ListChecks,
   ListFilter,
   Star,
+  Tag,
   X,
 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { pillClass } from '../lib/pillStyles'
 import { usePersistedState } from '../lib/usePersistedState'
-import { syncWidgetShowPhonetics, syncWidgetSortMode } from '../lib/widgetRefresh'
+import { syncWidgetSortMode } from '../lib/widgetRefresh'
 import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
 import { DragReorderList } from './DragReorderList'
@@ -34,6 +34,7 @@ interface Props {
   activeLanguageId: number
   languages: Language[]
   translating?: boolean
+  showPhonetics: boolean
   generatingPhonetics?: boolean
   phoneticsError?: string | null
   onGeneratePhonetics: () => Promise<void>
@@ -68,6 +69,14 @@ interface Group {
 type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translation-desc' | 'date-desc' | 'date-asc' | 'custom'
 
 const SORT_ICON_BOX = 'inline-flex w-4 h-4 shrink-0 items-center justify-center'
+
+/** Shared look for the View/Sort/Categories/Bulk trigger pills on the toolbar's two rows - each
+ * pair fills its row via flex-1 so both pills are always the same, even width. */
+function triggerPillClass(active: boolean): string {
+  const base =
+    'flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink px-2.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all'
+  return active ? `${base} bg-fabpink text-onaccent shadow-lg shadow-fabpink/20` : `${base} bg-transparent text-fabpink`
+}
 
 function SortIcon({ mode }: { mode: SortMode }) {
   return (
@@ -190,6 +199,7 @@ export function PhraseList({
   activeLanguageId,
   languages,
   translating = false,
+  showPhonetics,
   generatingPhonetics = false,
   phoneticsError = null,
   onGeneratePhonetics,
@@ -215,26 +225,23 @@ export function PhraseList({
   chromeVisible = true,
 }: Props) {
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
-  const [viewOptionsExpanded, setViewOptionsExpanded] = usePersistedState('phrasebook-view-section-expanded', true)
-  const [sortOptionsExpanded, setSortOptionsExpanded] = usePersistedState('phrasebook-sort-section-expanded', false)
   const [groupByCategoryOn, setGroupByCategoryOn] = usePersistedState('phrasebook-group-by-category', true)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [secondaryCollapsed, setSecondaryCollapsed] = useState<Record<string, boolean>>({})
   const [learnedFilter, setLearnedFilter] = usePersistedState<LearnedFilter>('phrasebook-learned-filter', 'unlearned')
   const [primaryExpanded, setPrimaryExpanded] = useState(true)
   const [secondaryExpanded, setSecondaryExpanded] = useState(false)
-  const [showPhonetics, setShowPhonetics] = usePersistedState('phrasebook-show-phonetics', false)
   const phoneticsEnabled = languages.find((language) => language.id === activeLanguageId)?.phoneticsEnabled ?? false
   const displayPhonetics = phoneticsEnabled && showPhonetics
   const [hiddenCategoryList, setHiddenCategoryList] = usePersistedState<string[]>('phrasebook-hidden-categories', [])
   const hiddenCategories = useMemo(() => new Set(hiddenCategoryList), [hiddenCategoryList])
   const [showManageCategories, setShowManageCategories] = useState(false)
-  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+  const [activePanel, setActivePanel] = useState<'sort' | 'categories' | null>(null)
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
-  const sortTriggerRef = useRef<HTMLDivElement>(null)
+  const toolbarRef = useRef<HTMLDivElement>(null)
   const sortPanelRef = useRef<HTMLDivElement>(null)
-  const bulkTriggerRef = useRef<HTMLDivElement>(null)
+  const bulkTriggerRef = useRef<HTMLButtonElement>(null)
   const bulkPanelRef = useRef<HTMLDivElement>(null)
   const phraseRowsRef = useRef<HTMLDivElement>(null)
 
@@ -254,22 +261,18 @@ export function PhraseList({
   }, [sortMode])
 
   useEffect(() => {
-    syncWidgetShowPhonetics(showPhonetics)
-  }, [showPhonetics])
-
-  useEffect(() => {
-    if (!sortMenuOpen && !selectionMode) return
+    if (!activePanel && !selectionMode) return
 
     function handleOutsidePointerDown(event: PointerEvent) {
       const target = event.target
       if (!(target instanceof Node)) return
 
       if (
-        sortMenuOpen &&
-        !sortTriggerRef.current?.contains(target) &&
+        activePanel &&
+        !toolbarRef.current?.contains(target) &&
         !sortPanelRef.current?.contains(target)
       ) {
-        setSortMenuOpen(false)
+        setActivePanel(null)
       }
       if (
         selectionMode &&
@@ -284,7 +287,7 @@ export function PhraseList({
 
     document.addEventListener('pointerdown', handleOutsidePointerDown)
     return () => document.removeEventListener('pointerdown', handleOutsidePointerDown)
-  }, [sortMenuOpen, selectionMode])
+  }, [activePanel, selectionMode])
 
   const categoryOrderIndex = useMemo(() => {
     const map = new Map<string, number>()
@@ -364,6 +367,14 @@ export function PhraseList({
   function exitSelectionMode() {
     setSelectionMode(false)
     setSelectedIds(new Set())
+  }
+
+  // The View pill cycles straight through the 4 filters on tap instead of opening a dropdown of them.
+  function cycleViewFilter() {
+    exitSelectionMode()
+    setActivePanel(null)
+    const nextIndex = (VIEW_FILTER_ORDER.indexOf(learnedFilter) + 1) % VIEW_FILTER_ORDER.length
+    setLearnedFilter(VIEW_FILTER_ORDER[nextIndex])
   }
 
   const selectedItems = filtered.filter((p) => selectedIds.has(p.translationId))
@@ -447,80 +458,83 @@ export function PhraseList({
       <div className="min-h-0 overflow-hidden">
       <div className="shrink-0">
         <div className="flex flex-col gap-2.5 px-4 py-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div ref={sortTriggerRef}>
+        {phoneticsEnabled && !generatingPhonetics && phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
+          <button
+            type="button"
+            onClick={() => void onGeneratePhonetics()}
+            className="self-start shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+          >
+            {phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
+          </button>
+        )}
+
+        <div ref={toolbarRef} className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={cycleViewFilter} className={triggerPillClass(false)}>
+              <LearnedFilterIcon filter={learnedFilter} />
+              {LEARNED_FILTER_LABEL[learnedFilter]}
+            </button>
+
             <button
               type="button"
               onClick={() => {
-                if (sortMenuOpen) {
-                  setSortMenuOpen(false)
-                } else {
-                  if (selectionMode) exitSelectionMode()
-                  setSortMenuOpen(true)
-                }
+                exitSelectionMode()
+                setActivePanel((panel) => (panel === 'sort' ? null : 'sort'))
               }}
-              aria-expanded={sortMenuOpen}
-              className={`flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
-                sortMenuOpen ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
-              }`}
+              aria-expanded={activePanel === 'sort'}
+              className={triggerPillClass(activePanel === 'sort')}
             >
-              {sortMenuOpen ? <X size={14} strokeWidth={2} /> : <Eye size={14} strokeWidth={2} />}
-              {sortMenuOpen ? 'Close' : 'View'}
+              {activePanel === 'sort' ? <X size={14} strokeWidth={2} /> : <ListFilter size={14} strokeWidth={2} />}
+              {activePanel === 'sort' ? 'Close' : 'Sort'}
             </button>
           </div>
 
-          <div ref={bulkTriggerRef}>
+          <div className="flex items-center gap-2">
             <button
+              type="button"
+              onClick={() => {
+                exitSelectionMode()
+                setActivePanel((panel) => (panel === 'categories' ? null : 'categories'))
+              }}
+              aria-expanded={activePanel === 'categories'}
+              className={`relative ${triggerPillClass(activePanel === 'categories')}`}
+            >
+              {activePanel === 'categories' ? <X size={14} strokeWidth={2} /> : <Tag size={14} strokeWidth={2} />}
+              {activePanel === 'categories' ? 'Close' : 'Categories'}
+              {activePanel !== 'categories' && hiddenCategories.size > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-fabpink" aria-hidden="true" />
+              )}
+            </button>
+
+            <button
+              ref={bulkTriggerRef}
+              type="button"
               onClick={() => {
                 if (selectionMode) {
                   exitSelectionMode()
                 } else {
-                  setSortMenuOpen(false)
+                  setActivePanel(null)
                   setSelectionMode(true)
                 }
               }}
-              className={`flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
-                selectionMode ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
-              }`}
+              className={triggerPillClass(selectionMode)}
             >
               {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
               {selectionMode ? 'Close' : 'Bulk'}
             </button>
           </div>
-
-          {phoneticsEnabled && (
-            <button
-              type="button"
-              onClick={() => setShowPhonetics((value) => !value)}
-              aria-pressed={showPhonetics}
-              className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
-              title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
-            >
-              <Languages size={13} strokeWidth={2} />
-              {showPhonetics ? 'PHONETIC' : 'Native'}
-            </button>
-          )}
-          {phoneticsEnabled && !generatingPhonetics && phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
-            <button
-              type="button"
-              onClick={() => void onGeneratePhonetics()}
-              className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
-            >
-              {phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
-            </button>
-          )}
         </div>
         </div>
 
         <div
           ref={sortPanelRef}
           className="menu-panel-reveal shrink-0 bg-surface"
-          data-open={sortMenuOpen}
-          aria-hidden={!sortMenuOpen}
+          data-open={activePanel !== null}
+          aria-hidden={activePanel === null}
         >
           <div className="min-h-0 overflow-hidden">
             <div className="relative overflow-hidden px-4 py-2">
-              {showManageCategories ? (
+              {activePanel === 'categories' && showManageCategories ? (
                 <ManageCategoriesPanel
                   categories={categories}
                   onClose={() => setShowManageCategories(false)}
@@ -530,82 +544,36 @@ export function PhraseList({
                   onReorder={onReorderCategories}
                 />
               ) : (
-                <div className={sortMenuOpen ? 'animate-menu-open' : ''}>
-                  <button
-                    type="button"
-                    aria-expanded={viewOptionsExpanded}
-                    onClick={() => setViewOptionsExpanded((expanded) => !expanded)}
-                    className="flex w-full items-center gap-1.5 px-2.5 pb-1 text-left"
-                  >
-                    {viewOptionsExpanded ? (
-                      <ChevronDown size={14} strokeWidth={2} className="text-ink" />
-                    ) : (
-                      <ChevronRight size={14} strokeWidth={2} className="text-ink" />
-                    )}
-                    <Eye size={14} strokeWidth={2} className="text-ink" />
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink">View</span>
-                  </button>
-                  <div className="menu-panel-reveal" data-open={viewOptionsExpanded} aria-hidden={!viewOptionsExpanded}>
-                    <div className="min-h-0 overflow-hidden">
-                      <div className="flex flex-wrap gap-1.5 pb-2">
-                        {VIEW_FILTER_ORDER.map((filter) => (
-                          <button
-                            key={filter}
-                            type="button"
-                            onClick={() => setLearnedFilter(filter)}
-                            aria-pressed={learnedFilter === filter}
-                            className={`flex items-center gap-1.5 ${pillClass(learnedFilter === filter, 'accent')}`}
-                          >
-                            <LearnedFilterIcon filter={filter} />
-                            {LEARNED_FILTER_LABEL[filter]}
-                          </button>
-                        ))}
-                      </div>
+                <div className={activePanel ? 'animate-menu-open' : ''}>
+                  {activePanel === 'sort' && (
+                    <div className="flex flex-wrap gap-1.5 py-0.5">
+                      {SORT_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setSortMode(option.value)}
+                          aria-pressed={sortMode === option.value}
+                          className={`flex items-center gap-1.5 ${pillClass(sortMode === option.value, 'accent')}`}
+                        >
+                          {option.shortLabel}
+                          <span className="sr-only">{option.label}</span>
+                        </button>
+                      ))}
                     </div>
-                  </div>
+                  )}
 
-                  <button
-                    type="button"
-                    aria-expanded={sortOptionsExpanded}
-                    onClick={() => setSortOptionsExpanded((expanded) => !expanded)}
-                    className="flex w-full items-center gap-1.5 px-2.5 pt-2 pb-1 text-left"
-                  >
-                    {sortOptionsExpanded ? (
-                      <ChevronDown size={14} strokeWidth={2} className="text-ink" />
-                    ) : (
-                      <ChevronRight size={14} strokeWidth={2} className="text-ink" />
-                    )}
-                    <ListFilter size={14} strokeWidth={2} className="text-ink" />
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink">Sort</span>
-                  </button>
-                  <div className="menu-panel-reveal" data-open={sortOptionsExpanded} aria-hidden={!sortOptionsExpanded}>
-                    <div className="min-h-0 overflow-hidden">
-                      <div className="flex flex-wrap gap-1.5 pb-2">
-                        {SORT_OPTIONS.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => setSortMode(option.value)}
-                            aria-pressed={sortMode === option.value}
-                            className={`flex items-center gap-1.5 ${pillClass(sortMode === option.value, 'accent')}`}
-                          >
-                            {option.shortLabel}
-                            <span className="sr-only">{option.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <CategoryFilterPopout
-                    allCategoryNames={allCategoryNames}
-                    hiddenCategories={hiddenCategories}
-                    onToggleCategoryVisible={toggleCategoryVisible}
-                    onManageCategories={() => setShowManageCategories(true)}
-                    groupByCategoryOn={groupByCategoryOn}
-                    onToggleGroupByCategory={setGroupByCategoryOn}
-                    removeFavoriteOnLearn={removeFavoriteOnLearn}
-                    onToggleRemoveFavoriteOnLearn={onToggleRemoveFavoriteOnLearn}
-                  />
+                  {activePanel === 'categories' && (
+                    <CategoryFilterPopout
+                      allCategoryNames={allCategoryNames}
+                      hiddenCategories={hiddenCategories}
+                      onToggleCategoryVisible={toggleCategoryVisible}
+                      onManageCategories={() => setShowManageCategories(true)}
+                      groupByCategoryOn={groupByCategoryOn}
+                      onToggleGroupByCategory={setGroupByCategoryOn}
+                      removeFavoriteOnLearn={removeFavoriteOnLearn}
+                      onToggleRemoveFavoriteOnLearn={onToggleRemoveFavoriteOnLearn}
+                    />
+                  )}
                 </div>
               )}
             </div>
