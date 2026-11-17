@@ -237,6 +237,7 @@ export function PhraseList({
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const toolbarRef = useRef<HTMLDivElement>(null)
   const sortPanelRef = useRef<HTMLDivElement>(null)
+  const categoriesPanelRef = useRef<HTMLDivElement>(null)
   const bulkTriggerRef = useRef<HTMLButtonElement>(null)
   const bulkPanelRef = useRef<HTMLDivElement>(null)
   const phraseRowsRef = useRef<HTMLDivElement>(null)
@@ -273,7 +274,8 @@ export function PhraseList({
       if (
         activePanel &&
         !toolbarRef.current?.contains(target) &&
-        !sortPanelRef.current?.contains(target)
+        !sortPanelRef.current?.contains(target) &&
+        !categoriesPanelRef.current?.contains(target)
       ) {
         setActivePanel(null)
       }
@@ -549,24 +551,14 @@ export function PhraseList({
         <div
           ref={sortPanelRef}
           className="menu-panel-reveal shrink-0 bg-surface"
-          data-open={activePanel !== null}
-          aria-hidden={activePanel === null}
+          data-open={activePanel === 'sort'}
+          aria-hidden={activePanel !== 'sort'}
         >
           <div className="min-h-0 overflow-hidden">
             <div className="relative overflow-hidden px-4 py-2">
-              {activePanel === 'categories' && showManageCategories ? (
-                <ManageCategoriesPanel
-                  categories={categories}
-                  onClose={() => setShowManageCategories(false)}
-                  onCreate={onCreateCategory}
-                  onRename={onRenameCategory}
-                  onDelete={onDeleteCategory}
-                  onReorder={onReorderCategories}
-                />
-              ) : (
-                <div className={activePanel ? 'animate-menu-open' : ''}>
-                  {activePanel === 'sort' && (
-                    <div className="flex flex-col gap-2 py-0.5">
+              {activePanel === 'sort' && (
+                <div className="animate-menu-open">
+                  <div className="flex flex-col gap-2 py-0.5">
                       <div className="flex flex-wrap gap-1.5">
                         {SORT_FIELDS.map(({ field, label }) => {
                           const active = sortFieldOf(sortMode) === field
@@ -624,9 +616,32 @@ export function PhraseList({
                         </button>
                       </div>
                     </div>
-                  )}
+                  </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-                  {activePanel === 'categories' && (
+        <div
+          ref={categoriesPanelRef}
+          className="menu-panel-reveal shrink-0 bg-surface"
+          data-open={activePanel === 'categories'}
+          aria-hidden={activePanel !== 'categories'}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className="relative overflow-hidden px-4 py-2">
+              {activePanel === 'categories' &&
+                (showManageCategories ? (
+                  <ManageCategoriesPanel
+                    categories={categories}
+                    onClose={() => setShowManageCategories(false)}
+                    onCreate={onCreateCategory}
+                    onRename={onRenameCategory}
+                    onDelete={onDeleteCategory}
+                    onReorder={onReorderCategories}
+                  />
+                ) : (
+                  <div className="animate-menu-open">
                     <CategoryFilterPopout
                       allCategoryNames={allCategoryNames}
                       hiddenCategories={hiddenCategories}
@@ -635,9 +650,8 @@ export function PhraseList({
                       groupByCategoryOn={groupByCategoryOn}
                       onToggleGroupByCategory={setGroupByCategoryOn}
                     />
-                  )}
-                </div>
-              )}
+                  </div>
+                ))}
             </div>
           </div>
         </div>
