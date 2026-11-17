@@ -73,6 +73,18 @@ async function migrate(db: SQLiteDBConnection): Promise<void> {
     await db.execute("ALTER TABLE translations ADD COLUMN phonetic TEXT NOT NULL DEFAULT '';")
   }
 
+  const hasPhoneticFormatVersion = (languageColumns.values ?? []).some((c) => c.name === 'phonetic_format_version')
+  if (!hasPhoneticFormatVersion) {
+    await db.execute('ALTER TABLE languages ADD COLUMN phonetic_format_version INTEGER NOT NULL DEFAULT 0;')
+  }
+  // Phonetics generated before this version used a hyphenated syllable-break style (e.g. "a-ri-ga-to");
+  // clear them so they regenerate with the new continuous-romanization prompt (e.g. "Arigato").
+  const staleLanguages = await db.query('SELECT id FROM languages WHERE phonetic_format_version < 1;')
+  for (const language of staleLanguages.values ?? []) {
+    await db.run("UPDATE translations SET phonetic = '' WHERE language_id = ?;", [language.id])
+    await db.run('UPDATE languages SET phonetic_format_version = 1 WHERE id = ?;', [language.id])
+  }
+
   const categoryColumns = await db.query('PRAGMA table_info(categories);')
   const hasCategorySortOrder = (categoryColumns.values ?? []).some((c) => c.name === 'sort_order')
   if (!hasCategorySortOrder) {
