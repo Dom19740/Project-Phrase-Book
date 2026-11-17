@@ -50,6 +50,7 @@ import { generatePhoneticsBulk, translatePhrase, translatePhrasesBulk } from '..
 import { createShareLink as uploadShareLink, type ShareLinkResult } from '../lib/shareLink'
 import { translateInChunksWithRetry } from '../lib/chunkedTranslate'
 import { usePersistedState } from '../lib/usePersistedState'
+import { checkVoiceAvailability } from '../lib/tts'
 import { phrasesToCsv } from '../lib/csvExport'
 import { parseCsvPhrases, type CsvPhraseRow } from '../lib/csvImport'
 import { startupPhrases } from '../data/startupPhrases'
@@ -700,6 +701,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       phoneticsEnabled = false,
     ) => {
       const lang = await addLanguage(name, code, includeConceptIds, sourceLanguageId, phoneticsEnabled)
+      void checkVoiceAvailability(lang.code)
       await refreshLanguages()
       setActiveLanguageId(lang.id)
 

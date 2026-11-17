@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import android.util.Log;
 import com.dpbcreative.travelchatter.R;
 import java.util.ArrayDeque;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Native counterpart to app/src/lib/tts.ts + useSpeakRate.ts for the widget, which has no access
@@ -118,11 +120,34 @@ final class PhraseWidgetTts {
         // LANG_AVAILABLE, leaving whatever locale a prior utterance had set - which is what made the
         // widget mispronounce phrases or read them in the wrong dialect.
         Locale locale = localeTag != null ? Locale.forLanguageTag(localeTag) : Locale.getDefault();
+        warnIfDialectUnavailable(locale);
         tts.setLanguage(locale);
         tts.setSpeechRate(rate);
         tts.setPitch(1.0f);
         String utteranceId = appWidgetId + ":" + translationId;
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
+    }
+
+    // setLanguage() never fails loudly - if no voice is installed for the exact region (e.g.
+    // "pt-PT"), the engine silently substitutes whatever it has for that base language (e.g.
+    // "pt-BR") with no error anywhere. Log it so a wrong dialect is at least visible, matching
+    // the check added to tts.ts.
+    private void warnIfDialectUnavailable(Locale locale) {
+        String country = locale.getCountry();
+        if (country.isEmpty()) return;
+
+        Set<Voice> voices = tts.getVoices();
+        if (voices == null) return;
+
+        for (Voice voice : voices) {
+            Locale voiceLocale = voice.getLocale();
+            if (voiceLocale != null
+                    && voiceLocale.getLanguage().equalsIgnoreCase(locale.getLanguage())
+                    && voiceLocale.getCountry().equalsIgnoreCase(country)) {
+                return;
+            }
+        }
+        Log.w(TAG, "No installed voice for locale " + locale.toLanguageTag() + " - device will substitute a different dialect.");
     }
 
     private void onSpeechStart(String utteranceId) {

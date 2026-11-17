@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { BookOpen, FileText, Layers, Moon, Plus, Save, Shield, Smartphone, Sparkles, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
@@ -19,10 +20,12 @@ import { MenuIcon } from './components/ui/MenuIcon'
 import { SegmentedControl } from './components/ui/SegmentedControl'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
+import { LANGUAGE_OPTIONS } from './lib/languageOptions'
 import { applyMaterialTheme } from './lib/materialTheme'
 import { detectInstallablePlatform } from './lib/platform'
 import { usePersistedState } from './lib/usePersistedState'
 import { syncStatusBarStyle } from './lib/systemBars'
+import { onMissingVoice, openVoiceInstallScreen } from './lib/tts'
 import { syncWidgetTheme, syncWidgetShowPhonetics } from './lib/widgetRefresh'
 import { onQuickAddRequested, onShareLinkOpened } from './lib/deepLink'
 import { fetchSharedCollection } from './lib/shareImport'
@@ -189,6 +192,13 @@ function Shell() {
   // Same "snooze for this session" behavior as backupReminderDismissed - it comes back next
   // launch if auto-backup is still failing, rather than being silenced forever after one tap.
   const [autoBackupWarningDismissed, setAutoBackupWarningDismissed] = useState(false)
+
+  // Set by tts.ts the first time it notices the device has no voice installed for a phrase's
+  // exact dialect (e.g. "pt-PT") and is silently substituting a different one (e.g. "pt-BR").
+  const [missingVoiceLanguageCode, setMissingVoiceLanguageCode] = useState<string | null>(null)
+  useEffect(() => onMissingVoice(setMissingVoiceLanguageCode), [])
+  const missingVoiceLanguageName =
+    LANGUAGE_OPTIONS.find((l) => l.code === missingVoiceLanguageCode)?.name ?? missingVoiceLanguageCode
 
   async function handleBackUpNow() {
     setBackingUp(true)
@@ -500,6 +510,28 @@ function Shell() {
         <p className="bg-surface px-4 pb-2 text-xs text-red-500">
           {shareLinkError}{' '}
           <button onClick={() => setShareLinkError(null)} className="underline">
+            Dismiss
+          </button>
+        </p>
+      )}
+
+      {missingVoiceLanguageCode && (
+        <p className="bg-surface px-4 pb-2 text-xs text-muted">
+          {Capacitor.getPlatform() === 'android' ? (
+            <>
+              Your device doesn't have the {missingVoiceLanguageName} voice installed, so playback uses a different
+              dialect.{' '}
+              <button onClick={() => openVoiceInstallScreen()} className="underline">
+                Install voice
+              </button>{' '}
+            </>
+          ) : (
+            <>
+              Your device doesn't have the {missingVoiceLanguageName} voice installed, so playback uses a different
+              dialect. Install it from Settings &gt; Accessibility &gt; Spoken Content &gt; Voices.{' '}
+            </>
+          )}
+          <button onClick={() => setMissingVoiceLanguageCode(null)} className="underline">
             Dismiss
           </button>
         </p>
