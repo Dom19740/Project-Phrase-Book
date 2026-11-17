@@ -1,5 +1,7 @@
 import { Layers, Save, Share, SquarePlus, X } from 'lucide-react'
 import { Logo } from './Logo'
+import { Button } from './ui/Button'
+import { Dialog } from './ui/Dialog'
 import { ANDROID_PLAY_STORE_URL, type InstallablePlatform } from '../lib/platform'
 
 interface Props {
@@ -9,14 +11,8 @@ interface Props {
 
 export function InstallPrompt({ platform, onClose }: Props) {
   return (
-    <div
-      className="animate-modal-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center"
-      onClick={onClose}
-    >
-      <div
-        className="animate-modal-sheet w-full min-w-0 rounded-t-3xl border-[1.5px] border-hairline bg-surface p-5 pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))] shadow-2xl sm:max-w-sm sm:rounded-3xl sm:pb-5"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog onClose={onClose} maxWidthClassName="sm:max-w-md">
+      <>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <Logo size={36} className="shrink-0 text-fabpink" />
@@ -73,12 +69,9 @@ export function InstallPrompt({ platform, onClose }: Props) {
         )}
 
         <div className="mt-5 flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
-          >
+          <Button variant="outline" onClick={onClose} className="px-4 py-2 text-sm">
             Not now
-          </button>
+          </Button>
           {platform === 'android' && (
             <a
               href={ANDROID_PLAY_STORE_URL}
@@ -91,7 +84,7 @@ export function InstallPrompt({ platform, onClose }: Props) {
             </a>
           )}
         </div>
-      </div>
-    </div>
+      </>
+    </Dialog>
   )
 }

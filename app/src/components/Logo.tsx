@@ -20,22 +20,27 @@ interface WordmarkProps {
   oneLine?: boolean
 }
 
-/** The Archivo wordmark that pairs with the mark - two lines by default, one line only for short headers. */
+/**
+ * The Archivo wordmark that pairs with the mark - two lines by default, one line only for short
+ * headers. Two-tone: "Travel" in the theme's ink color (near-white in dark mode, matching the
+ * brand), "Chatter" in the accent, regardless of layout.
+ */
 export function Wordmark({ size, className = '', oneLine = false }: WordmarkProps) {
   const style = size ? { fontSize: size } : undefined
 
   if (oneLine) {
     return (
       <span className={`font-brand font-bold uppercase tracking-[0.14em] ${className}`} style={style}>
-        Travel Chatter
+        <span className="text-ink">Travel </span>
+        <span className="text-fabpink">Chatter</span>
       </span>
     )
   }
 
   return (
     <span className={`font-brand font-bold uppercase leading-[1.05] tracking-[0.14em] ${className}`} style={style}>
-      <span className="block">Travel</span>
-      <span className="block">Chatter</span>
+      <span className="block text-ink">Travel</span>
+      <span className="block text-fabpink">Chatter</span>
     </span>
   )
 }

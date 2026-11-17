@@ -18,8 +18,9 @@ import {
   X,
 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
+import { pillClass } from '../lib/pillStyles'
 import { usePersistedState } from '../lib/usePersistedState'
-import { syncWidgetSortMode } from '../lib/widgetRefresh'
+import { syncWidgetShowPhonetics, syncWidgetSortMode } from '../lib/widgetRefresh'
 import { BulkActionBar } from './BulkActionBar'
 import { CategoryFilterPopout } from './CategoryFilterPopout'
 import { DragReorderList } from './DragReorderList'
@@ -55,6 +56,8 @@ interface Props {
   onReorderCategories: (orderedCategoryIds: number[]) => Promise<void>
   removeFavoriteOnLearn: boolean
   onToggleRemoveFavoriteOnLearn: (value: boolean) => void
+  /** False collapses the whole toolbar (View/Bulk/Sort bar) above the list, driven by the header's hide-chrome toggle. */
+  chromeVisible?: boolean
 }
 
 interface Group {
@@ -148,7 +151,7 @@ function sortItems(items: PhraseListItem[], mode: SortMode, showPhonetics: boole
 
 type LearnedFilter = 'unlearned' | 'learned' | 'all' | 'favorites'
 
-const LEARNED_FILTER_CYCLE: LearnedFilter[] = ['unlearned', 'learned', 'all', 'favorites']
+const VIEW_FILTER_ORDER: LearnedFilter[] = ['all', 'favorites', 'unlearned', 'learned']
 const LEARNED_FILTER_LABEL: Record<LearnedFilter, string> = { unlearned: 'Not Learnt', learned: 'Learnt', all: 'All', favorites: 'Favorites' }
 
 function LearnedFilterIcon({ filter }: { filter: LearnedFilter }) {
@@ -209,8 +212,10 @@ export function PhraseList({
   onReorderCategories,
   removeFavoriteOnLearn,
   onToggleRemoveFavoriteOnLearn,
+  chromeVisible = true,
 }: Props) {
   const [sortMode, setSortMode] = usePersistedState<SortMode>('phrasebook-sort-mode', 'english-asc')
+  const [viewOptionsExpanded, setViewOptionsExpanded] = usePersistedState('phrasebook-view-section-expanded', true)
   const [sortOptionsExpanded, setSortOptionsExpanded] = usePersistedState('phrasebook-sort-section-expanded', false)
   const [groupByCategoryOn, setGroupByCategoryOn] = usePersistedState('phrasebook-group-by-category', true)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
@@ -233,6 +238,13 @@ export function PhraseList({
   const bulkPanelRef = useRef<HTMLDivElement>(null)
   const phraseRowsRef = useRef<HTMLDivElement>(null)
 
+  // Switching language tabs swaps the list contents but the shared scroll container keeps
+  // whatever scrollTop the previous language's list left it at - scroll back to the top so the
+  // view (and the onScroll-driven header-collapse state) actually matches the new list.
+  useEffect(() => {
+    phraseRowsRef.current?.scrollTo({ top: 0 })
+  }, [activeLanguageId])
+
   useEffect(() => {
     onSelectionModeChange?.(selectionMode)
   }, [selectionMode, onSelectionModeChange])
@@ -240,6 +252,10 @@ export function PhraseList({
   useEffect(() => {
     syncWidgetSortMode(sortMode)
   }, [sortMode])
+
+  useEffect(() => {
+    syncWidgetShowPhonetics(showPhonetics)
+  }, [showPhonetics])
 
   useEffect(() => {
     if (!sortMenuOpen && !selectionMode) return
@@ -390,6 +406,7 @@ export function PhraseList({
         getId={(item) => item.translationId}
         onReorder={commitReorder}
         className="flex flex-col gap-1.5"
+        pressDelayMs={200}
         renderItem={(item, dragHandleProps, dragging) => renderRow(item, dragHandleProps, dragging)}
       />
     )
@@ -426,63 +443,11 @@ export function PhraseList({
 
   return (
     <div className="flex h-full flex-col">
+      <div className="menu-panel-reveal shrink-0" data-open={chromeVisible} aria-hidden={!chromeVisible}>
+      <div className="min-h-0 overflow-hidden">
       <div className="shrink-0">
-        <div className="flex flex-col gap-2.5 px-4 py-3 border-b border-hairline">
+        <div className="flex flex-col gap-2.5 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setLearnedFilter((f) => LEARNED_FILTER_CYCLE[(LEARNED_FILTER_CYCLE.indexOf(f) + 1) % LEARNED_FILTER_CYCLE.length])}
-            className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
-            title="Cycle: Not Learnt → Learnt → All → Favorites"
-          >
-            <LearnedFilterIcon filter={learnedFilter} />
-            {LEARNED_FILTER_LABEL[learnedFilter]}
-          </button>
-
-          {phoneticsEnabled && (
-            <>
-              <button
-                type="button"
-                onClick={() => setShowPhonetics((value) => !value)}
-                aria-pressed={showPhonetics}
-                className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
-                title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
-              >
-                <Languages size={13} strokeWidth={2} />
-                {showPhonetics ? 'PHONETIC' : 'Native'}
-              </button>
-              {phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
-                <button
-                  type="button"
-                  onClick={() => void onGeneratePhonetics()}
-                  disabled={generatingPhonetics}
-                  className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all disabled:opacity-50"
-                >
-                  {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
-                </button>
-              )}
-            </>
-          )}
-
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div ref={bulkTriggerRef}>
-            <button
-              onClick={() => {
-                if (selectionMode) {
-                  exitSelectionMode()
-                } else {
-                  setSortMenuOpen(false)
-                  setSelectionMode(true)
-                }
-              }}
-              className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
-            >
-              {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} className="text-fabpink" />}
-              {selectionMode ? 'Close' : 'Bulk'}
-            </button>
-          </div>
-
           <div ref={sortTriggerRef}>
             <button
               type="button"
@@ -495,18 +460,61 @@ export function PhraseList({
                 }
               }}
               aria-expanded={sortMenuOpen}
-              className="flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+              className={`flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
+                sortMenuOpen ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
+              }`}
             >
-              {sortMenuOpen ? <X size={14} strokeWidth={2} /> : <ListFilter size={14} strokeWidth={2} />}
-              {sortMenuOpen ? 'Close' : 'Sort'}
+              {sortMenuOpen ? <X size={14} strokeWidth={2} /> : <Eye size={14} strokeWidth={2} />}
+              {sortMenuOpen ? 'Close' : 'View'}
             </button>
           </div>
+
+          <div ref={bulkTriggerRef}>
+            <button
+              onClick={() => {
+                if (selectionMode) {
+                  exitSelectionMode()
+                } else {
+                  setSortMenuOpen(false)
+                  setSelectionMode(true)
+                }
+              }}
+              className={`flex w-24 items-center justify-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all ${
+                selectionMode ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
+              }`}
+            >
+              {selectionMode ? <X size={14} strokeWidth={2} /> : <ListChecks size={14} strokeWidth={2} />}
+              {selectionMode ? 'Close' : 'Bulk'}
+            </button>
+          </div>
+
+          {phoneticsEnabled && (
+            <button
+              type="button"
+              onClick={() => setShowPhonetics((value) => !value)}
+              aria-pressed={showPhonetics}
+              className="flex items-center gap-1.5 shrink-0 rounded-full border-2 border-fabpink bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent active:scale-95 transition-all"
+              title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
+            >
+              <Languages size={13} strokeWidth={2} />
+              {showPhonetics ? 'PHONETIC' : 'Native'}
+            </button>
+          )}
+          {phoneticsEnabled && !generatingPhonetics && phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
+            <button
+              type="button"
+              onClick={() => void onGeneratePhonetics()}
+              className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+            >
+              {phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
+            </button>
+          )}
         </div>
         </div>
 
         <div
           ref={sortPanelRef}
-          className="menu-panel-reveal shrink-0 border-b border-hairline bg-surface"
+          className="menu-panel-reveal shrink-0 bg-surface"
           data-open={sortMenuOpen}
           aria-hidden={!sortMenuOpen}
         >
@@ -525,36 +533,69 @@ export function PhraseList({
                 <div className={sortMenuOpen ? 'animate-menu-open' : ''}>
                   <button
                     type="button"
-                    aria-expanded={sortOptionsExpanded}
-                    onClick={() => setSortOptionsExpanded((expanded) => !expanded)}
+                    aria-expanded={viewOptionsExpanded}
+                    onClick={() => setViewOptionsExpanded((expanded) => !expanded)}
                     className="flex w-full items-center gap-1.5 px-2.5 pb-1 text-left"
                   >
-                    {sortOptionsExpanded ? (
-                      <ChevronDown size={14} strokeWidth={2} className="text-fabpink" />
+                    {viewOptionsExpanded ? (
+                      <ChevronDown size={14} strokeWidth={2} className="text-ink" />
                     ) : (
-                      <ChevronRight size={14} strokeWidth={2} className="text-fabpink" />
+                      <ChevronRight size={14} strokeWidth={2} className="text-ink" />
                     )}
-                    <ListFilter size={14} strokeWidth={2} className="text-fabpink" />
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Sort</span>
+                    <Eye size={14} strokeWidth={2} className="text-ink" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink">View</span>
                   </button>
-                  {sortOptionsExpanded && (
-                    <div className="flex flex-wrap gap-1 pb-1">
-                      {SORT_OPTIONS.map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => setSortMode(option.value)}
-                          aria-pressed={sortMode === option.value}
-                          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-left transition-colors hover:bg-surfacehover ${
-                            sortMode === option.value ? 'font-medium text-fabpink' : 'text-ink'
-                          }`}
-                        >
-                          {option.shortLabel}
-                          <span className="sr-only">{option.label}</span>
-                        </button>
-                      ))}
+                  <div className="menu-panel-reveal" data-open={viewOptionsExpanded} aria-hidden={!viewOptionsExpanded}>
+                    <div className="min-h-0 overflow-hidden">
+                      <div className="flex flex-wrap gap-1.5 pb-2">
+                        {VIEW_FILTER_ORDER.map((filter) => (
+                          <button
+                            key={filter}
+                            type="button"
+                            onClick={() => setLearnedFilter(filter)}
+                            aria-pressed={learnedFilter === filter}
+                            className={`flex items-center gap-1.5 ${pillClass(learnedFilter === filter, 'accent')}`}
+                          >
+                            <LearnedFilterIcon filter={filter} />
+                            {LEARNED_FILTER_LABEL[filter]}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  <button
+                    type="button"
+                    aria-expanded={sortOptionsExpanded}
+                    onClick={() => setSortOptionsExpanded((expanded) => !expanded)}
+                    className="flex w-full items-center gap-1.5 px-2.5 pt-2 pb-1 text-left"
+                  >
+                    {sortOptionsExpanded ? (
+                      <ChevronDown size={14} strokeWidth={2} className="text-ink" />
+                    ) : (
+                      <ChevronRight size={14} strokeWidth={2} className="text-ink" />
+                    )}
+                    <ListFilter size={14} strokeWidth={2} className="text-ink" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-ink">Sort</span>
+                  </button>
+                  <div className="menu-panel-reveal" data-open={sortOptionsExpanded} aria-hidden={!sortOptionsExpanded}>
+                    <div className="min-h-0 overflow-hidden">
+                      <div className="flex flex-wrap gap-1.5 pb-2">
+                        {SORT_OPTIONS.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setSortMode(option.value)}
+                            aria-pressed={sortMode === option.value}
+                            className={`flex items-center gap-1.5 ${pillClass(sortMode === option.value, 'accent')}`}
+                          >
+                            {option.shortLabel}
+                            <span className="sr-only">{option.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                   <CategoryFilterPopout
                     allCategoryNames={allCategoryNames}
                     hiddenCategories={hiddenCategories}
@@ -570,6 +611,8 @@ export function PhraseList({
             </div>
           </div>
         </div>
+      </div>
+      </div>
       </div>
 
       <div
@@ -646,7 +689,7 @@ export function PhraseList({
           )}
 
           {secondaryItems.length > 0 && (
-            <div className="border-t border-hairline pt-3">
+            <div className="pt-3">
               <button
                 onClick={() => setSecondaryExpanded((v) => !v)}
                 className="flex w-full items-center justify-between py-1 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink"

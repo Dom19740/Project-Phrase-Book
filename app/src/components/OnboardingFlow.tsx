@@ -17,7 +17,7 @@ interface HowToPage {
 const ALL_HOWTO_PAGES: HowToPage[] = [
   {
     title: 'Add your language',
-    body: 'Tap the language selector to add one of dozens of languages. Adding your first language offers a curated set of starter phrases to get you started.',
+    body: 'Adding your first language offers an optional set of phrases to get you started.',
     illustration: (
       <div className="flex w-full flex-col items-center gap-2">
         <div className="w-full max-w-xs rounded-2xl border-2 border-fabpink bg-surface p-3 text-left shadow-lg shadow-fabpink/10">
@@ -58,7 +58,7 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Read it phonetically',
-    body: "For languages written in a different script, Thai, Vietnamese, Japanese and more, turn on phonetics to get a learner-friendly romanized pronunciation guide alongside the native translation. Enable it when adding a language, or any time after from the language selector.",
+    body: "For languages written in a different script, eg. Thai or Japanese, add phonetics to get a learner-friendly pronunciation guide alongside the native translation. Enable it when adding a language, or at any time from the language selector.",
     illustration: (
       <div className="flex w-full flex-col items-center gap-3">
         <div className="flex w-full max-w-xs items-center justify-between gap-2 rounded-2xl border-2 border-fabpink bg-surface px-4 py-3.5 shadow-lg shadow-fabpink/20">
@@ -337,9 +337,9 @@ export function OnboardingFlow({ onFinish }: Props) {
               aria-hidden="true"
             />
             <Logo size={72} className="relative text-fabpink" />
-            <Wordmark size={28} className="relative mt-4 text-ink" />
+            <Wordmark size={28} className="relative mt-4" />
             <p className="relative mt-4 font-brand text-xs font-semibold uppercase tracking-[0.26em] text-muted">
-              The phrasebook you write
+              The phrasebook you write as you go
             </p>
 
             <p className="relative mt-5 text-sm leading-relaxed text-muted">

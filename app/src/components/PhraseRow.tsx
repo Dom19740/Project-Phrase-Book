@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, GripVertical, Loader2, Star, Volume2 } from 'lucide-react'
+import { motion } from 'motion/react'
+import { Check, GripVertical, Star, Volume2 } from 'lucide-react'
 import { speak } from '../lib/tts'
+import { motionSafeSpring, spatialFast, usePrefersReducedMotion } from '../lib/motionPresets'
 import { useSpeakRate } from '../lib/useSpeakRate'
 import type { PhraseListItem } from '../db/types'
 import { PhraseQuickMenu } from './PhraseQuickMenu'
+import { LoadingIndicator } from './ui/LoadingIndicator'
 
 interface Props {
   phrase: PhraseListItem
@@ -41,6 +44,7 @@ export function PhraseRow({
   dragHandleProps,
   dragging = false,
 }: Props) {
+  const reducedMotion = usePrefersReducedMotion()
   const [menuOpen, setMenuOpen] = useState(false)
   const [speaking, setSpeaking] = useState(false)
   const pressTimer = useRef<number | null>(null)
@@ -91,11 +95,13 @@ export function PhraseRow({
   }
 
   return (
-    <div
+    <motion.div
       ref={rowRef}
-      className={`group relative overflow-hidden rounded-2xl bg-surface border shadow-sm transition-all hover:border-fabpink/40 select-none ${
+      whileTap={menuOpen ? undefined : { scale: 0.99 }}
+      transition={motionSafeSpring(spatialFast, reducedMotion)}
+      className={`group relative overflow-hidden rounded-2xl bg-surface border shadow-sm transition-colors hover:border-fabpink/40 select-none ${
         dragging ? 'border-fabpink' : 'border-hairline'
-      } ${menuOpen ? '' : 'active:scale-[0.99]'}`}
+      }`}
     >
       <div
         className="relative flex cursor-pointer items-center gap-1.5 px-2 py-0.1"
@@ -133,7 +139,7 @@ export function PhraseRow({
                 <span className="font-semibold text-ink">{displayedTranslation} </span>
               ) : translating ? (
                 <span className="inline-flex items-center gap-1 italic text-muted">
-                  <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
+                  <LoadingIndicator size={12} className="text-fabpink" />
                   Translating&hellip;{' '}
                 </span>
               ) : (
@@ -148,7 +154,7 @@ export function PhraseRow({
                 <span className="font-semibold text-ink">{displayedTranslation}</span>
               ) : translating ? (
                 <span className="inline-flex items-center gap-1 italic text-muted">
-                  <Loader2 size={12} strokeWidth={2.5} className="animate-spin text-fabpink" />
+                  <LoadingIndicator size={12} className="text-fabpink" />
                   Translating&hellip;
                 </span>
               ) : (
@@ -161,11 +167,11 @@ export function PhraseRow({
 
       <div className="shrink-0 flex items-center justify-end gap-0.5">
         {phrase.learned && phrase.favorite ? (
-          <Star size={16} strokeWidth={2.5} className="text-fabpink" aria-label="Favorite and learned" />
+          <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favorite and learned" />
         ) : (
           <>
             {phrase.learned && <Check size={18} strokeWidth={2.5} className="text-fabpink" aria-label="Learnt" />}
-            {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="currentColor" className="text-fabpink" aria-label="Favorite" />}
+            {phrase.favorite && <Star size={16} strokeWidth={2.5} fill="none" className="text-fabpink" aria-label="Favorite" />}
           </>
         )}
         {selectionMode && (
@@ -218,6 +224,6 @@ export function PhraseRow({
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

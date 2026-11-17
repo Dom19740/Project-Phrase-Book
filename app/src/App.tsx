@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { BookOpen, FileText, Layers, Loader2, Menu, Moon, Plus, Save, Shield, Smartphone, Sun, TriangleAlert } from 'lucide-react'
+import { BookOpen, FileText, Layers, Moon, Plus, Save, Shield, Smartphone, Sparkles, Sun, TriangleAlert } from 'lucide-react'
 import { AddPhraseModal } from './components/AddPhraseModal'
 import { BackupModal } from './components/BackupModal'
 import { BackupReminderBanner } from './components/BackupReminderBanner'
 import { EditPhraseModal } from './components/EditPhraseModal'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { FlashCardsModal } from './components/FlashCardsModal'
+import { Header } from './components/Header'
 import { InstallPrompt } from './components/InstallPrompt'
 import { LanguageTabs } from './components/LanguageTabs'
 import { LearnFavoriteSettingModal } from './components/LearnFavoriteSettingModal'
@@ -13,13 +14,20 @@ import { LoadingScreen } from './components/LoadingScreen'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
 import { StartupPhrasesModal } from './components/StartupPhrasesModal'
+import { Button } from './components/ui/Button'
+import { LoadingIndicator } from './components/ui/LoadingIndicator'
+import { MenuIcon } from './components/ui/MenuIcon'
+import { SegmentedControl } from './components/ui/SegmentedControl'
+import { WhatsNewModal } from './components/WhatsNewModal'
 import { PhraseBookProvider, usePhraseBook } from './context/PhraseBookContext'
+import { applyMaterialTheme } from './lib/materialTheme'
 import { detectInstallablePlatform } from './lib/platform'
 import { usePersistedState } from './lib/usePersistedState'
 import { syncStatusBarStyle } from './lib/systemBars'
 import { syncWidgetTheme } from './lib/widgetRefresh'
 import { onQuickAddRequested, onShareLinkOpened } from './lib/deepLink'
 import { fetchSharedCollection } from './lib/shareImport'
+import { WHATS_NEW } from './lib/whatsNew'
 import type { CsvPhraseRow } from './lib/csvImport'
 import type { PhraseListItem } from './db/types'
 
@@ -128,6 +136,19 @@ function Shell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [editingPhrase, setEditingPhrase] = useState<PhraseListItem | null>(null)
   const [selectionModeActive, setSelectionModeActive] = useState(false)
+  const [chromeVisible, setChromeVisible] = useState(true)
+  // True once the show transition has fully finished - the language bar's menu button opens a
+  // dropdown via position:absolute, which the collapse wrapper's overflow-hidden (needed to
+  // actually hide the bar while collapsed/animating) would otherwise clip.
+  const [chromeExpanded, setChromeExpanded] = useState(true)
+
+  function toggleChrome() {
+    setChromeVisible((visible) => {
+      const next = !visible
+      if (!next) setChromeExpanded(false)
+      return next
+    })
+  }
   const [themeOverride, setThemeOverride] = usePersistedState<Theme | null>('phrasebook-theme', null)
   const systemTheme = useSystemTheme()
   const theme = themeOverride ?? systemTheme
@@ -141,6 +162,20 @@ function Shell() {
   const [installPromptOffered, setInstallPromptOffered] = usePersistedState('phrasebook-install-prompt-offered', false)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [installPlatform] = useState(detectInstallablePlatform)
+
+  const [lastSeenWhatsNewVersion, setLastSeenWhatsNewVersion] = usePersistedState<string | null>('phrasebook-whats-new-version', null)
+  const [showWhatsNew, setShowWhatsNew] = useState(false)
+
+  // Shows automatically once per version bump for existing users, but a brand-new install
+  // starts already "caught up" (set in finishOnboarding below) since there's nothing new to them.
+  useEffect(() => {
+    if (onboardingSeen && lastSeenWhatsNewVersion !== WHATS_NEW.version) setShowWhatsNew(true)
+  }, [onboardingSeen, lastSeenWhatsNewVersion])
+
+  function dismissWhatsNew() {
+    setShowWhatsNew(false)
+    setLastSeenWhatsNewVersion(WHATS_NEW.version)
+  }
 
   // Dismissing only snoozes the banner for this session - it comes back next launch if the
   // phrasebook is still unbacked-up, rather than being silenced forever after one tap.
@@ -167,6 +202,7 @@ function Shell() {
     const wasFirstOnboarding = !onboardingSeen
     setOnboardingSeen(true)
     setShowOnboarding(false)
+    if (wasFirstOnboarding) setLastSeenWhatsNewVersion(WHATS_NEW.version)
     if (wasFirstOnboarding && !installPromptOffered && installPlatform) {
       setShowInstallPrompt(true)
       setInstallPromptOffered(true)
@@ -193,7 +229,8 @@ function Shell() {
   useEffect(() => {
     document.documentElement.style.setProperty('--color-fabpink', appliedAccent)
     document.documentElement.style.setProperty('--color-onaccent', readableTextOn(appliedAccent))
-  }, [appliedAccent])
+    applyMaterialTheme(appliedAccent, theme === 'dark')
+  }, [appliedAccent, theme])
 
   useEffect(() => {
     syncWidgetTheme(theme, accent)
@@ -258,6 +295,18 @@ function Shell() {
       className="flex h-full flex-col bg-appbg text-ink"
       style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }}
     >
+      <Header chromeVisible={chromeVisible} onToggleChrome={toggleChrome} />
+      <div
+        className="menu-panel-reveal shrink-0"
+        data-open={chromeVisible}
+        aria-hidden={!chromeVisible}
+        onTransitionEnd={(e) => {
+          if (chromeVisible && e.target === e.currentTarget && e.propertyName === 'grid-template-rows') {
+            setChromeExpanded(true)
+          }
+        }}
+      >
+      <div className={`min-h-0 ${chromeExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
       <LanguageTabs
         languages={languages}
         activeLanguageId={activeLanguageId}
@@ -274,37 +323,16 @@ function Shell() {
               onClick={() => setMenuOpen((v) => !v)}
               className="rounded-full p-2 text-muted hover:bg-surfacehover hover:text-ink active:scale-90 transition-all"
               aria-label="Menu"
+              aria-expanded={menuOpen}
               title="Menu"
             >
-              <Menu size={20} strokeWidth={2} />
+              <MenuIcon open={menuOpen} size={20} />
             </button>
 
             {menuOpen && (
               <>
                 <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenuOpen(false)} aria-label="Close menu" />
                 <div className="animate-menu-open absolute right-0 top-full z-50 mt-2 w-52 rounded-2xl border border-hairline bg-surface p-1.5 shadow-xl">
-                  <button
-                    onClick={() => {
-                      setShowOnboarding(true)
-                      setMenuOpen(false)
-                    }}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
-                  >
-                    <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
-                    How to Use
-                  </button>
-                  {installPlatform && (
-                    <button
-                      onClick={() => {
-                        setShowInstallPrompt(true)
-                        setMenuOpen(false)
-                      }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
-                    >
-                      <Smartphone size={16} strokeWidth={2} className="text-fabpink" />
-                      {installPlatform === 'ios' ? 'Add to Home Screen' : 'Get the app'}
-                    </button>
-                  )}
                   <button
                     onClick={() => {
                       setShowFlashCards(true)
@@ -326,27 +354,60 @@ function Shell() {
                     <Save size={16} strokeWidth={2} className="text-fabpink" />
                     Backup & Share
                   </button>
+                  <button
+                    onClick={() => {
+                      setShowOnboarding(true)
+                      setMenuOpen(false)
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                  >
+                    <BookOpen size={16} strokeWidth={2} className="text-fabpink" />
+                    How to Use
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowWhatsNew(true)
+                      setMenuOpen(false)
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                  >
+                    <Sparkles size={16} strokeWidth={2} className="text-fabpink" />
+                    What's New
+                  </button>
+                  {installPlatform && (
+                    <button
+                      onClick={() => {
+                        setShowInstallPrompt(true)
+                        setMenuOpen(false)
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+                    >
+                      <Smartphone size={16} strokeWidth={2} className="text-fabpink" />
+                      {installPlatform === 'ios' ? 'Add to Home Screen' : 'Get the app'}
+                    </button>
+                  )}
 
                   <div className="mt-1 border-t border-hairline px-2.5 pt-2 pb-1">
                     <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => setThemeOverride('light')}
-                        aria-label="Light theme"
-                        aria-pressed={theme === 'light'}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
-                        style={theme === 'light' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
-                      >
-                        <Sun size={13} strokeWidth={2} />
-                      </button>
-                      <button
-                        onClick={() => setThemeOverride('dark')}
-                        aria-label="Dark theme"
-                        aria-pressed={theme === 'dark'}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90"
-                        style={theme === 'dark' ? { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) } : { color: 'var(--color-muted)' }}
-                      >
-                        <Moon size={13} strokeWidth={2} />
-                      </button>
+                      <SegmentedControl
+                        value={theme}
+                        onChange={setThemeOverride}
+                        options={[
+                          {
+                            value: 'light',
+                            label: <Sun size={13} strokeWidth={2} />,
+                            ariaLabel: 'Light theme',
+                            selectedStyle: { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) },
+                          },
+                          {
+                            value: 'dark',
+                            label: <Moon size={13} strokeWidth={2} />,
+                            ariaLabel: 'Dark theme',
+                            selectedStyle: { backgroundColor: appliedAccent, color: readableTextOn(appliedAccent) },
+                          },
+                        ]}
+                        className="border-none bg-transparent p-0"
+                      />
                       <div className="mx-0.5 h-4 w-px shrink-0 bg-hairline" />
                       {ACCENT_COLORS.map((color) => (
                         <button
@@ -389,6 +450,8 @@ function Shell() {
           </div>
         }
       />
+      </div>
+      </div>
 
       {needsBackupReminder && !backupReminderDismissed && (
         <>
@@ -437,7 +500,7 @@ function Shell() {
           // however long translation takes - that can now run to several minutes of retries, and
           // there's no reason to block on it when there's already something real to look at.
           <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
-            <Loader2 size={28} strokeWidth={2.5} className="animate-spin text-fabpink" />
+            <LoadingIndicator size={28} className="text-fabpink" />
             <p className="text-sm">Translating {backgroundTranslation.languageName}&hellip;</p>
           </div>
         ) : (
@@ -469,6 +532,7 @@ function Shell() {
             onReorderCategories={reorderCategories}
             removeFavoriteOnLearn={removeFavoriteOnLearn}
             onToggleRemoveFavoriteOnLearn={setRemoveFavoriteOnLearn}
+            chromeVisible={chromeVisible}
           />
         )}
       </main>
@@ -478,7 +542,7 @@ function Shell() {
           className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surfacehover/95 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
         >
-          <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
+          <LoadingIndicator size={15} className="text-fabpink" />
           <span className="min-w-0 whitespace-normal break-words leading-5">Translating {backgroundTranslation.languageName} in the background&hellip;</span>
         </div>
       )}
@@ -488,7 +552,7 @@ function Shell() {
           className="fixed left-1/2 -translate-x-1/2 flex w-fit max-w-[85vw] items-start gap-2 rounded-2xl bg-surfacehover/95 backdrop-blur-md border border-hairline px-4 py-2 text-sm text-ink shadow-lg shadow-black/20"
           style={{ bottom: 'calc(9rem + var(--safe-area-inset-bottom, 0px))' }}
         >
-          <Loader2 size={15} strokeWidth={2.5} className="shrink-0 animate-spin text-fabpink" />
+          <LoadingIndicator size={15} className="text-fabpink" />
           <span className="min-w-0 whitespace-normal break-words leading-5">Creating phonetic translations for {backgroundPhonetics.languageName}&hellip;</span>
         </div>
       )}
@@ -520,15 +584,15 @@ function Shell() {
       )}
 
       {!selectionModeActive && (
-        <button
+        <Button
           onClick={() => setShowAddPhrase(true)}
           disabled={languages.length === 0}
-          className="fixed right-6 flex size-14 items-center justify-center rounded-full bg-fabpink text-onaccent shadow-lg shadow-black/30 transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+          className="fixed right-6 flex size-14 items-center justify-center"
           style={{ bottom: 'calc(1.5rem + var(--safe-area-inset-bottom, 0px))' }}
           aria-label="Add phrase"
         >
           <Plus size={26} strokeWidth={2.5} />
-        </button>
+        </Button>
       )}
 
       {showAddPhrase && (
@@ -596,6 +660,8 @@ function Shell() {
       {showInstallPrompt && installPlatform && (
         <InstallPrompt platform={installPlatform} onClose={() => setShowInstallPrompt(false)} />
       )}
+
+      {showWhatsNew && <WhatsNewModal entry={WHATS_NEW} onClose={dismissWhatsNew} />}
 
       {showLearnFavoritePrompt && <LearnFavoriteSettingModal onConfirm={resolveLearnFavoritePrompt} />}
 

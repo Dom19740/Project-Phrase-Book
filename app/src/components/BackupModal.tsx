@@ -14,6 +14,7 @@ import type { BackupSnapshot } from '../db/backup'
 import type { Language } from '../db/types'
 import { LanguageSearchList } from './LanguageSearchList'
 import { PopoutSelect } from './PopoutSelect'
+import { Dialog } from './ui/Dialog'
 
 const APP_LINK = 'https://travelchatter.dpbcreative.com'
 
@@ -319,8 +320,8 @@ export function BackupModal({
   const blankCount = pendingImport ? pendingImport.rows.filter((r) => !r.text.trim()).length : 0
 
   return (
-    <div className="animate-modal-backdrop fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24" onClick={onClose}>
-      <div className="animate-modal-panel w-full min-w-0 sm:max-w-md rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0" onClick={(e) => e.stopPropagation()}>
+    <Dialog onClose={onClose} maxWidthClassName="sm:max-w-md">
+      <>
         <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">Backup & Share</h2>
         <p className="text-xs text-muted mb-4">
           {lastBackupAt ? `Last automatic backup: ${new Date(lastBackupAt).toLocaleString()}` : 'No automatic backup yet on this device.'}{' '}
@@ -643,7 +644,7 @@ export function BackupModal({
             </button>
           </div>
         )}
-      </div>
-    </div>
+      </>
+    </Dialog>
   )
 }

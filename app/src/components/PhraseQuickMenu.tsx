@@ -1,4 +1,6 @@
+import { motion } from 'motion/react'
 import { Check, Pencil, Star } from 'lucide-react'
+import { motionSafeSpring, spatialDefault, usePrefersReducedMotion } from '../lib/motionPresets'
 
 interface Props {
   open: boolean
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export function PhraseQuickMenu({ open, learned, favorite, onToggleLearned, onToggleFavorite, onEdit, onClose }: Props) {
+  const reducedMotion = usePrefersReducedMotion()
   return (
     <div
       className={`flex flex-col p-1.5 ${open ? 'animate-menu-open' : ''}`}
@@ -24,10 +27,12 @@ export function PhraseQuickMenu({ open, learned, favorite, onToggleLearned, onTo
           onClose()
         }}
         tabIndex={open ? 0 : -1}
-        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink hover:bg-surfacehover transition-colors"
       >
-        <Check size={16} strokeWidth={2.5} className={learned ? 'text-fabpink' : 'text-muted'} />
-        Learnt
+        <motion.span key={learned ? 'learned' : 'not-learned'} initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={motionSafeSpring(spatialDefault, reducedMotion)} className="inline-flex">
+          <Check size={16} strokeWidth={2.5} className="text-fabpink" />
+        </motion.span>
+        {learned ? 'Unlearn' : 'Learnt'}
       </button>
       <button
         type="button"
@@ -36,10 +41,12 @@ export function PhraseQuickMenu({ open, learned, favorite, onToggleLearned, onTo
           onClose()
         }}
         tabIndex={open ? 0 : -1}
-        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink hover:bg-surfacehover transition-colors"
       >
-        <Star size={16} strokeWidth={2.5} fill={favorite ? 'currentColor' : 'none'} className={favorite ? 'text-fabpink' : 'text-muted'} />
-        Favorite
+        <motion.span key={favorite ? 'favorite' : 'not-favorite'} initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={motionSafeSpring(spatialDefault, reducedMotion)} className="inline-flex">
+          <Star size={16} strokeWidth={2.5} fill={learned ? 'currentColor' : 'none'} className="text-fabpink" />
+        </motion.span>
+        {favorite ? 'Unfavorite' : 'Favorite'}
       </button>
       <button
         type="button"
@@ -48,9 +55,9 @@ export function PhraseQuickMenu({ open, learned, favorite, onToggleLearned, onTo
           onClose()
         }}
         tabIndex={open ? 0 : -1}
-        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-left text-ink hover:bg-surfacehover transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink hover:bg-surfacehover transition-colors"
       >
-        <Pencil size={16} strokeWidth={2.5} className="text-muted" />
+        <Pencil size={16} strokeWidth={2.5} className="text-fabpink" />
         Edit
       </button>
     </div>

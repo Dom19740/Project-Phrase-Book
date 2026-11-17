@@ -23,11 +23,13 @@ final class PhraseWidgetDb {
         final int id;
         final String name;
         final String code;
+        final boolean phoneticsEnabled;
 
-        LanguageRow(int id, String name, String code) {
+        LanguageRow(int id, String name, String code, boolean phoneticsEnabled) {
             this.id = id;
             this.name = name;
             this.code = code;
+            this.phoneticsEnabled = phoneticsEnabled;
         }
     }
 
@@ -35,13 +37,15 @@ final class PhraseWidgetDb {
         final long id;
         final String english;
         final String text;
+        final String phonetic;
         final boolean favorite;
         final boolean learned;
 
-        PhraseRow(long id, String english, String text, boolean favorite, boolean learned) {
+        PhraseRow(long id, String english, String text, String phonetic, boolean favorite, boolean learned) {
             this.id = id;
             this.english = english;
             this.text = text;
+            this.phonetic = phonetic;
             this.favorite = favorite;
             this.learned = learned;
         }
@@ -55,9 +59,9 @@ final class PhraseWidgetDb {
     static List<LanguageRow> getLanguages(Context context) {
         List<LanguageRow> result = new ArrayList<>();
         try (SQLiteDatabase db = openReadOnly(context);
-             Cursor c = db.rawQuery("SELECT id, name, code FROM languages ORDER BY sort_order, id", null)) {
+             Cursor c = db.rawQuery("SELECT id, name, code, phonetics_enabled FROM languages ORDER BY sort_order, id", null)) {
             while (c.moveToNext()) {
-                result.add(new LanguageRow(c.getInt(0), c.getString(1), c.getString(2)));
+                result.add(new LanguageRow(c.getInt(0), c.getString(1), c.getString(2), c.getInt(3) != 0));
             }
         } catch (Exception e) {
             // No languages added yet, or the app is mid-write and briefly holds the file lock -
@@ -69,14 +73,14 @@ final class PhraseWidgetDb {
     static List<PhraseRow> getPhrases(Context context, int languageId, String filter, String sortMode) {
         List<PhraseRow> result = new ArrayList<>();
         String condition = "favorites".equals(filter) ? "t.favorite = 1" : "t.learned = 0";
-        String sql = "SELECT t.id, pc.english, t.text, t.favorite, t.learned FROM translations t "
+        String sql = "SELECT t.id, pc.english, t.text, t.phonetic, t.favorite, t.learned FROM translations t "
                 + "JOIN phrase_concepts pc ON pc.id = t.phrase_concept_id "
                 + "WHERE t.language_id = ? AND " + condition + " "
                 + "ORDER BY " + orderByClause(sortMode);
         try (SQLiteDatabase db = openReadOnly(context);
              Cursor c = db.rawQuery(sql, new String[] { String.valueOf(languageId) })) {
             while (c.moveToNext()) {
-                result.add(new PhraseRow(c.getLong(0), c.getString(1), c.getString(2), c.getInt(3) != 0, c.getInt(4) != 0));
+                result.add(new PhraseRow(c.getLong(0), c.getString(1), c.getString(2), c.getString(3), c.getInt(4) != 0, c.getInt(5) != 0));
             }
         } catch (Exception e) {
             // Same fallback as above.

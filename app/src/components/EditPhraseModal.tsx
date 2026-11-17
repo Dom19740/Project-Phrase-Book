@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { Check, Copy, Loader2, Mic, RefreshCw, Save, Trash2 } from 'lucide-react'
+import { Check, Copy, Mic, RefreshCw, Save, Trash2 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag, getSpeechLocale } from '../lib/languageFlags'
 import { pillClass } from '../lib/pillStyles'
 import { translateAlternatives } from '../lib/translateApi'
 import { useSpeechToText } from '../lib/useSpeechToText'
 import { PopoutSelect } from './PopoutSelect'
+import { Button } from './ui/Button'
+import { Dialog } from './ui/Dialog'
+import { LoadingIndicator } from './ui/LoadingIndicator'
 
 const NEW_CATEGORY = '__new__'
 
@@ -123,8 +126,8 @@ export function EditPhraseModal({
   }
 
   return (
-    <div className="animate-modal-backdrop fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
-      <div className="animate-modal-panel w-full min-w-0 sm:max-w-md rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
+    <Dialog onClose={onClose} maxWidthClassName="sm:max-w-md" dismissOnBackdropClick={false} zIndexClassName="z-[60]">
+      <>
         {confirmingDelete ? (
           <>
             <h2 className="text-lg font-bold tracking-tight mb-4 text-ink">Delete phrase</h2>
@@ -136,20 +139,12 @@ export function EditPhraseModal({
               >
                 Delete from {languageName} only
               </button>
-              <button
-                onClick={() => handleDelete('all')}
-                disabled={deleting}
-                className="rounded-full bg-fabpink px-4 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-              >
+              <Button onClick={() => handleDelete('all')} disabled={deleting} className="px-4 py-2 text-sm font-medium">
                 Delete from all languages
-              </button>
-              <button
-                onClick={() => setConfirmingDelete(false)}
-                disabled={deleting}
-                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
-              >
+              </Button>
+              <Button variant="outline" onClick={() => setConfirmingDelete(false)} disabled={deleting} className="px-4 py-2 text-sm font-medium">
                 Cancel
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -317,13 +312,9 @@ export function EditPhraseModal({
                       })}
                     </div>
                     <div className="flex justify-end">
-                      <button
-                        onClick={applyCopy}
-                        disabled={copying || copyTargetIds.size === 0}
-                        className="rounded-full bg-fabpink px-3.5 py-1.5 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-                      >
+                      <Button onClick={applyCopy} disabled={copying || copyTargetIds.size === 0} className="px-3.5 py-1.5 text-sm font-medium">
                         {copying ? 'Copying...' : 'Copy'}
-                      </button>
+                      </Button>
                     </div>
                   </>
                 )}
@@ -332,14 +323,9 @@ export function EditPhraseModal({
 
             <div className="flex items-center justify-between gap-2 mt-1">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setConfirmingDelete(true)}
-                  aria-label="Delete phrase"
-                  title="Delete phrase"
-                  className="rounded-full border border-hairline p-2 text-muted hover:bg-surfacehover active:scale-90 transition-all"
-                >
+                <Button variant="outline" onClick={() => setConfirmingDelete(true)} aria-label="Delete phrase" title="Delete phrase" className="p-2">
                   <Trash2 size={16} strokeWidth={2} />
-                </button>
+                </Button>
                 <button
                   onClick={() => setCopyPanelOpen((v) => !v)}
                   className={`flex items-center gap-1 rounded-full border px-3 py-2 text-sm font-medium transition-all active:scale-95 ${
@@ -351,23 +337,17 @@ export function EditPhraseModal({
                 </button>
               </div>
               <div className="flex gap-2">
-                <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
+                <Button variant="outline" onClick={onClose} className="px-4 py-2 text-sm font-medium">
                   Cancel
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!canSubmit || saving}
-                  aria-label={saving ? 'Saving' : 'Save'}
-                  title={saving ? 'Saving' : 'Save'}
-                  className="rounded-full bg-fabpink p-2.5 text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-                >
-                  {saving ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : <Save size={16} strokeWidth={2} />}
-                </button>
+                </Button>
+                <Button onClick={handleSubmit} disabled={!canSubmit || saving} aria-label={saving ? 'Saving' : 'Save'} title={saving ? 'Saving' : 'Save'} className="p-2.5">
+                  {saving ? <LoadingIndicator size={16} /> : <Save size={16} strokeWidth={2} />}
+                </Button>
               </div>
             </div>
           </>
         )}
-      </div>
-    </div>
+      </>
+    </Dialog>
   )
 }

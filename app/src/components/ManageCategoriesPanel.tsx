@@ -58,7 +58,7 @@ export function ManageCategoriesPanel({ categories, onClose, onCreate, onRename,
           >
             <ArrowLeft size={15} strokeWidth={2} />
           </button>
-          <h2 className="text-sm font-extrabold uppercase tracking-wider text-fabpink">Manage categories</h2>
+          <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Manage categories</h2>
         </div>
 
         <DragReorderList

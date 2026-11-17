@@ -27,4 +27,10 @@ public class WidgetRefreshPlugin extends Plugin {
         PhraseWidgetProvider.syncSortMode(getContext(), call.getString("sortMode"));
         call.resolve();
     }
+
+    @PluginMethod
+    public void syncShowPhonetics(PluginCall call) {
+        PhraseWidgetProvider.syncShowPhonetics(getContext(), call.getBoolean("showPhonetics", false));
+        call.resolve();
+    }
 }

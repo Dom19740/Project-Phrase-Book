@@ -4,6 +4,8 @@ import { getLanguageFlag } from '../lib/languageFlags'
 import type { LanguageOption } from '../lib/languageOptions'
 import { LanguageSearchList } from './LanguageSearchList'
 import { PopoutSelect } from './PopoutSelect'
+import { Button } from './ui/Button'
+import { Dialog } from './ui/Dialog'
 
 interface Props {
   languages: Language[]
@@ -82,14 +84,8 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
   }
 
   return (
-    <div
-      className="animate-modal-backdrop fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24"
-      onClick={onClose}
-    >
-      <div
-        className={`animate-modal-panel w-full min-w-0 ${selected ? 'sm:max-w-md' : 'sm:max-w-sm'} rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0`}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog onClose={onClose} maxWidthClassName={selected ? 'sm:max-w-md' : 'sm:max-w-sm'}>
+      <>
         {selected ? (
           <>
             <h2 className="text-lg font-bold tracking-tight mb-1 text-ink">
@@ -184,20 +180,12 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             )}
 
             <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setSelected(null)}
-                disabled={saving}
-                className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-40"
-              >
+              <Button variant="outline" onClick={() => setSelected(null)} disabled={saving} className="px-4 py-2 text-sm">
                 Back
-              </button>
-              <button
-                onClick={handleAdd}
-                disabled={saving || loadingPhrases}
-                className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-              >
+              </Button>
+              <Button onClick={handleAdd} disabled={saving || loadingPhrases} className="px-5 py-2 text-sm">
                 {saving ? 'Adding...' : 'Add a language'}
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -209,13 +197,13 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             </div>
 
             <div className="flex items-center justify-end gap-2">
-              <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
+              <Button variant="outline" onClick={onClose} className="px-4 py-2 text-sm">
                 Cancel
-              </button>
+              </Button>
             </div>
           </>
         )}
-      </div>
-    </div>
+      </>
+    </Dialog>
   )
 }

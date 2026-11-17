@@ -6,6 +6,8 @@ import { pillClass } from '../lib/pillStyles'
 import { translateAlternatives, translatePhrase } from '../lib/translateApi'
 import { useSpeechToText } from '../lib/useSpeechToText'
 import { PopoutSelect } from './PopoutSelect'
+import { Button } from './ui/Button'
+import { Dialog } from './ui/Dialog'
 
 const NEW_CATEGORY = '__new__'
 
@@ -134,8 +136,8 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
   }
 
   return (
-    <div className="animate-modal-backdrop fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm pt-16 pb-[var(--safe-area-inset-bottom,0px)] sm:pt-24">
-      <div className="animate-modal-panel w-full min-w-0 sm:max-w-md rounded-2xl border-[1.5px] border-hairline bg-surface p-5 shadow-2xl mx-4 sm:mx-0">
+    <Dialog onClose={onClose} maxWidthClassName="sm:max-w-md" dismissOnBackdropClick={false}>
+      <>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold tracking-tight text-ink">Add phrase</h2>
           <button
@@ -336,18 +338,14 @@ export function AddPhraseModal({ categories, languages, activeLanguageId, onClos
         )}
 
         <div className="flex justify-end gap-2 mt-3">
-          <button onClick={onClose} className="rounded-full border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all">
+          <Button variant="outline" onClick={onClose} className="px-4 py-2 text-sm font-medium">
             Cancel
-          </button>
-          <button
-            onClick={allTranslated ? handleSubmit : handleAutoTranslate}
-            disabled={!canSubmit || saving || anyLoadingAlternatives}
-            className="rounded-full bg-fabpink px-5 py-2 text-sm font-medium text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-          >
+          </Button>
+          <Button onClick={allTranslated ? handleSubmit : handleAutoTranslate} disabled={!canSubmit || saving || anyLoadingAlternatives} className="px-5 py-2 text-sm font-medium">
             {saving ? 'Saving...' : anyLoadingAlternatives ? 'Translating…' : allTranslated ? 'Add phrase' : 'Auto translate'}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </>
+    </Dialog>
   )
 }

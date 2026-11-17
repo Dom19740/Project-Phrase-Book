@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -12,5 +12,5 @@
     "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src/lib/chunkedTranslate.ts", "test"]
+  "include": ["src/lib/chunkedTranslate.ts", "src/lib/materialRoles.ts", "src/lib/motionPresets.ts", "test"]
 }

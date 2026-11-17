@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeftRight, Check, ChevronLeft, ChevronRight, Layers, Shuffle, Star, Volume2, X } from 'lucide-react'
+import { ArrowLeftRight, Check, ChevronLeft, ChevronRight, Languages, Layers, Shuffle, Star, Volume2, X } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { pillClass as sharedPillClass } from '../lib/pillStyles'
 import { speak } from '../lib/tts'
+import { usePersistedState } from '../lib/usePersistedState'
 import { useSpeakRate } from '../lib/useSpeakRate'
+import { Button } from './ui/Button'
+import { SegmentedControl } from './ui/SegmentedControl'
 import { EditPhraseModal } from './EditPhraseModal'
 
-type FlashFilterFlag = 'unlearned' | 'favorites'
+type FlashFilterFlag = 'unlearned' | 'learned' | 'favorites'
 type GuessDirection = 'english' | 'translation'
 
 interface Props {
@@ -36,6 +39,7 @@ const LONG_PRESS_MS = 500
 
 const FILTERS: { value: FlashFilterFlag; label: string }[] = [
   { value: 'unlearned', label: 'Not Learnt' },
+  { value: 'learned', label: 'Learnt' },
   { value: 'favorites', label: 'Favorites' },
 ]
 
@@ -49,7 +53,7 @@ function shuffled<T>(items: T[]): T[] {
 }
 
 function pillClass(active: boolean) {
-  return `${sharedPillClass(active)} font-medium active:scale-95`
+  return `${sharedPillClass(active, 'accent')} active:scale-95`
 }
 
 export function FlashCardsModal({
@@ -71,6 +75,7 @@ export function FlashCardsModal({
   const [categoryIds, setCategoryIds] = useState<Set<number>>(new Set())
   const [direction, setDirection] = useState<GuessDirection>('english')
   const [shuffle, setShuffle] = useState(false)
+  const [showPhonetics, setShowPhonetics] = usePersistedState('phrasebook-show-phonetics', false)
   const [languagePhrases, setLanguagePhrases] = useState<PhraseListItem[]>([])
   const [loadingPhrases, setLoadingPhrases] = useState(false)
 
@@ -153,6 +158,7 @@ export function FlashCardsModal({
       if (!p.text) return false
       if (filterFlags.has('favorites') && !p.favorite) return false
       if (filterFlags.has('unlearned') && p.learned) return false
+      if (filterFlags.has('learned') && !p.learned) return false
       if (categoryIds.size > 0 && (p.categoryId == null || !categoryIds.has(p.categoryId))) return false
       return true
     })
@@ -162,8 +168,9 @@ export function FlashCardsModal({
   const languageCode = activeLanguage?.code ?? 'en'
   const card = deck[index]
   const promptIsTranslation = direction === 'translation'
-  const frontText = card ? (promptIsTranslation ? card.text : card.english) : ''
-  const backText = card ? (promptIsTranslation ? card.english : card.text) : ''
+  const translationText = card ? (showPhonetics && card.phonetic ? card.phonetic : card.text) : ''
+  const frontText = card ? (promptIsTranslation ? translationText : card.english) : ''
+  const backText = card ? (promptIsTranslation ? card.english : translationText) : ''
   const shownIsTranslation = flipped ? !promptIsTranslation : promptIsTranslation
 
   function startSession() {
@@ -307,7 +314,7 @@ export function FlashCardsModal({
             ) : (
               <>
                 <section>
-                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Language</h2>
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-ink mb-2">Language</h2>
                   <div className="flex flex-wrap gap-2">
                     {languages.map((lang) => (
                       <button key={lang.id} onClick={() => setLanguageId(lang.id)} className={pillClass(languageId === lang.id)}>
@@ -317,11 +324,23 @@ export function FlashCardsModal({
                         {lang.name}
                       </button>
                     ))}
+                    {activeLanguage?.phoneticsEnabled && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPhonetics((v) => !v)}
+                        aria-pressed={showPhonetics}
+                        className={`flex items-center gap-1.5 ${pillClass(showPhonetics)}`}
+                        title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
+                      >
+                        <Languages size={13} strokeWidth={2} />
+                        {showPhonetics ? 'Phonetics' : 'Native'}
+                      </button>
+                    )}
                   </div>
                 </section>
 
                 <section>
-                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Phrases</h2>
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-ink mb-2">Phrases</h2>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => setFilterFlags(new Set())} className={pillClass(filterFlags.size === 0)}>
                       All
@@ -336,7 +355,7 @@ export function FlashCardsModal({
 
                 {availableCategories.length > 0 && (
                   <section>
-                    <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Category</h2>
+                    <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-ink mb-2">Category</h2>
                     <div className="flex flex-wrap gap-2">
                       <button onClick={() => setCategoryIds(new Set())} className={pillClass(categoryIds.size === 0)}>
                         All categories
@@ -351,19 +370,19 @@ export function FlashCardsModal({
                 )}
 
                 <section>
-                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Guess via</h2>
-                  <div className="flex flex-wrap gap-2">
-                    <button onClick={() => setDirection('english')} className={pillClass(direction === 'english')}>
-                      English
-                    </button>
-                    <button onClick={() => setDirection('translation')} className={pillClass(direction === 'translation')}>
-                      {activeLanguage?.name ?? 'Translation'}
-                    </button>
-                  </div>
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-ink mb-2">Guess via</h2>
+                  <SegmentedControl
+                    value={direction}
+                    onChange={setDirection}
+                    options={[
+                      { value: 'english', label: 'English' },
+                      { value: 'translation', label: activeLanguage?.name ?? 'Translation' },
+                    ]}
+                  />
                 </section>
 
                 <section>
-                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-2">Order</h2>
+                  <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-ink mb-2">Order</h2>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => setShuffle((s) => !s)} className={pillClass(shuffle) + ' flex items-center gap-1.5'}>
                       <Shuffle size={15} strokeWidth={2.5} />
@@ -380,13 +399,9 @@ export function FlashCardsModal({
               <p className="text-sm text-muted mb-3 text-center">
                 {loadingPhrases ? 'Loading phrases…' : `${matchingPhrases.length} phrase${matchingPhrases.length === 1 ? '' : 's'} match`}
               </p>
-              <button
-                onClick={startSession}
-                disabled={matchingPhrases.length === 0 || loadingPhrases}
-                className="w-full rounded-full bg-fabpink px-5 py-3 text-base font-semibold text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
-              >
+              <Button onClick={startSession} disabled={matchingPhrases.length === 0 || loadingPhrases} className="w-full px-5 py-3 text-base">
                 Start
-              </button>
+              </Button>
             </footer>
           )}
         </>
@@ -395,17 +410,18 @@ export function FlashCardsModal({
       {step === 'session' && card && (
         <div className="flex-1 flex flex-col px-4 py-4 min-h-0">
           <div className="flex items-center justify-center pb-3 shrink-0">
-            <button
+            <Button
+              variant="outline"
               onClick={() => {
                 setDirection((d) => (d === 'english' ? 'translation' : 'english'))
                 setFlipped(false)
               }}
-              className="flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
               title="Swap guess direction"
             >
               <ArrowLeftRight size={13} strokeWidth={2.5} className="text-fabpink" />
               Guess via {promptIsTranslation ? (activeLanguage?.name ?? 'Translation') : 'English'}
-            </button>
+            </Button>
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center gap-4 min-h-0">
@@ -428,14 +444,14 @@ export function FlashCardsModal({
                   className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-y-auto rounded-3xl border-2 border-fabpink/40 bg-surface px-6 py-10 shadow-xl text-center"
                   style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' } as React.CSSProperties}
                 >
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted">Tap to reveal</span>
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted">Tap to reveal</span>
                   <span className="text-2xl font-bold leading-snug text-ink break-words">{frontText || <span className="italic text-muted">&mdash;</span>}</span>
                 </div>
                 <div
                   className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-y-auto rounded-3xl bg-fabpink px-6 py-10 shadow-xl text-center"
                   style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' } as React.CSSProperties}
                 >
-                  <span className="text-xs font-bold uppercase tracking-wider text-black/70">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-black/70">
                     {promptIsTranslation ? 'English' : (activeLanguage?.name ?? 'Translation')}
                   </span>
                   <span className="text-2xl font-bold leading-snug text-black break-words">{backText || <span className="italic text-black/60">&mdash;</span>}</span>
@@ -444,23 +460,17 @@ export function FlashCardsModal({
             </button>
 
             <div className="w-full max-w-sm flex items-center justify-between gap-3 shrink-0">
-              <button
-                onClick={goPrev}
-                disabled={index === 0}
-                className="flex-1 rounded-full border border-hairline py-3 flex items-center justify-center gap-1 text-sm font-medium text-ink hover:bg-surfacehover active:scale-95 transition-all disabled:opacity-30"
-              >
+              <Button variant="outline" onClick={goPrev} disabled={index === 0} className="flex-1 flex items-center justify-center gap-1 py-3 text-sm">
                 <ChevronLeft size={18} strokeWidth={2} /> Previous
-              </button>
-              <button
-                onClick={goNext}
-                className="flex-1 rounded-full bg-fabpink py-3 text-sm font-semibold text-onaccent shadow-lg shadow-fabpink/20 flex items-center justify-center gap-1 active:scale-95 transition-all"
-              >
+              </Button>
+              <Button onClick={goNext} className="flex-1 flex items-center justify-center gap-1 py-3 text-sm">
                 {index === deck.length - 1 ? 'Finish' : 'Next'} <ChevronRight size={18} strokeWidth={2} />
-              </button>
+              </Button>
             </div>
 
             <div className="flex items-center justify-center gap-3 shrink-0">
-              <button
+              <Button
+                variant="outline"
                 onClick={async () => {
                   if (!shownIsTranslation) return
                   setSpeaking(true)
@@ -471,12 +481,12 @@ export function FlashCardsModal({
                   }
                 }}
                 disabled={!shownIsTranslation}
-                className={`rounded-full p-2.5 border border-hairline hover:bg-surfacehover disabled:opacity-30 transition-all ${speaking ? 'text-fabpink' : 'text-muted'}`}
+                className={`p-2.5 ${speaking ? 'text-fabpink' : 'text-muted'}`}
                 aria-label="Speak"
                 title="Speak"
               >
                 <Volume2 size={18} strokeWidth={2} />
-              </button>
+              </Button>
               <button onClick={() => updateCard({ favorite: !card.favorite })} className={pillClass(card.favorite) + ' flex items-center gap-1.5'}>
                 <Star size={15} strokeWidth={2.5} fill={card.favorite ? 'currentColor' : 'none'} />
                 Favorite

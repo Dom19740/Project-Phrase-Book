@@ -50,7 +50,7 @@ export function LanguageTabs({
   const activeLanguage = languages.find((l) => l.id === activeLanguageId)
 
   return (
-    <div className="flex shrink-0 flex-col border-b border-hairline">
+    <div className="flex shrink-0 flex-col">
       <div className="flex flex-wrap items-center gap-2 px-4 py-2">
       <div className="relative flex w-full flex-1 items-center gap-2 sm:w-auto">
         <div className="relative flex-1">
@@ -107,7 +107,7 @@ export function LanguageTabs({
               searchExpanded ? 'opacity-100' : 'pointer-events-none opacity-0'
             }`}
           />
-          {search && searchExpanded && (
+          {searchExpanded && (
             <button
               type="button"
               onClick={() => {
