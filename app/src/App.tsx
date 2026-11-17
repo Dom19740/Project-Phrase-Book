@@ -13,7 +13,6 @@ import { LearnFavoriteSettingModal } from './components/LearnFavoriteSettingModa
 import { LoadingScreen } from './components/LoadingScreen'
 import { OnboardingFlow } from './components/OnboardingFlow'
 import { PhraseList } from './components/PhraseList'
-import { StartupPhrasesModal } from './components/StartupPhrasesModal'
 import { Button } from './components/ui/Button'
 import { LoadingIndicator } from './components/ui/LoadingIndicator'
 import { MenuIcon } from './components/ui/MenuIcon'
@@ -159,7 +158,6 @@ function Shell() {
     syncWidgetShowPhonetics(showPhonetics)
   }, [showPhonetics])
   const [search, setSearch] = useState('')
-  const [startupPhrasesLanguageId, setStartupPhrasesLanguageId] = useState<number | null>(null)
   const [onboardingSeen, setOnboardingSeen] = usePersistedState('phrasebook-onboarding-seen', false)
   const [showOnboarding, setShowOnboarding] = useState(() => !onboardingSeen)
   const appliedAccent = theme === 'light' ? (LIGHT_MODE_ACCENT_OVERRIDES[accent] ?? accent) : accent
@@ -222,12 +220,9 @@ function Shell() {
     phoneticsEnabled = false,
     starterPhraseKeys?: string[] | null,
   ) {
-    const wasFirstLanguage = languages.length === 0
     const lang = await createLanguage(name, code, includeConceptIds, sourceLanguageId, phoneticsEnabled)
     if (phoneticsEnabled) setShowPhonetics(true)
-    if (wasFirstLanguage) {
-      setStartupPhrasesLanguageId(lang.id)
-    } else if (starterPhraseKeys && starterPhraseKeys.length > 0) {
+    if (starterPhraseKeys && starterPhraseKeys.length > 0) {
       await addStartupPhrases(lang.id, starterPhraseKeys)
     }
   }
@@ -569,7 +564,7 @@ function Shell() {
           style={{ bottom: 'calc(6rem + var(--safe-area-inset-bottom, 0px))' }}
         >
           <LoadingIndicator size={15} className="text-fabpink" />
-          <span className="min-w-0 whitespace-normal break-words leading-5">Translating {backgroundTranslation.languageName} in the background&hellip;</span>
+          <span className="min-w-0 whitespace-normal break-words leading-5">Translating {backgroundTranslation.languageName}&hellip;</span>
         </div>
       )}
 
@@ -648,16 +643,6 @@ function Shell() {
           onDeleteOneLanguage={deleteOneLanguage}
           onDeleteAllLanguages={deleteAllLanguages}
           onCopyToLanguages={(targetLanguageIds) => bulkCopyToLanguages([editingPhrase.phraseConceptId], targetLanguageIds)}
-        />
-      )}
-
-      {startupPhrasesLanguageId != null && (
-        <StartupPhrasesModal
-          onSkip={() => setStartupPhrasesLanguageId(null)}
-          onSubmit={async (englishKeys) => {
-            await addStartupPhrases(startupPhrasesLanguageId, englishKeys)
-            setStartupPhrasesLanguageId(null)
-          }}
         />
       )}
 

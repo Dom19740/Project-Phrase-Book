@@ -35,7 +35,9 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
   const [saving, setSaving] = useState(false)
   const [phoneticsEnabled, setPhoneticsEnabled] = useState(false)
 
-  const [sourceLanguageId, setSourceLanguageId] = useState<number | null>(activeLanguageId ?? languages[0]?.id ?? null)
+  const [sourceLanguageId, setSourceLanguageId] = useState<number | null>(
+    activeLanguageId ?? languages[0]?.id ?? (languages.length === 0 ? STARTER_PHRASES_SOURCE : null),
+  )
   const [sourcePhrases, setSourcePhrases] = useState<PhraseListItem[] | null>(null)
   const [loadingPhrases, setLoadingPhrases] = useState(false)
   const [includedIds, setIncludedIds] = useState<Set<number>>(new Set())
@@ -133,8 +135,8 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
   async function handleAdd() {
     if (!selected) return
     setSaving(true)
-    const conceptIdsToInclude = hasExistingPhrases ? Array.from(allSelectedConceptIds) : []
-    const starterKeysToInclude = hasExistingPhrases ? dedupedStarterKeys : []
+    const conceptIdsToInclude = Array.from(allSelectedConceptIds)
+    const starterKeysToInclude = dedupedStarterKeys
     await onSubmit(
       selected.name,
       selected.code,
@@ -147,10 +149,6 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
     onClose()
   }
 
-  /**
-   * Confirm configuration before adding the first language too, so phonetics can be enabled
-   * before the caller offers starter phrases.
-   */
   async function chooseLanguage(lang: LanguageOption) {
     setPhoneticsEnabled(false)
     setSelected(lang)
@@ -165,19 +163,9 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
               <span aria-hidden="true">{getLanguageFlag(selected.code)}</span> Add {selected.name}
             </h2>
 
-            <label className="mb-4 flex items-start gap-2 rounded-xl border border-hairline p-3 text-sm text-ink">
-              <input
-                type="checkbox"
-                checked={phoneticsEnabled}
-                onChange={(event) => setPhoneticsEnabled(event.target.checked)}
-                className="mt-0.5 size-4 shrink-0 appearance-none rounded-full border-2 border-fabpink checked:bg-fabpink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fabpink"
-              />
-              <span>Enable phonetics</span>
-            </label>
-
             {hasExistingPhrases && (
               <>
-                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Select starter or phrases to copy</label>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Select starter or copied phrases</label>
                 <PopoutSelect
                   className="mb-3 w-full"
                   align="left"
@@ -206,6 +194,9 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
                     })),
                   ]}
                 />
+              </>
+            )}
+
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-fabpink">Phrases to include</span>
               <div className="flex gap-2">
@@ -284,8 +275,16 @@ export function AddLanguageModal({ languages, activeLanguageId, getLanguagePhras
             <p className="text-xs text-muted mb-4">
               {totalSelectedCount} of {totalAvailableCount} phrases selected (across all lists).
             </p>
-              </>
-            )}
+
+            <label className="mb-4 flex items-start gap-2 rounded-xl border border-hairline p-3 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={phoneticsEnabled}
+                onChange={(event) => setPhoneticsEnabled(event.target.checked)}
+                className="mt-0.5 size-4 shrink-0 appearance-none rounded-full border-2 border-fabpink checked:bg-fabpink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fabpink"
+              />
+              <span>Enable phonetics</span>
+            </label>
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setSelected(null)} disabled={saving} className="px-4 py-2 text-sm">
