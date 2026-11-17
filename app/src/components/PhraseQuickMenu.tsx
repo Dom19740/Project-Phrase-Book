@@ -27,7 +27,7 @@ export function PhraseQuickMenu({ open, learned, favorite, onToggleLearned, onTo
           onClose()
         }}
         tabIndex={open ? 0 : -1}
-        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink hover:bg-surfacehover transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-white hover:bg-surfacehover transition-colors"
       >
         <motion.span key={learned ? 'learned' : 'not-learned'} initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={motionSafeSpring(spatialDefault, reducedMotion)} className="inline-flex">
           <Check size={16} strokeWidth={2.5} className="text-fabpink" />
@@ -41,7 +41,7 @@ export function PhraseQuickMenu({ open, learned, favorite, onToggleLearned, onTo
           onClose()
         }}
         tabIndex={open ? 0 : -1}
-        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink hover:bg-surfacehover transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-white hover:bg-surfacehover transition-colors"
       >
         <motion.span key={favorite ? 'favorite' : 'not-favorite'} initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={motionSafeSpring(spatialDefault, reducedMotion)} className="inline-flex">
           <Star size={16} strokeWidth={2.5} fill={learned ? 'currentColor' : 'none'} className="text-fabpink" />
@@ -55,9 +55,9 @@ export function PhraseQuickMenu({ open, learned, favorite, onToggleLearned, onTo
           onClose()
         }}
         tabIndex={open ? 0 : -1}
-        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-fabpink hover:bg-surfacehover transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-white hover:bg-surfacehover transition-colors"
       >
-        <Pencil size={16} strokeWidth={2.5} className="text-fabpink" />
+        <Pencil size={16} strokeWidth={2.5} className="text-white" />
         Edit
       </button>
     </div>

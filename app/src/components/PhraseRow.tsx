@@ -27,8 +27,6 @@ interface Props {
   dragging?: boolean
 }
 
-const LONG_PRESS_MS = 500
-
 export function PhraseRow({
   phrase,
   languageCode,
@@ -47,8 +45,6 @@ export function PhraseRow({
   const reducedMotion = usePrefersReducedMotion()
   const [menuOpen, setMenuOpen] = useState(false)
   const [speaking, setSpeaking] = useState(false)
-  const pressTimer = useRef<number | null>(null)
-  const longPressFired = useRef(false)
   const nextSpeakRate = useSpeakRate()
   const rowRef = useRef<HTMLDivElement>(null)
   const displayedTranslation = showPhonetics && phrase.phonetic ? phrase.phonetic : phrase.text
@@ -66,29 +62,9 @@ export function PhraseRow({
     if (selectionMode) setMenuOpen(false)
   }, [selectionMode])
 
-  function clearPressTimer() {
-    if (pressTimer.current != null) {
-      window.clearTimeout(pressTimer.current)
-      pressTimer.current = null
-    }
-  }
-
-  function handlePointerDown() {
-    if (selectionMode) return
-    longPressFired.current = false
-    pressTimer.current = window.setTimeout(() => {
-      longPressFired.current = true
-      onEdit(phrase)
-    }, LONG_PRESS_MS)
-  }
-
   function handleClick() {
     if (selectionMode) {
       onToggleSelect?.(phrase.translationId)
-      return
-    }
-    if (longPressFired.current) {
-      longPressFired.current = false
       return
     }
     setMenuOpen((open) => !open)
@@ -105,12 +81,8 @@ export function PhraseRow({
     >
       <div
         className="relative flex cursor-pointer items-center gap-1.5 px-2 py-0.1"
-        onPointerDown={handlePointerDown}
-        onPointerUp={clearPressTimer}
-        onPointerLeave={clearPressTimer}
-        onPointerCancel={clearPressTimer}
         onClick={handleClick}
-        title={selectionMode ? 'Tap to select' : 'Tap for options, or long-press to jump straight to edit'}
+        title={selectionMode ? 'Tap to select' : 'Tap for options'}
       >
       <button
         type="button"
