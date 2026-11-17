@@ -141,7 +141,7 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Learnt, favorite, or edit',
-    body: ['Tap a phrase to mark it learnt, a favorite, or edit it. Long-press for a shortcut straight to editing.',
+    body: ['Tap a phrase to mark it learnt, a favorite, or edit it.',
           "Tap the speaker icon to hear a phrase read aloud. Tap it again right after to hear it again, slower.",],
     illustration: (
       <div className="flex w-full flex-col items-center gap-3">

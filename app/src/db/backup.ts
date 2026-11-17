@@ -8,6 +8,8 @@ interface BackupTranslation {
   phonetic?: string
   learned: boolean
   favorite: boolean
+  /** Position in that language's own custom sort order. Absent in backups made before this field existed. */
+  sortOrder?: number
 }
 
 interface BackupPhrase {
@@ -31,7 +33,8 @@ function isBackupTranslation(value: unknown): value is BackupTranslation {
     typeof t.text === 'string' &&
     (t.phonetic == null || typeof t.phonetic === 'string') &&
     typeof t.learned === 'boolean' &&
-    typeof t.favorite === 'boolean'
+    typeof t.favorite === 'boolean' &&
+    (t.sortOrder == null || typeof t.sortOrder === 'number')
   )
 }
 
@@ -83,7 +86,7 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
   const concepts = (conceptsRes.values ?? []) as { id: number; english: string; category_name: string | null }[]
 
   const translationsRes = await db.query(
-    'SELECT phrase_concept_id, language_id, text, phonetic, learned, favorite FROM translations ORDER BY phrase_concept_id;',
+    'SELECT phrase_concept_id, language_id, text, phonetic, learned, favorite, sort_order FROM translations ORDER BY phrase_concept_id;',
   )
   const translationsByConcept = new Map<number, BackupTranslation[]>()
   for (const row of (translationsRes.values ?? []) as {
@@ -93,11 +96,19 @@ export async function exportSnapshot(): Promise<BackupSnapshot> {
     phonetic: string
     learned: number
     favorite: number
+    sort_order: number
   }[]) {
     const languageCode = languageCodeById.get(row.language_id)
     if (!languageCode) continue
     const list = translationsByConcept.get(row.phrase_concept_id) ?? []
-    list.push({ languageCode, text: row.text, phonetic: row.phonetic, learned: !!row.learned, favorite: !!row.favorite })
+    list.push({
+      languageCode,
+      text: row.text,
+      phonetic: row.phonetic,
+      learned: !!row.learned,
+      favorite: !!row.favorite,
+      sortOrder: row.sort_order,
+    })
     translationsByConcept.set(row.phrase_concept_id, list)
   }
 
@@ -215,7 +226,9 @@ export async function importSnapshot(snapshot: BackupSnapshot): Promise<void> {
         if (languageId == null) continue
         await db.run(
           'INSERT INTO translations (phrase_concept_id, language_id, text, phonetic, learned, favorite, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?);',
-          [conceptId, languageId, t.text, t.phonetic ?? '', t.learned ? 1 : 0, t.favorite ? 1 : 0, i],
+          // Backups written before `sortOrder` existed fall back to the phrase's position in the
+          // file, which was the old (buggy) behavior but keeps old backups importable.
+          [conceptId, languageId, t.text, t.phonetic ?? '', t.learned ? 1 : 0, t.favorite ? 1 : 0, t.sortOrder ?? i],
           false,
         )
       }
