@@ -324,8 +324,8 @@ function Shell() {
         activeLanguageId={activeLanguageId}
         onSelect={setActiveLanguageId}
         onAddLanguage={handleAddLanguage}
-        onSetLanguagePhonetics={(languageId, enabled) => {
-          setLanguagePhoneticsEnabled(languageId, enabled)
+        onSetLanguagePhonetics={async (languageId, enabled) => {
+          await setLanguagePhoneticsEnabled(languageId, enabled)
           if (enabled) setShowPhonetics(true)
         }}
         onRemoveLanguage={removeLanguage}
