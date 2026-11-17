@@ -260,6 +260,13 @@ export function PhraseList({
     syncWidgetSortMode(sortMode)
   }, [sortMode])
 
+  // Whenever the categories panel closes (by any route - toggling it shut, switching to another
+  // pill, or clicking outside), fall back to the main category list so reopening it always lands
+  // there instead of picking back up wherever Manage categories was left.
+  useEffect(() => {
+    if (activePanel !== 'categories') setShowManageCategories(false)
+  }, [activePanel])
+
   useEffect(() => {
     if (!activePanel && !selectionMode) return
 

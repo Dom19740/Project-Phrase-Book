@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown, Languages, Plus, Search, Trash2, X } from 'lucide-react'
+import { ChevronDown, Languages, Plus, RefreshCw, Search, Trash2, X } from 'lucide-react'
 import type { Language, PhraseListItem } from '../db/types'
 import { getLanguageFlag } from '../lib/languageFlags'
 import { AddLanguageModal } from './AddLanguageModal'
@@ -14,6 +14,7 @@ interface Props {
     includeConceptIds?: number[] | null,
     sourceLanguageId?: number | null,
     phoneticsEnabled?: boolean,
+    starterPhraseKeys?: string[] | null,
   ) => Promise<void>
   onSetLanguagePhonetics: (languageId: number, enabled: boolean) => Promise<void>
   onRemoveLanguage: (id: number) => void
@@ -23,6 +24,10 @@ interface Props {
   phoneticsEnabled: boolean
   showPhonetics: boolean
   onToggleShowPhonetics: () => void
+  /** True once a translation attempt has actually finished leaving some phrase(s) in the active
+   * language untranslated - shows a retry button beside the language bar, hidden otherwise. */
+  needsRetranslate: boolean
+  onRetranslate: () => void
   menu: ReactNode
 }
 
@@ -39,6 +44,8 @@ export function LanguageTabs({
   phoneticsEnabled,
   showPhonetics,
   onToggleShowPhonetics,
+  needsRetranslate,
+  onRetranslate,
   menu,
 }: Props) {
   const [open, setOpen] = useState(false)
@@ -72,10 +79,16 @@ export function LanguageTabs({
                 <span className="flex-1 text-left truncate text-fabpink">Add a language</span>
               </>
             ) : (
-              // The row also has to fit the phonetics pill, search and menu button, so there's
-              // rarely room for the full name - show just the flag and leave the name for the
-              // dropdown list below, where there's no width pressure.
-              <span className="shrink-0 text-base leading-none">{activeLanguage ? getLanguageFlag(activeLanguage.code) : '🌐'}</span>
+              <>
+                <span className="shrink-0 text-base leading-none">{activeLanguage ? getLanguageFlag(activeLanguage.code) : '🌐'}</span>
+                {/* With the phonetics pill or the retry-translation button also in this row,
+                    there's rarely room for the full name - collapse to just the flag then and
+                    leave the name for the dropdown list below. Otherwise there's space to spare,
+                    so show the name too. */}
+                {!phoneticsEnabled && !needsRetranslate && (
+                  <span className="flex-1 min-w-0 text-left truncate text-ink">{activeLanguage?.name ?? 'Select a language'}</span>
+                )}
+              </>
             )}
             <ChevronDown size={16} strokeWidth={2.5} className="shrink-0 text-fabpink" />
           </button>
@@ -86,11 +99,23 @@ export function LanguageTabs({
             type="button"
             onClick={onToggleShowPhonetics}
             aria-pressed={showPhonetics}
-            className="flex h-8 w-24 shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-2 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+            className="flex h-8 w-32 shrink-0 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-2 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
             title={showPhonetics ? 'Show native script' : 'Show phonetic translation'}
           >
             <Languages size={13} strokeWidth={2} className="shrink-0" />
             {showPhonetics ? 'Phonetic' : 'Native'}
+          </button>
+        )}
+
+        {needsRetranslate && (
+          <button
+            type="button"
+            onClick={onRetranslate}
+            className="flex h-8 shrink-0 items-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-2.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
+            title="Some phrases didn't translate - retry"
+          >
+            <RefreshCw size={13} strokeWidth={2} className="shrink-0" />
+            Retry translation
           </button>
         )}
 

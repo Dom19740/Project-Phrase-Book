@@ -143,18 +143,18 @@ export function ManageCategoriesPanel({ categories, onClose, onCreate, onRename,
         {categories.length === 0 && <p className="text-sm text-muted mb-4">No categories yet.</p>}
 
         <label className="block text-[11px] font-extrabold uppercase tracking-wider text-fabpink mb-1">Add category</label>
-        <div className="flex gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-4">
           <input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-            className="flex-1 min-w-0 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 py-2 text-sm outline-none focus:border-fabpink transition-all"
+            className="h-8 flex-1 min-w-0 rounded-xl border-2 border-hairline bg-transparent text-ink px-3 text-sm outline-none focus:border-fabpink transition-all"
             placeholder="e.g. Emergencies"
           />
           <button
             onClick={handleCreate}
             disabled={busy || !newName.trim()}
-            className="rounded-full px-4 py-2 text-sm font-medium bg-fabpink text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
+            className="h-8 shrink-0 rounded-full px-4 text-sm font-medium bg-fabpink text-onaccent shadow-lg shadow-fabpink/20 active:scale-95 transition-all disabled:opacity-40"
           >
             Add
           </button>

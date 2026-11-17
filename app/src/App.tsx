@@ -83,6 +83,7 @@ function Shell() {
     backgroundPhonetics,
     phoneticsIncomplete,
     generateLanguagePhonetics,
+    retranslateLanguage,
     toggleLearned,
     toggleFavorite,
     removeFavoriteOnLearn,
@@ -219,10 +220,16 @@ function Shell() {
     includeConceptIds?: number[] | null,
     sourceLanguageId?: number | null,
     phoneticsEnabled = false,
+    starterPhraseKeys?: string[] | null,
   ) {
     const wasFirstLanguage = languages.length === 0
     const lang = await createLanguage(name, code, includeConceptIds, sourceLanguageId, phoneticsEnabled)
-    if (wasFirstLanguage) setStartupPhrasesLanguageId(lang.id)
+    if (phoneticsEnabled) setShowPhonetics(true)
+    if (wasFirstLanguage) {
+      setStartupPhrasesLanguageId(lang.id)
+    } else if (starterPhraseKeys && starterPhraseKeys.length > 0) {
+      await addStartupPhrases(lang.id, starterPhraseKeys)
+    }
   }
 
   useEffect(() => {
@@ -288,6 +295,11 @@ function Shell() {
   const activeLanguageCode = activeLanguage?.code ?? 'en'
   const activeLanguageName = activeLanguage?.name ?? ''
   const activeLanguagePhoneticsEnabled = activeLanguage?.phoneticsEnabled ?? false
+  // Only ever true once a translation attempt has actually finished leaving phrases blank - never
+  // while one is still in flight, so this doesn't flash on for the ordinary moment right after
+  // adding a language or a phrase, before the background translation call has even landed.
+  const needsRetranslate =
+    backgroundTranslation?.languageId !== activeLanguageId && phrases.some((p) => p.english.trim() && !p.text.trim())
 
   // Flash cards can study a language other than the active tab, so the edit modal must resolve
   // its language from the phrase being edited rather than assuming the active tab's language.
@@ -317,7 +329,10 @@ function Shell() {
         activeLanguageId={activeLanguageId}
         onSelect={setActiveLanguageId}
         onAddLanguage={handleAddLanguage}
-        onSetLanguagePhonetics={setLanguagePhoneticsEnabled}
+        onSetLanguagePhonetics={(languageId, enabled) => {
+          setLanguagePhoneticsEnabled(languageId, enabled)
+          if (enabled) setShowPhonetics(true)
+        }}
         onRemoveLanguage={removeLanguage}
         getLanguagePhrases={getLanguagePhrases}
         search={search}
@@ -325,6 +340,8 @@ function Shell() {
         phoneticsEnabled={activeLanguagePhoneticsEnabled}
         showPhonetics={showPhonetics}
         onToggleShowPhonetics={() => setShowPhonetics((value) => !value)}
+        needsRetranslate={needsRetranslate}
+        onRetranslate={() => activeLanguageId != null && retranslateLanguage(activeLanguageId)}
         menu={
           <div className="relative shrink-0">
             <button

@@ -62,7 +62,7 @@ interface PhraseBookContextValue {
   setActiveLanguageId: (id: number) => void
   phrases: PhraseListItem[]
   backgroundTranslation: { languageId: number; languageName: string } | null
-  translationIncomplete: { languageName: string; count: number } | null
+  translationIncomplete: { languageId: number; languageName: string; count: number } | null
   backgroundPhonetics: { languageId: number; languageName: string } | null
   phoneticsIncomplete: { languageId: number; languageName: string; count: number; error: string | null } | null
   refreshPhrases: () => Promise<void>
@@ -110,6 +110,7 @@ interface PhraseBookContextValue {
   ) => Promise<Language>
   setLanguagePhoneticsEnabled: (languageId: number, enabled: boolean) => Promise<void>
   generateLanguagePhonetics: (languageId: number) => Promise<void>
+  retranslateLanguage: (languageId: number) => Promise<void>
   addStartupPhrases: (languageId: number, englishKeys?: string[]) => Promise<void>
   removeLanguage: (languageId: number) => Promise<void>
   getLanguagePhrases: (languageId: number) => Promise<PhraseListItem[]>
@@ -151,7 +152,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
   const [activeLanguageId, setActiveLanguageId] = usePersistedState<number | null>('phrasebook-active-language-id', null)
   const [phrases, setPhrases] = useState<PhraseListItem[]>([])
   const [backgroundTranslation, setBackgroundTranslation] = useState<{ languageId: number; languageName: string } | null>(null)
-  const [translationIncomplete, setTranslationIncomplete] = useState<{ languageName: string; count: number } | null>(null)
+  const [translationIncomplete, setTranslationIncomplete] = useState<{ languageId: number; languageName: string; count: number } | null>(null)
   const [backgroundPhonetics, setBackgroundPhonetics] = useState<{ languageId: number; languageName: string } | null>(null)
   const [phoneticsIncomplete, setPhoneticsIncomplete] = useState<{
     languageId: number
@@ -620,15 +621,30 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
         if (failed.length > 0) {
           console.error(`${failed.length} phrase(s) could not be auto-translated after retrying.`)
-          setTranslationIncomplete({ languageName, count: failed.length })
+          setTranslationIncomplete({ languageId, languageName, count: failed.length })
+          // Only the toast banner times out - the retry button beside the language bar is driven
+          // by whether any phrase is actually still untranslated, so it sticks around until that's
+          // genuinely fixed rather than silently vanishing after 8 seconds.
           setTimeout(() => {
-            setTranslationIncomplete((current) => (current?.languageName === languageName ? null : current))
+            setTranslationIncomplete((current) => (current?.languageId === languageId ? null : current))
           }, 8000)
         }
         if (phoneticsEnabled) void runBackgroundPhonetics(languageId, languageCode, languageName)
       })()
     },
     [runBackgroundPhonetics],
+  )
+
+  const retranslateLanguage = useCallback(
+    async (languageId: number) => {
+      const lang = languages.find((l) => l.id === languageId)
+      if (!lang) return
+      const phraseList = await getPhraseList(languageId)
+      const concepts = phraseList.filter((p) => p.english.trim() && !p.text.trim()).map((p) => ({ id: p.phraseConceptId, english: p.english }))
+      if (concepts.length === 0) return
+      runBackgroundTranslation(languageId, lang.code, lang.name, concepts, lang.phoneticsEnabled)
+    },
+    [languages, runBackgroundTranslation],
   )
 
   const importLanguageCsv = useCallback(
@@ -734,7 +750,15 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
 
   const addStartupPhrases = useCallback(
     async (languageId: number, englishKeys?: string[]) => {
-      const lang = languages.find((l) => l.id === languageId)
+      // A caller that just created this language (e.g. picking starter phrases to copy while
+      // adding a language) may still be holding the `languages` closure from before that
+      // language existed, since state updates don't retroactively patch an already-captured
+      // callback - fall back to a fresh read rather than silently doing nothing.
+      let lang = languages.find((l) => l.id === languageId)
+      if (!lang) {
+        const freshLanguages = await getLanguages()
+        lang = freshLanguages.find((l) => l.id === languageId)
+      }
       if (!lang) return
 
       const included = englishKeys ? new Set(englishKeys) : null
@@ -807,6 +831,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       createLanguage,
       setLanguagePhoneticsEnabled,
       generateLanguagePhonetics,
+      retranslateLanguage,
       addStartupPhrases,
       removeLanguage,
       getLanguagePhrases,
@@ -870,6 +895,7 @@ export function PhraseBookProvider({ children }: { children: ReactNode }) {
       createLanguage,
       setLanguagePhoneticsEnabled,
       generateLanguagePhonetics,
+      retranslateLanguage,
       addStartupPhrases,
       removeLanguage,
       getLanguagePhrases,
