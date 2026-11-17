@@ -8,8 +8,6 @@ interface Props {
   onManageCategories: () => void
   groupByCategoryOn: boolean
   onToggleGroupByCategory: (on: boolean) => void
-  removeFavoriteOnLearn: boolean
-  onToggleRemoveFavoriteOnLearn: (on: boolean) => void
 }
 
 export function CategoryFilterPopout({
@@ -19,8 +17,6 @@ export function CategoryFilterPopout({
   onManageCategories,
   groupByCategoryOn,
   onToggleGroupByCategory,
-  removeFavoriteOnLearn,
-  onToggleRemoveFavoriteOnLearn,
 }: Props) {
   return (
     <div className="flex flex-col gap-0.5">
@@ -52,34 +48,19 @@ export function CategoryFilterPopout({
           )
         })}
       </div>
-      <div className="flex flex-col gap-1 px-0.5">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <button
-            type="button"
-            role="checkbox"
-            aria-checked={groupByCategoryOn}
-            onClick={() => onToggleGroupByCategory(!groupByCategoryOn)}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
-          >
-            <span
-              aria-hidden="true"
-              className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
-            />
-            <span>Group by category</span>
-          </button>
-        </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-0.5">
         <button
           type="button"
           role="checkbox"
-          aria-checked={removeFavoriteOnLearn}
-          onClick={() => onToggleRemoveFavoriteOnLearn(!removeFavoriteOnLearn)}
-          className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg py-1.5 text-left text-xs text-ink transition-colors hover:bg-surfacehover"
+          aria-checked={groupByCategoryOn}
+          onClick={() => onToggleGroupByCategory(!groupByCategoryOn)}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-sm text-ink transition-colors hover:bg-surfacehover"
         >
           <span
             aria-hidden="true"
-            className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink' : ''}`}
+            className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${groupByCategoryOn ? 'bg-fabpink' : ''}`}
           />
-          <span>Remove learnt from favorites</span>
+          <span>Group by category</span>
         </button>
       </div>
     </div>

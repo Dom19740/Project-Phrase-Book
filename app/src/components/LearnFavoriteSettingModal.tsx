@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react'
 import { Button } from './ui/Button'
-import { Sheet } from './ui/Sheet'
+import { Dialog } from './ui/Dialog'
 
 interface Props {
   onConfirm: (removeFavorite: boolean) => void
@@ -8,7 +8,7 @@ interface Props {
 
 export function LearnFavoriteSettingModal({ onConfirm }: Props) {
   return (
-    <Sheet onClose={() => onConfirm(false)}>
+    <Dialog onClose={() => onConfirm(false)} maxWidthClassName="sm:max-w-xs">
       <>
         <div className="flex items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-fabpink/15 text-fabpink">
@@ -30,6 +30,6 @@ export function LearnFavoriteSettingModal({ onConfirm }: Props) {
           </Button>
         </div>
       </>
-    </Sheet>
+    </Dialog>
   )
 }

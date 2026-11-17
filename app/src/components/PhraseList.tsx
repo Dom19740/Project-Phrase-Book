@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import {
   ArrowDown,
-  ArrowDownAZ,
   ArrowUp,
-  ArrowUpZA,
   Check,
   ChevronDown,
   ChevronRight,
@@ -18,7 +16,6 @@ import {
   X,
 } from 'lucide-react'
 import type { Category, Language, PhraseListItem } from '../db/types'
-import { pillClass } from '../lib/pillStyles'
 import { usePersistedState } from '../lib/usePersistedState'
 import { syncWidgetSortMode } from '../lib/widgetRefresh'
 import { BulkActionBar } from './BulkActionBar'
@@ -97,21 +94,20 @@ function SortIcon({ mode }: { mode: SortMode }) {
 function SortDirectionIcon({ mode }: { mode: SortMode }) {
   if (mode === 'custom') return null
   const asc = mode.endsWith('asc')
-  return (
-    <span className={SORT_ICON_BOX}>
-      {mode.startsWith('date') ? (
-        asc ? (
-          <ArrowUp size={14} strokeWidth={2} />
-        ) : (
-          <ArrowDown size={14} strokeWidth={2} />
-        )
-      ) : asc ? (
-        <ArrowDownAZ size={14} strokeWidth={2} />
-      ) : (
-        <ArrowUpZA size={14} strokeWidth={2} />
-      )}
-    </span>
-  )
+  return <span className={SORT_ICON_BOX}>{asc ? <ArrowUp size={14} strokeWidth={2} /> : <ArrowDown size={14} strokeWidth={2} />}</span>
+}
+
+type SortField = 'english' | 'translation' | 'date'
+
+const SORT_FIELDS: { field: SortField; label: string }[] = [
+  { field: 'english', label: 'Sort by English' },
+  { field: 'translation', label: 'Sort by translation' },
+  { field: 'date', label: 'Sort by date added' },
+]
+
+function sortFieldOf(mode: SortMode): SortField | 'custom' {
+  if (mode === 'custom') return 'custom'
+  return mode.startsWith('english') ? 'english' : mode.startsWith('translation') ? 'translation' : 'date'
 }
 
 const SORT_OPTION_LABELS: { value: SortMode; label: string }[] = [
@@ -384,6 +380,14 @@ export function PhraseList({
     setLearnedFilter(VIEW_FILTER_ORDER[nextIndex])
   }
 
+  // Tapping a sort field pill a second time flips its direction instead of needing a separate
+  // asc/desc pill per field - switching to a different field always starts it ascending.
+  function toggleSortField(field: SortField) {
+    const isActive = sortFieldOf(sortMode) === field
+    const direction = isActive && sortMode.endsWith('asc') ? 'desc' : 'asc'
+    setSortMode(`${field}-${direction}` as SortMode)
+  }
+
   const selectedItems = filtered.filter((p) => selectedIds.has(p.translationId))
   const selectedTranslationIds = selectedItems.map((p) => p.translationId)
   const selectedConceptIds = [...new Set(selectedItems.map((p) => p.phraseConceptId))]
@@ -456,7 +460,11 @@ export function PhraseList({
                   )}
                 </button>
               )}
-              {!isCollapsed && <div className="mt-1.5">{renderDraggableGroup(group.items)}</div>}
+              <div className="menu-panel-reveal" data-open={!isCollapsed} aria-hidden={isCollapsed}>
+                <div className="min-h-0 overflow-hidden">
+                  <div className="mt-1.5">{renderDraggableGroup(group.items)}</div>
+                </div>
+              </div>
             </div>
           )
         })}
@@ -558,19 +566,63 @@ export function PhraseList({
               ) : (
                 <div className={activePanel ? 'animate-menu-open' : ''}>
                   {activePanel === 'sort' && (
-                    <div className="flex flex-wrap gap-1.5 py-0.5">
-                      {SORT_OPTIONS.map((option) => (
+                    <div className="flex flex-col gap-2 py-0.5">
+                      <div className="flex flex-wrap gap-1.5">
+                        {SORT_FIELDS.map(({ field, label }) => {
+                          const active = sortFieldOf(sortMode) === field
+                          const directionMode = (active ? sortMode : `${field}-asc`) as SortMode
+                          return (
+                            <button
+                              key={field}
+                              type="button"
+                              onClick={() => toggleSortField(field)}
+                              aria-pressed={active}
+                              className={`flex items-center gap-0.5 rounded-full border-2 border-fabpink px-2 py-1.5 text-[11px] font-extrabold uppercase tracking-wider transition-all ${
+                                active ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
+                              }`}
+                            >
+                              <SortIcon mode={directionMode} />
+                              <SortDirectionIcon mode={directionMode} />
+                              <span className="sr-only">
+                                {label}
+                                {active ? (sortMode.endsWith('asc') ? ' ascending' : ' descending') : ''}
+                              </span>
+                            </button>
+                          )
+                        })}
+                        {SORT_OPTIONS.filter((option) => option.value === 'custom').map((option) => {
+                          const selected = sortMode === option.value
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => setSortMode(option.value)}
+                              aria-pressed={selected}
+                              className={`flex shrink-0 items-center gap-1.5 rounded-full border-2 border-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider transition-all ${
+                                selected ? 'bg-fabpink text-onaccent shadow-lg shadow-fabpink/20' : 'bg-transparent text-fabpink'
+                              }`}
+                            >
+                              {option.shortLabel}
+                              <span className="sr-only">{option.label}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                         <button
-                          key={option.value}
                           type="button"
-                          onClick={() => setSortMode(option.value)}
-                          aria-pressed={sortMode === option.value}
-                          className={`flex items-center gap-1.5 ${pillClass(sortMode === option.value, 'accent')}`}
+                          role="checkbox"
+                          aria-checked={removeFavoriteOnLearn}
+                          onClick={() => onToggleRemoveFavoriteOnLearn(!removeFavoriteOnLearn)}
+                          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg py-1.5 text-left text-sm text-ink transition-colors hover:bg-surfacehover"
                         >
-                          {option.shortLabel}
-                          <span className="sr-only">{option.label}</span>
+                          <span
+                            aria-hidden="true"
+                            className={`size-3.5 shrink-0 rounded-full border-2 border-fabpink transition-colors ${removeFavoriteOnLearn ? 'bg-fabpink' : ''}`}
+                          />
+                          <span>Remove Learnt from Favorites</span>
                         </button>
-                      ))}
+                      </div>
                     </div>
                   )}
 
@@ -582,8 +634,6 @@ export function PhraseList({
                       onManageCategories={() => setShowManageCategories(true)}
                       groupByCategoryOn={groupByCategoryOn}
                       onToggleGroupByCategory={setGroupByCategoryOn}
-                      removeFavoriteOnLearn={removeFavoriteOnLearn}
-                      onToggleRemoveFavoriteOnLearn={onToggleRemoveFavoriteOnLearn}
                     />
                   )}
                 </div>
@@ -664,7 +714,9 @@ export function PhraseList({
                   <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
                 )}
               </button>
-              {primaryExpanded && renderGroups(groups, collapsed, setCollapsed)}
+              <div className="menu-panel-reveal" data-open={primaryExpanded} aria-hidden={!primaryExpanded}>
+                <div className="min-h-0 overflow-hidden">{renderGroups(groups, collapsed, setCollapsed)}</div>
+              </div>
             </div>
           )}
 
@@ -683,7 +735,9 @@ export function PhraseList({
                   <ChevronRight size={16} strokeWidth={2} className="text-fabpink" />
                 )}
               </button>
-              {secondaryExpanded && renderGroups(secondaryGroups, secondaryCollapsed, setSecondaryCollapsed)}
+              <div className="menu-panel-reveal" data-open={secondaryExpanded} aria-hidden={!secondaryExpanded}>
+                <div className="min-h-0 overflow-hidden">{renderGroups(secondaryGroups, secondaryCollapsed, setSecondaryCollapsed)}</div>
+              </div>
             </div>
           )}
         </div>
