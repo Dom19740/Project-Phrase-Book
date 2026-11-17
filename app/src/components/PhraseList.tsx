@@ -67,11 +67,17 @@ type SortMode = 'english-asc' | 'english-desc' | 'translation-asc' | 'translatio
 
 const SORT_ICON_BOX = 'inline-flex w-4 h-4 shrink-0 items-center justify-center'
 
-/** Shared look for the View/Sort/Categories/Bulk trigger pills on the toolbar's two rows - each
- * pair fills its row via flex-1 so both pills are always the same, even width. */
+/** Shared look for the View/Sort/Category/Bulk trigger pills on the toolbar's two rows - each
+ * pair fills its row via flex-1, so one pill's label changing length (e.g. "Sort" <-> "Close")
+ * reflows its flex-1 sibling's width too. Transitioning only color/shadow/transform (Tailwind's
+ * plain `transition`, not `transition-all`) keeps that reflow instant instead of animating the
+ * sibling's width. `whitespace-nowrap` matters more than it looks: without it, the longest label
+ * ("Category") could wrap onto a second line for the one frame its flex-1 width is still
+ * settling, which - inside the pill's fixed h-8 - clips/compresses the text and reads as a
+ * flicker to a smaller font. */
 function triggerPillClass(active: boolean): string {
   const base =
-    'flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink px-2.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition-all'
+    'flex h-8 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border-2 border-fabpink px-2.5 text-[11px] font-extrabold uppercase tracking-wider active:scale-95 transition'
   return active ? `${base} bg-fabpink text-onaccent shadow-lg shadow-fabpink/20` : `${base} bg-transparent text-fabpink`
 }
 
@@ -522,7 +528,7 @@ export function PhraseList({
               className={`relative ${triggerPillClass(activePanel === 'categories')}`}
             >
               {activePanel === 'categories' ? <X size={14} strokeWidth={2} /> : <Tag size={14} strokeWidth={2} />}
-              {activePanel === 'categories' ? 'Close' : 'Categories'}
+              {activePanel === 'categories' ? 'Close' : 'Category'}
               {activePanel !== 'categories' && hiddenCategories.size > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-fabpink" aria-hidden="true" />
               )}

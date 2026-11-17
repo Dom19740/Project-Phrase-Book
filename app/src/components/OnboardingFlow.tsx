@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { ArrowDown, ArrowRight, Check, ChevronDown, Eye, Languages, Layers, ListChecks, ListFilter, Mic, Pencil, Search, Star, Volume2 } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, ChevronDown, GraduationCap, Languages, Layers, ListChecks, ListFilter, Mic, Pencil, Search, Star, Tag, Volume2 } from 'lucide-react'
 import { Logo, Wordmark } from './Logo'
 
 interface Props {
@@ -117,30 +117,25 @@ const ALL_HOWTO_PAGES: HowToPage[] = [
   },
   {
     title: 'Filter, sort, and bulk actions',
-    body: 'Cycle through Not Learnt, Learnt, or All phrases, and switch between native script and phonetic text when available. Tap Sort to reorder your list and show, hide, or manage categories, and use Bulk to select and edit several phrases at once.',
+    body: 'Cycle through All, Favorites, Not Learnt, or Learnt phrases. Sort your phrases by English, Translation, Date, or Custom. Manage categories, and Bulk edit several phrases at once.',
     illustration: (
-      <div className="flex w-full flex-col items-center gap-2">
-        <div className="flex w-full max-w-xs flex-wrap items-center justify-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
-            <Eye size={13} strokeWidth={2.5} />
-            Not Learnt
-          </span>
-          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
-            <Languages size={13} strokeWidth={2.5} />
-            PHONETIC
-          </span>
-        </div>
-        <div className="flex w-full max-w-xs flex-wrap items-center justify-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
-            <ListChecks size={13} strokeWidth={2.5} />
-            Bulk
-          </span>
-          <span className="flex items-center gap-1.5 rounded-full bg-fabpink px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-onaccent shadow-lg shadow-fabpink/20">
-            <ListFilter size={13} strokeWidth={2.5} />
-            Sort
-            <ChevronDown size={12} strokeWidth={2.5} />
-          </span>
-        </div>
+      <div className="mx-auto grid w-full max-w-xs grid-cols-2 gap-2">
+        <span className="flex h-8 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-2.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink">
+          <GraduationCap size={13} strokeWidth={2.5} />
+          Not Learnt
+        </span>
+        <span className="flex h-8 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-2.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink">
+          <ListFilter size={13} strokeWidth={2.5} />
+          Sort
+        </span>
+        <span className="flex h-8 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-2.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink">
+          <Tag size={13} strokeWidth={2.5} />
+          Category
+        </span>
+        <span className="flex h-8 items-center justify-center gap-1.5 rounded-full border-2 border-fabpink bg-transparent px-2.5 text-[11px] font-extrabold uppercase tracking-wider text-fabpink">
+          <ListChecks size={13} strokeWidth={2.5} />
+          Bulk
+        </span>
       </div>
     ),
   },
