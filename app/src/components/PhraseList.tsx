@@ -500,14 +500,13 @@ export function PhraseList({
               {showPhonetics ? 'PHONETIC' : 'Native'}
             </button>
           )}
-          {phoneticsEnabled && phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
+          {phoneticsEnabled && !generatingPhonetics && phrases.some((phrase) => phrase.text && !phrase.phonetic) && (
             <button
               type="button"
               onClick={() => void onGeneratePhonetics()}
-              disabled={generatingPhonetics}
-              className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all disabled:opacity-50"
+              className="shrink-0 rounded-full border-2 border-fabpink bg-transparent px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-fabpink active:scale-95 transition-all"
             >
-              {generatingPhonetics ? 'Generating...' : phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
+              {phoneticsError ? 'Retry phonetics' : 'Generate phonetics'}
             </button>
           )}
         </div>

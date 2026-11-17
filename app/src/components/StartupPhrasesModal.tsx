@@ -8,6 +8,8 @@ interface Props {
   onSubmit: (englishKeys: string[]) => Promise<void>
 }
 
+const alphabeticalPhrases = [...startupPhrases].sort((a, b) => a.english.localeCompare(b.english))
+
 export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
   const [includedKeys, setIncludedKeys] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
@@ -49,7 +51,7 @@ export function StartupPhrasesModal({ onSkip, onSubmit }: Props) {
         </div>
 
         <div className="flex flex-col gap-0.5 max-h-72 overflow-y-auto mb-4 rounded-xl border border-hairline p-1.5">
-          {startupPhrases.map((p) => {
+          {alphabeticalPhrases.map((p) => {
             const checked = includedKeys.has(p.english)
             return (
               <button
