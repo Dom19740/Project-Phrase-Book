@@ -416,8 +416,13 @@ export function PhraseList({
     )
   }
 
-  /** Renders one draggable bucket - items can be reordered within it, never out of it. */
+  /** Renders one draggable bucket - items can be reordered within it, never out of it. Dragging
+   * (and its grip handle) is only on offer while the Sort panel itself is open, so a phrase can't
+   * get nudged out of order by an accidental drag during ordinary browsing. */
   function renderDraggableGroup(items: PhraseListItem[]) {
+    if (activePanel !== 'sort') {
+      return <div className="flex flex-col gap-1.5">{items.map((item) => renderRow(item))}</div>
+    }
     return (
       <DragReorderList
         items={items}
